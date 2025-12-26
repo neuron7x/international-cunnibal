@@ -1,0 +1,161 @@
+import 'dart:async';
+import 'package:international_cunnibal/models/dictation_session.dart';
+import 'package:international_cunnibal/models/tongue_data.dart';
+import 'package:international_cunnibal/services/neural_engine.dart';
+
+/// Symbol Dictation Service
+/// Partner-led A-Z rhythmic synchronization in real-time
+/// Reference: Symbol Dictation feature (2025-11-30)
+class SymbolDictationService {
+  static final SymbolDictationService _instance = 
+      SymbolDictationService._internal();
+  factory SymbolDictationService() => _instance;
+  SymbolDictationService._internal();
+
+  final NeuralEngine _neuralEngine = NeuralEngine();
+  
+  DictationSession? _currentSession;
+  final List<double> _rhythmTimestamps = [];
+  String _targetSymbol = 'A';
+  DateTime? _sessionStartTime;
+  
+  StreamSubscription<TongueData>? _tongueDataSubscription;
+  final StreamController<DictationSession> _sessionController = 
+      StreamController<DictationSession>.broadcast();
+
+  Stream<DictationSession> get sessionStream => _sessionController.stream;
+  DictationSession? get currentSession => _currentSession;
+  String get targetSymbol => _targetSymbol;
+
+  /// Start a new dictation session with target symbol
+  void startSession(String symbol) {
+    if (symbol.length != 1 || !RegExp(r'^[A-Z]$').hasMatch(symbol)) {
+      throw ArgumentError('Symbol must be a single letter A-Z');
+    }
+
+    _targetSymbol = symbol;
+    _sessionStartTime = DateTime.now();
+    _rhythmTimestamps.clear();
+
+    // Listen to tongue data for rhythm detection
+    _tongueDataSubscription = _neuralEngine.tongueDataStream.listen(
+      (tongueData) => _processRhythm(tongueData),
+    );
+  }
+
+  /// Process rhythm from tongue movements
+  void _processRhythm(TongueData data) {
+    if (_sessionStartTime == null) return;
+
+    // Detect significant movement (velocity threshold)
+    if (data.velocity > 5.0 && data.isValidated) {
+      final timestamp = data.timestamp
+          .difference(_sessionStartTime!)
+          .inMilliseconds / 1000.0;
+      
+      _rhythmTimestamps.add(timestamp);
+      
+      // Update session
+      _updateSession();
+    }
+  }
+
+  /// Update current session with latest data
+  void _updateSession() {
+    if (_sessionStartTime == null) return;
+
+    final synchronizationScore = _calculateSynchronization();
+    
+    _currentSession = DictationSession(
+      targetSymbol: _targetSymbol,
+      startTime: _sessionStartTime!,
+      rhythmTimestamps: List.from(_rhythmTimestamps),
+      synchronizationScore: synchronizationScore,
+    );
+
+    _sessionController.add(_currentSession!);
+  }
+
+  /// Calculate synchronization score based on rhythm patterns
+  /// Uses expected rhythm pattern for each letter
+  double _calculateSynchronization() {
+    if (_rhythmTimestamps.length < 2) return 0.0;
+
+    // Expected rhythm patterns for letters (simplified)
+    // In production, this would use more sophisticated pattern matching
+    final expectedIntervals = _getExpectedRhythm(_targetSymbol);
+    
+    if (_rhythmTimestamps.length < expectedIntervals.length + 1) {
+      return (_rhythmTimestamps.length / (expectedIntervals.length + 1)) * 100;
+    }
+
+    // Calculate actual intervals
+    final actualIntervals = <double>[];
+    for (int i = 1; i < _rhythmTimestamps.length; i++) {
+      actualIntervals.add(_rhythmTimestamps[i] - _rhythmTimestamps[i - 1]);
+    }
+
+    // Compare with expected pattern
+    double totalError = 0.0;
+    final compareLength = actualIntervals.length.clamp(0, expectedIntervals.length);
+    
+    for (int i = 0; i < compareLength; i++) {
+      final error = (actualIntervals[i] - expectedIntervals[i]).abs();
+      totalError += error;
+    }
+
+    final avgError = totalError / compareLength;
+    final score = 100.0 / (1.0 + avgError);
+    
+    return score.clamp(0.0, 100.0);
+  }
+
+  /// Get expected rhythm pattern for symbol
+  /// Each letter has a unique rhythm signature for dictation
+  List<double> _getExpectedRhythm(String symbol) {
+    // Morse code-inspired rhythm patterns
+    // Short = 0.2s, Long = 0.6s
+    final patterns = {
+      'A': [0.2, 0.6], // .-
+      'B': [0.6, 0.2, 0.2, 0.2], // -...
+      'C': [0.6, 0.2, 0.6, 0.2], // -.-.
+      'D': [0.6, 0.2, 0.2], // -..
+      'E': [0.2], // .
+      'F': [0.2, 0.2, 0.6, 0.2], // ..-.
+      'G': [0.6, 0.6, 0.2], // --.
+      'H': [0.2, 0.2, 0.2, 0.2], // ....
+      'I': [0.2, 0.2], // ..
+      'J': [0.2, 0.6, 0.6, 0.6], // .---
+      'K': [0.6, 0.2, 0.6], // -.-
+      'L': [0.2, 0.6, 0.2, 0.2], // .-..
+      'M': [0.6, 0.6], // --
+      'N': [0.6, 0.2], // -.
+      'O': [0.6, 0.6, 0.6], // ---
+      'P': [0.2, 0.6, 0.6, 0.2], // .--.
+      'Q': [0.6, 0.6, 0.2, 0.6], // --.-
+      'R': [0.2, 0.6, 0.2], // .-.
+      'S': [0.2, 0.2, 0.2], // ...
+      'T': [0.6], // -
+      'U': [0.2, 0.2, 0.6], // ..-
+      'V': [0.2, 0.2, 0.2, 0.6], // ...-
+      'W': [0.2, 0.6, 0.6], // .--
+      'X': [0.6, 0.2, 0.2, 0.6], // -..-
+      'Y': [0.6, 0.2, 0.6, 0.6], // -.--
+      'Z': [0.6, 0.6, 0.2, 0.2], // --..
+    };
+
+    return patterns[symbol] ?? [0.2, 0.2];
+  }
+
+  /// Stop current dictation session
+  void stopSession() {
+    _tongueDataSubscription?.cancel();
+    _tongueDataSubscription = null;
+    _sessionStartTime = null;
+  }
+
+  void dispose() {
+    stopSession();
+    _sessionController.close();
+  }
+}
