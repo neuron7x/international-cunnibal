@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:international_cunnibal/models/dictation_session.dart';
 import 'package:international_cunnibal/models/tongue_data.dart';
 import 'package:international_cunnibal/services/neural_engine.dart';
+import 'package:international_cunnibal/utils/constants.dart';
 
 /// Symbol Dictation Service
 /// Partner-led A-Z rhythmic synchronization in real-time
@@ -13,9 +14,6 @@ class SymbolDictationService {
   SymbolDictationService._internal();
 
   final NeuralEngine _neuralEngine = NeuralEngine();
-  
-  // Threshold for detecting significant tongue movement
-  static const double significantMovementThreshold = 5.0;
   
   DictationSession? _currentSession;
   final List<double> _rhythmTimestamps = [];
@@ -51,7 +49,8 @@ class SymbolDictationService {
     if (_sessionStartTime == null) return;
 
     // Detect significant movement (velocity threshold)
-    if (data.velocity > significantMovementThreshold && data.isValidated) {
+    if (data.velocity > RhythmPatterns.significantMovementThreshold && 
+        data.isValidated) {
       final timestamp = data.timestamp
           .difference(_sessionStartTime!)
           .inMilliseconds / 1000.0;
@@ -116,38 +115,7 @@ class SymbolDictationService {
   /// Get expected rhythm pattern for symbol
   /// Each letter has a unique rhythm signature for dictation
   List<double> _getExpectedRhythm(String symbol) {
-    // Morse code-inspired rhythm patterns
-    // Short = 0.2s, Long = 0.6s
-    final patterns = {
-      'A': [0.2, 0.6], // .-
-      'B': [0.6, 0.2, 0.2, 0.2], // -...
-      'C': [0.6, 0.2, 0.6, 0.2], // -.-.
-      'D': [0.6, 0.2, 0.2], // -..
-      'E': [0.2], // .
-      'F': [0.2, 0.2, 0.6, 0.2], // ..-.
-      'G': [0.6, 0.6, 0.2], // --.
-      'H': [0.2, 0.2, 0.2, 0.2], // ....
-      'I': [0.2, 0.2], // ..
-      'J': [0.2, 0.6, 0.6, 0.6], // .---
-      'K': [0.6, 0.2, 0.6], // -.-
-      'L': [0.2, 0.6, 0.2, 0.2], // .-..
-      'M': [0.6, 0.6], // --
-      'N': [0.6, 0.2], // -.
-      'O': [0.6, 0.6, 0.6], // ---
-      'P': [0.2, 0.6, 0.6, 0.2], // .--.
-      'Q': [0.6, 0.6, 0.2, 0.6], // --.-
-      'R': [0.2, 0.6, 0.2], // .-.
-      'S': [0.2, 0.2, 0.2], // ...
-      'T': [0.6], // -
-      'U': [0.2, 0.2, 0.6], // ..-
-      'V': [0.2, 0.2, 0.2, 0.6], // ...-
-      'W': [0.2, 0.6, 0.6], // .--
-      'X': [0.6, 0.2, 0.2, 0.6], // -..-
-      'Y': [0.6, 0.2, 0.6, 0.6], // -.--
-      'Z': [0.6, 0.6, 0.2, 0.2], // --..
-    };
-
-    return patterns[symbol] ?? [0.2, 0.2];
+    return RhythmPatterns.getPattern(symbol);
   }
 
   /// Stop current dictation session

@@ -4,6 +4,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:intl/intl.dart';
 import 'package:international_cunnibal/models/metrics.dart';
 import 'package:international_cunnibal/models/dictation_session.dart';
+import 'package:international_cunnibal/utils/constants.dart';
 
 /// GitHub Performance Log Export Service
 /// Automated export of performance logs for GitHub integration
@@ -20,8 +21,8 @@ class GitHubExportService {
   void logMetrics(BiometricMetrics metrics) {
     _metricsLog.add(metrics);
     
-    // Auto-export if we have 100+ entries
-    if (_metricsLog.length >= 100) {
+    // Auto-export if we have enough entries
+    if (_metricsLog.length >= ExportConstants.autoExportThreshold) {
       exportPerformanceLog();
     }
   }
@@ -41,7 +42,7 @@ class GitHubExportService {
 
     final data = {
       'exportTimestamp': DateTime.now().toIso8601String(),
-      'appVersion': '1.0.0',
+      'appVersion': ExportConstants.appVersion,
       'totalMetrics': _metricsLog.length,
       'totalSessions': _sessionsLog.length,
       'metrics': _metricsLog.map((m) => m.toJson()).toList(),

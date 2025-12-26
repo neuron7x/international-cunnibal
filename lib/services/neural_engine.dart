@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 import 'package:international_cunnibal/models/tongue_data.dart';
 import 'package:international_cunnibal/models/metrics.dart';
+import 'package:international_cunnibal/utils/constants.dart';
 
 /// NeuralEngine service implementing Anokhin's Action Acceptor
 /// 
@@ -24,7 +25,7 @@ class NeuralEngine {
   Stream<BiometricMetrics> get metricsStream => _metricsController.stream;
 
   final List<TongueData> _dataBuffer = [];
-  final int _bufferSize = 100; // Store last 100 samples for analysis
+  final int _bufferSize = NeuralEngineConstants.bufferSize;
   
   bool _isProcessing = false;
   Timer? _metricsTimer;
@@ -37,12 +38,15 @@ class NeuralEngine {
     _dataBuffer.clear();
     
     // Calculate metrics every second
-    _metricsTimer = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (_dataBuffer.isNotEmpty) {
-        final metrics = _calculateMetrics();
-        _metricsController.add(metrics);
-      }
-    });
+    _metricsTimer = Timer.periodic(
+      Duration(seconds: NeuralEngineConstants.metricsUpdateIntervalSeconds),
+      (_) {
+        if (_dataBuffer.isNotEmpty) {
+          final metrics = _calculateMetrics();
+          _metricsController.add(metrics);
+        }
+      },
+    );
   }
 
   /// Stop the neural engine processing
@@ -81,7 +85,7 @@ class NeuralEngine {
     
     final previous = _dataBuffer[_dataBuffer.length - 2];
     final velocityChange = (data.velocity - previous.velocity).abs();
-    final isConsistent = velocityChange < 0.5; // Threshold for consistency
+    final isConsistent = velocityChange < NeuralEngineConstants.velocityChangeThreshold;
     
     return TongueData(
       timestamp: data.timestamp,
@@ -134,9 +138,11 @@ class NeuralEngine {
     final stdDev = sqrt(variance);
     
     // Normalize to 0-100 scale (inverse, so lower stdDev = higher score)
-    // Scaling factor: stdDev of 2.0 = 0 score, stdDev of 0 = 100 score
-    const stdDevScalingFactor = 50.0;
-    return max(0, 100 - (stdDev * stdDevScalingFactor)).clamp(0.0, 100.0);
+    // Scaling factor explanation: A stdDev of 2.0 maps to 0% consistency,
+    // while a stdDev of 0 maps to 100% consistency. This creates an
+    // intuitive linear scale where typical movement variation (stdDev ~0.5-1.5)
+    // maps to 25-92% consistency scores.
+    return (100 - (stdDev * NeuralEngineConstants.stdDevScalingFactor)).clamp(0.0, 100.0);
   }
 
   /// Calculate movement frequency in Hz

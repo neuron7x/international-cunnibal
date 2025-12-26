@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:international_cunnibal/models/tongue_data.dart';
 import 'package:international_cunnibal/services/neural_engine.dart';
+import 'package:international_cunnibal/utils/constants.dart';
 
 /// Bio-Tracking service for real-time tongue biomechanics
 /// Uses MediaPipe/TFLite for on-device AI processing
@@ -63,7 +64,7 @@ class BioTrackingService {
 
     // Process frames at 30 FPS
     _trackingTimer = Timer.periodic(
-      const Duration(milliseconds: 33),
+      Duration(milliseconds: BioTrackingConstants.frameProcessingIntervalMs),
       (_) => _processFrame(),
     );
   }
@@ -102,10 +103,13 @@ class BioTrackingService {
   TongueData _simulateTongueDetection() {
     final timestamp = DateTime.now();
     
-    // Simulate natural tongue movement patterns
-    final time = _frameCount / 30.0; // Time in seconds
-    final x = 0.5 + _simulationAmplitudeX * (time % _simulationPeriod - 1.0);
-    final y = 0.5 + _simulationAmplitudeY * ((time * _simulationFrequencyMultiplier) % _simulationPeriod - 1.0);
+    // Simulate natural tongue movement patterns using constants
+    final time = _frameCount / BioTrackingConstants.framesPerSecond;
+    final x = 0.5 + BioTrackingConstants.simulationAmplitudeX * 
+        (time % BioTrackingConstants.simulationPeriod - 1.0);
+    final y = 0.5 + BioTrackingConstants.simulationAmplitudeY * 
+        ((time * BioTrackingConstants.simulationFrequencyMultiplier) % 
+        BioTrackingConstants.simulationPeriod - 1.0);
     
     final position = Offset(x, y);
     final velocity = (position - _lastPosition).distance * 30.0; // pixels/sec
