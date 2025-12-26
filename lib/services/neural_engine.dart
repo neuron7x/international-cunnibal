@@ -134,7 +134,9 @@ class NeuralEngine {
     final stdDev = sqrt(variance);
     
     // Normalize to 0-100 scale (inverse, so lower stdDev = higher score)
-    return max(0, 100 - (stdDev * 50)).clamp(0.0, 100.0);
+    // Scaling factor: stdDev of 2.0 = 0 score, stdDev of 0 = 100 score
+    const stdDevScalingFactor = 50.0;
+    return max(0, 100 - (stdDev * stdDevScalingFactor)).clamp(0.0, 100.0);
   }
 
   /// Calculate movement frequency in Hz

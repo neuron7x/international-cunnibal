@@ -91,6 +91,12 @@ class BioTrackingService {
     _neuralEngine.processTongueData(tongueData);
   }
 
+  // Simulation constants for tongue movement patterns
+  static const double _simulationAmplitudeX = 0.3; // Horizontal oscillation amplitude
+  static const double _simulationAmplitudeY = 0.2; // Vertical oscillation amplitude
+  static const double _simulationFrequencyMultiplier = 1.5; // Y-axis frequency multiplier
+  static const double _simulationPeriod = 2.0; // Oscillation period in seconds
+
   /// Simulate tongue detection using TFLite/MediaPipe
   /// This is a placeholder for actual ML model inference
   TongueData _simulateTongueDetection() {
@@ -98,8 +104,8 @@ class BioTrackingService {
     
     // Simulate natural tongue movement patterns
     final time = _frameCount / 30.0; // Time in seconds
-    final x = 0.5 + 0.3 * (time % 2.0 - 1.0); // Oscillate -0.3 to +0.3
-    final y = 0.5 + 0.2 * ((time * 1.5) % 2.0 - 1.0);
+    final x = 0.5 + _simulationAmplitudeX * (time % _simulationPeriod - 1.0);
+    final y = 0.5 + _simulationAmplitudeY * ((time * _simulationFrequencyMultiplier) % _simulationPeriod - 1.0);
     
     final position = Offset(x, y);
     final velocity = (position - _lastPosition).distance * 30.0; // pixels/sec

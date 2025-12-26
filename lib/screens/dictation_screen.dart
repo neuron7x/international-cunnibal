@@ -17,6 +17,7 @@ class _DictationScreenState extends State<DictationScreen> {
   bool _isActive = false;
   String _selectedSymbol = 'A';
   DictationSession? _currentSession;
+  StreamSubscription<DictationSession>? _sessionSubscription;
 
   @override
   void initState() {
@@ -36,7 +37,7 @@ class _DictationScreenState extends State<DictationScreen> {
     }
 
     // Listen to dictation sessions
-    _dictation.sessionStream.listen((session) {
+    _sessionSubscription = _dictation.sessionStream.listen((session) {
       if (mounted) {
         setState(() => _currentSession = session);
       }
@@ -64,6 +65,7 @@ class _DictationScreenState extends State<DictationScreen> {
 
   @override
   void dispose() {
+    _sessionSubscription?.cancel();
     _dictation.dispose();
     super.dispose();
   }

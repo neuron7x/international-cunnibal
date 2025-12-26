@@ -14,6 +14,9 @@ class SymbolDictationService {
 
   final NeuralEngine _neuralEngine = NeuralEngine();
   
+  // Threshold for detecting significant tongue movement
+  static const double significantMovementThreshold = 5.0;
+  
   DictationSession? _currentSession;
   final List<double> _rhythmTimestamps = [];
   String _targetSymbol = 'A';
@@ -48,7 +51,7 @@ class SymbolDictationService {
     if (_sessionStartTime == null) return;
 
     // Detect significant movement (velocity threshold)
-    if (data.velocity > 5.0 && data.isValidated) {
+    if (data.velocity > significantMovementThreshold && data.isValidated) {
       final timestamp = data.timestamp
           .difference(_sessionStartTime!)
           .inMilliseconds / 1000.0;
