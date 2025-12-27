@@ -1,7 +1,9 @@
 # Pull Request
 
 ## ⚠️ Title Format Required
+
 **Your PR title MUST follow [Conventional Commits](https://www.conventionalcommits.org/):**
+
 - `feat:` New features
 - `fix:` Bug fixes  
 - `docs:` Documentation changes
@@ -20,19 +22,24 @@
 ---
 
 ## Purpose
+
 <!-- What problem are we solving? -->
 
 ## Impact on metrics/UX
+
 <!-- Which metrics or user flows move, how, and why? -->
 
 ## Tests
+
 - [ ] Added/updated unit tests
 - [ ] Manually verified critical flows
 - [ ] Not applicable (explain why)
 
 ## Risk / rollback
+
 <!-- What could go wrong? How do we detect and roll back? -->
 
 ## Docs
+
 - [ ] Relevant docs updated (architecture, metrics, or user-facing)
 - [ ] Not applicable (explain why)

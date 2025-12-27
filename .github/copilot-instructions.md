@@ -5,11 +5,13 @@
 All PR titles MUST follow Conventional Commits format as enforced by `.github/workflows/semantic-pr.yml`.
 
 ### Required Format
-```
+
+```text
 <type>: <description>
 ```
 
 ### Valid Types
+
 - `feat` - New features or capabilities
 - `fix` - Bug fixes
 - `docs` - Documentation changes
@@ -22,13 +24,16 @@ All PR titles MUST follow Conventional Commits format as enforced by `.github/wo
 - `revert` - Revert previous changes
 
 ### Examples
+
 - `feat: add Flutter-native dependency security scanner`
 - `fix: resolve base ref error in dependency-review workflow`
 - `ci: migrate dependency-review to Flutter pub outdated`
 - `docs: update security scanning documentation`
 
 ### Validation
-PR titles are automatically validated by the `semantic-pr` workflow. PRs with non-compliant titles will be blocked from merging.
+
+PR titles are automatically validated by the `semantic-pr` workflow. PRs with non-compliant
+titles will be blocked from merging.
 
 ## Code Quality Standards
 
