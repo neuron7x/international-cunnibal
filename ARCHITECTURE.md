@@ -16,6 +16,8 @@ lib/
 │   ├── bio_tracking_service.dart
 │   ├── symbol_dictation_service.dart
 │   └── github_export_service.dart
+├── core/                     # Pure math / signal processing
+│   └── motion_metrics.dart
 ├── screens/                  # UI screens
 │   ├── home_screen.dart
 │   ├── tracking_screen.dart
@@ -28,12 +30,12 @@ lib/
 ## Core Components
 
 ### NeuralEngine
-The heart of the application, implementing Anokhin's Action Acceptor theory:
+The heart of the application, implementing Anokhin's Action Acceptor theory and feeding MotionMetrics:
 
 **Responsibilities:**
 - Process incoming tongue biomechanics data
 - Validate motor patterns against expected outcomes
-- Calculate real-time metrics (consistency, frequency, PCA)
+- Calculate real-time metrics (consistency, frequency, direction, intensity, pattern)
 - Stream processed data to UI components
 
 **Key Features:**
@@ -50,6 +52,7 @@ Handles real-time tongue tracking via camera:
 - Frame processing at 30 FPS
 - TFLite model integration (placeholder for actual model)
 - Landmark detection and extraction
+- Demo CV engine provides deterministic simulated motion when no camera/model is used
 
 **Integration Points:**
 - Sends TongueData to NeuralEngine

@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:international_cunnibal/models/tongue_data.dart';
 import 'package:international_cunnibal/models/metrics.dart';
 import 'package:international_cunnibal/models/dictation_session.dart';
+import 'package:international_cunnibal/models/movement_direction.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -61,7 +62,12 @@ void main() {
       final metrics = BiometricMetrics(
         consistencyScore: 85.0,
         frequency: 2.5,
+        frequencyConfidence: 0.8,
         pcaVariance: [60.0, 30.0, 10.0],
+        movementDirection: MovementDirection.right,
+        directionStability: 40,
+        intensity: 55,
+        patternScore: 70,
         timestamp: DateTime.now(),
       );
 
@@ -74,7 +80,12 @@ void main() {
       final metrics = BiometricMetrics(
         consistencyScore: 85.0,
         frequency: 2.5,
+        frequencyConfidence: 0.6,
         pcaVariance: [60.0, 30.0, 10.0],
+        movementDirection: MovementDirection.left,
+        directionStability: 25,
+        intensity: 30,
+        patternScore: 10,
         timestamp: DateTime(2025, 12, 26),
       );
 
@@ -82,6 +93,7 @@ void main() {
 
       expect(json['consistencyScore'], equals(85.0));
       expect(json['frequency'], equals(2.5));
+      expect(json['frequencyConfidence'], equals(0.6));
       expect(json['pcaVariance'], equals([60.0, 30.0, 10.0]));
     });
   });

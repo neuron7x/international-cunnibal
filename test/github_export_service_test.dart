@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:international_cunnibal/models/dictation_session.dart';
 import 'package:international_cunnibal/models/metrics.dart';
+import 'package:international_cunnibal/models/movement_direction.dart';
 import 'package:international_cunnibal/services/github_export_service.dart';
 
 void main() {
@@ -20,7 +21,12 @@ void main() {
         BiometricMetrics(
           consistencyScore: 80,
           frequency: 2.0,
+          frequencyConfidence: 0.9,
           pcaVariance: const [50.0, 30.0, 20.0],
+          movementDirection: MovementDirection.right,
+          directionStability: 50,
+          intensity: 60,
+          patternScore: 75,
           timestamp: DateTime(2025, 12, 26),
         ),
       );

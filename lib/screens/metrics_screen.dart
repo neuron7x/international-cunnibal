@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:international_cunnibal/services/neural_engine.dart';
 import 'package:international_cunnibal/services/github_export_service.dart';
 import 'package:international_cunnibal/models/metrics.dart';
+import 'package:international_cunnibal/models/movement_direction.dart';
 
 class MetricsScreen extends StatefulWidget {
   const MetricsScreen({super.key});
@@ -113,6 +114,44 @@ class _MetricsScreenState extends State<MetricsScreen> {
                 unit: 'Hz',
                 icon: Icons.graphic_eq,
                 color: Colors.blue,
+              ),
+              const SizedBox(height: 16),
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Row(
+                    children: [
+                      Icon(Icons.explore, size: 48, color: Colors.teal[400]),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Direction Control',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                              'Dominant: ${_currentMetrics!.movementDirection.label}',
+                              style: const TextStyle(fontSize: 12, color: Colors.grey),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Text(
+                        '${_currentMetrics!.directionStability.toStringAsFixed(1)}%',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.teal[400],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
               const SizedBox(height: 16),
               

@@ -1,9 +1,20 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:international_cunnibal/services/bio_tracking_service.dart';
 import 'package:international_cunnibal/services/neural_engine.dart';
 import 'package:international_cunnibal/models/tongue_data.dart';
+import 'package:international_cunnibal/models/game_state.dart';
+import 'package:international_cunnibal/services/game_logic_service.dart';
 import 'package:international_cunnibal/widgets/tracking_overlay.dart';
+import 'package:international_cunnibal/services/cv_engine.dart';
+
+bool isTrackingControlEnabled({
+  required bool isDemoMode,
+  required bool cameraReady,
+}) {
+  return isDemoMode || cameraReady;
+}
 
 class TrackingScreen extends StatefulWidget {
   const TrackingScreen({super.key});
@@ -15,9 +26,12 @@ class TrackingScreen extends StatefulWidget {
 class _TrackingScreenState extends State<TrackingScreen> {
   final BioTrackingService _bioTracking = BioTrackingService();
   final NeuralEngine _neuralEngine = NeuralEngine();
+  final GameLogicService _gameLogic = GameLogicService();
   
   bool _isTracking = false;
   TongueData? _latestData;
+  GameState? _gameState;
+  StreamSubscription<GameState>? _gameSubscription;
 
   @override
   void initState() {
@@ -27,8 +41,15 @@ class _TrackingScreenState extends State<TrackingScreen> {
 
   Future<void> _initializeTracking() async {
     try {
-      await _bioTracking.initializeCamera();
-      setState(() {});
+      await _bioTracking.prepare();
+      _gameSubscription = _gameLogic.stateStream.listen((state) {
+        if (mounted) {
+          setState(() => _gameState = state);
+        }
+      });
+      setState(() {
+        _gameState = _gameLogic.state;
+      });
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -58,6 +79,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
   @override
   void dispose() {
     _bioTracking.dispose();
+    _gameSubscription?.cancel();
     super.dispose();
   }
 
@@ -65,6 +87,10 @@ class _TrackingScreenState extends State<TrackingScreen> {
   Widget build(BuildContext context) {
     final cameraController = _bioTracking.cameraController;
     final isInitialized = cameraController?.value.isInitialized ?? false;
+    final controlEnabled = isTrackingControlEnabled(
+      isDemoMode: _bioTracking.isDemoMode,
+      cameraReady: isInitialized,
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -87,8 +113,41 @@ class _TrackingScreenState extends State<TrackingScreen> {
                           TrackingOverlay(tongueData: _latestData!),
                       ],
                     )
-                  : const Center(
-                      child: CircularProgressIndicator(),
+                  : Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        const DecoratedBox(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [Colors.deepPurple, Colors.blueGrey],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                          ),
+                        ),
+                        Center(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: const [
+                              Icon(Icons.videogame_asset, color: Colors.white70, size: 64),
+                              SizedBox(height: 12),
+                              Text(
+                                'Demo CV Engine Running',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              SizedBox(height: 6),
+                              Text(
+                                'No camera or ML models required',
+                                style: TextStyle(color: Colors.white70),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
             ),
           ),
@@ -120,6 +179,37 @@ class _TrackingScreenState extends State<TrackingScreen> {
                       ),
                     ],
                   ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Chip(
+                        label: Text(_bioTracking.isDemoMode ? 'DEMO ENGINE' : 'CAMERA FEED'),
+                        backgroundColor: _bioTracking.isDemoMode
+                            ? Colors.green.withOpacity(0.2)
+                            : Colors.blueGrey.withOpacity(0.2),
+                      ),
+                      const SizedBox(width: 8),
+                      IconButton(
+                        onPressed: _isTracking
+                            ? null
+                            : () async {
+                                await _bioTracking.setMode(
+                                  _bioTracking.isDemoMode
+                                      ? CvEngineMode.camera
+                                      : CvEngineMode.demo,
+                                );
+                                if (mounted) setState(() {});
+                              },
+                        icon: Icon(
+                          _bioTracking.isDemoMode ? Icons.camera_alt : Icons.bolt,
+                        ),
+                        tooltip: _bioTracking.isDemoMode
+                            ? 'Switch to camera feed'
+                            : 'Switch to demo feed',
+                      ),
+                    ],
+                  ),
                   const SizedBox(height: 16),
 
                   // Current Data
@@ -141,6 +231,22 @@ class _TrackingScreenState extends State<TrackingScreen> {
                           : Colors.orange,
                     ),
                   ],
+                  if (_gameState != null) ...[
+                    const SizedBox(height: 12),
+                    _DataRow(
+                      label: 'Level',
+                      value: _gameState!.level.toString(),
+                    ),
+                    _DataRow(
+                      label: 'Score',
+                      value: _gameState!.score.toString(),
+                    ),
+                    _DataRow(
+                      label: 'Targets',
+                      value:
+                          '${_gameState!.targetConsistency.toStringAsFixed(0)}% · ${_gameState!.targetFrequency.toStringAsFixed(1)}Hz',
+                    ),
+                  ],
 
                   const Spacer(),
 
@@ -149,7 +255,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
                     width: double.infinity,
                     height: 56,
                     child: ElevatedButton(
-                      onPressed: isInitialized ? _toggleTracking : null,
+                      onPressed: controlEnabled ? _toggleTracking : null,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: _isTracking ? Colors.red : Colors.green,
                         foregroundColor: Colors.white,

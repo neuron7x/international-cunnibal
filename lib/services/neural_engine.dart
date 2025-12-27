@@ -1,7 +1,8 @@
 import 'dart:async';
-import 'dart:math';
+import 'package:international_cunnibal/core/motion_metrics.dart';
 import 'package:international_cunnibal/models/tongue_data.dart';
 import 'package:international_cunnibal/models/metrics.dart';
+import 'package:international_cunnibal/services/game_logic_service.dart';
 import 'package:international_cunnibal/utils/constants.dart';
 
 /// NeuralEngine service implementing Anokhin's Action Acceptor
@@ -16,16 +17,38 @@ class NeuralEngine {
   factory NeuralEngine() => _instance;
   NeuralEngine._internal();
 
-  final StreamController<TongueData> _tongueDataController = 
-      StreamController<TongueData>.broadcast();
-  final StreamController<BiometricMetrics> _metricsController = 
-      StreamController<BiometricMetrics>.broadcast();
+  StreamController<TongueData>? _tongueDataController;
+  StreamController<BiometricMetrics>? _metricsController;
 
-  Stream<TongueData> get tongueDataStream => _tongueDataController.stream;
-  Stream<BiometricMetrics> get metricsStream => _metricsController.stream;
+  Stream<TongueData> get tongueDataStream {
+    _ensureControllers();
+    return _tongueDataController!.stream;
+  }
+
+  Stream<BiometricMetrics> get metricsStream {
+    _ensureControllers();
+    return _metricsController!.stream;
+  }
 
   final List<TongueData> _dataBuffer = [];
   final int _bufferSize = NeuralEngineConstants.bufferSize;
+  final GameLogicService _gameLogic = GameLogicService();
+
+  void _resetControllers() {
+    _tongueDataController?.close();
+    _metricsController?.close();
+    _tongueDataController = StreamController<TongueData>.broadcast();
+    _metricsController = StreamController<BiometricMetrics>.broadcast();
+  }
+
+  void _ensureControllers() {
+    if (_tongueDataController == null ||
+        _metricsController == null ||
+        _tongueDataController!.isClosed ||
+        _metricsController!.isClosed) {
+      _resetControllers();
+    }
+  }
   
   bool _isProcessing = false;
   Timer? _metricsTimer;
@@ -33,6 +56,9 @@ class NeuralEngine {
   /// Start the neural engine processing
   void start() {
     if (_isProcessing) return;
+    _ensureControllers();
+    final metricsController = _metricsController;
+    if (metricsController == null) return;
     
     _isProcessing = true;
     _dataBuffer.clear();
@@ -43,7 +69,8 @@ class NeuralEngine {
       (_) {
         if (_dataBuffer.isNotEmpty) {
           final metrics = _calculateMetrics();
-          _metricsController.add(metrics);
+          metricsController.add(metrics);
+          _gameLogic.ingest(metrics);
         }
       },
     );
@@ -60,6 +87,9 @@ class NeuralEngine {
   /// Implements the Action Acceptor pattern for sensory-motor validation
   void processTongueData(TongueData data) {
     if (!_isProcessing) return;
+    _ensureControllers();
+    final tongueController = _tongueDataController;
+    if (tongueController == null) return;
 
     // Add to buffer, maintaining buffer size
     _dataBuffer.add(data);
@@ -73,7 +103,7 @@ class NeuralEngine {
     // 3. Validate motor command execution
     final validated = _validateAction(data);
     
-    _tongueDataController.add(validated);
+    tongueController.add(validated);
   }
 
   /// Validate action using Anokhin's Action Acceptor principle
@@ -100,70 +130,42 @@ class NeuralEngine {
   /// Calculate biometric metrics
   BiometricMetrics _calculateMetrics() {
     if (_dataBuffer.isEmpty) {
-      return BiometricMetrics(
-        consistencyScore: 0.0,
-        frequency: 0.0,
-        pcaVariance: [0.0, 0.0, 0.0],
-        timestamp: DateTime.now(),
-      );
+      return BiometricMetrics.empty();
     }
 
-    // Consistency Score (Standard Deviation)
-    final velocities = _dataBuffer.map((d) => d.velocity).toList();
-    final consistencyScore = _calculateConsistencyScore(velocities);
+    final samples = _dataBuffer
+        .map((d) => MotionSample(
+              t: d.timestamp.millisecondsSinceEpoch / 1000.0,
+              position: Vector2(d.position.dx, d.position.dy),
+            ))
+        .toList();
 
-    // Frequency (Hz) - movements per second
-    final frequency = _calculateFrequency();
+    final motion = MotionMetrics.compute(
+      samples: samples,
+      expectedAmplitude: NeuralEngineConstants.expectedAmplitude,
+    );
 
-    // Vector PCA for dimensional reduction
-    final pcaVariance = _calculatePCA();
+    final pca = _calculatePCA();
 
     return BiometricMetrics(
-      consistencyScore: consistencyScore,
-      frequency: frequency,
-      pcaVariance: pcaVariance,
+      consistencyScore: motion.consistency,
+      frequency: motion.frequency.hertz,
+      frequencyConfidence: motion.frequency.confidence,
+      pcaVariance: pca,
+      movementDirection: _toDirection(motion.direction.direction),
+      directionStability: motion.direction.stability,
+      intensity: motion.intensity,
+      patternScore: motion.patternMatch.score,
       timestamp: DateTime.now(),
     );
   }
 
-  /// Calculate consistency score using standard deviation
-  /// Lower std dev = higher consistency
-  double _calculateConsistencyScore(List<double> values) {
-    if (values.isEmpty) return 0.0;
-    
-    final mean = values.reduce((a, b) => a + b) / values.length;
-    final variance = values
-        .map((v) => pow(v - mean, 2))
-        .reduce((a, b) => a + b) / values.length;
-    final stdDev = sqrt(variance);
-    
-    // Normalize to 0-100 scale (inverse, so lower stdDev = higher score)
-    // Scaling factor explanation: A stdDev of 2.0 maps to 0% consistency,
-    // while a stdDev of 0 maps to 100% consistency. This creates an
-    // intuitive linear scale where typical movement variation (stdDev ~0.5-1.5)
-    // maps to 25-92% consistency scores.
-    return (100 - (stdDev * NeuralEngineConstants.stdDevScalingFactor)).clamp(0.0, 100.0);
-  }
-
-  /// Calculate movement frequency in Hz
-  double _calculateFrequency() {
-    if (_dataBuffer.length < 2) return 0.0;
-    
-    // Count peaks in velocity data
-    int peaks = 0;
-    for (int i = 1; i < _dataBuffer.length - 1; i++) {
-      if (_dataBuffer[i].velocity > _dataBuffer[i - 1].velocity &&
-          _dataBuffer[i].velocity > _dataBuffer[i + 1].velocity) {
-        peaks++;
-      }
+  MovementDirection _toDirection(Vector2 v) {
+    if (v.magnitude < 1e-6) return MovementDirection.steady;
+    if (v.x.abs() >= v.y.abs()) {
+      return v.x >= 0 ? MovementDirection.right : MovementDirection.left;
     }
-    
-    // Calculate time span
-    final timeSpan = _dataBuffer.last.timestamp
-        .difference(_dataBuffer.first.timestamp)
-        .inMilliseconds / 1000.0;
-    
-    return timeSpan > 0 ? peaks / timeSpan : 0.0;
+    return v.y >= 0 ? MovementDirection.down : MovementDirection.up;
   }
 
   /// Calculate PCA variance for dimensional reduction
@@ -171,12 +173,10 @@ class NeuralEngine {
   List<double> _calculatePCA() {
     if (_dataBuffer.length < 3) return [0.0, 0.0, 0.0];
     
-    // Extract position vectors
     final positions = _dataBuffer
         .map((d) => d.position)
         .toList();
     
-    // Calculate variance along each axis (simplified PCA)
     final xValues = positions.map((p) => p.dx).toList();
     final yValues = positions.map((p) => p.dy).toList();
     
@@ -186,11 +186,10 @@ class NeuralEngine {
     
     if (totalVariance == 0) return [0.0, 0.0, 0.0];
     
-    // Return explained variance ratios
     return [
       (xVariance / totalVariance) * 100,
       (yVariance / totalVariance) * 100,
-      0.0, // Third component (could be expanded for 3D tracking)
+      0.0,
     ];
   }
 
@@ -199,13 +198,15 @@ class NeuralEngine {
     
     final mean = values.reduce((a, b) => a + b) / values.length;
     return values
-        .map((v) => pow(v - mean, 2))
+        .map((v) => (v - mean) * (v - mean))
         .reduce((a, b) => a + b) / values.length;
   }
 
   void dispose() {
     stop();
-    _tongueDataController.close();
-    _metricsController.close();
+    _tongueDataController?.close();
+    _metricsController?.close();
+    _tongueDataController = null;
+    _metricsController = null;
   }
 }
