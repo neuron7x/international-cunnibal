@@ -25,6 +25,7 @@ jobs:
         if: steps.docs.outputs.any_changed == 'true'
         uses: DavidAnson/markdownlint-cli2-action@v22
         with:
+          config: '.markdownlint.json'
           globs: |
             **/*.md
 

@@ -764,7 +764,7 @@ graph LR
 
 Copyright © 2025 **International Cunnibal Project**
 
-```
+```text
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -780,7 +780,7 @@ See [LICENSE](LICENSE) file for full details.
 
 <div align="center">
 
-## 🌟 Star Us!
+## 🌟 Star Us
 
 If you find this project useful, please consider giving it a ⭐
 
@@ -877,6 +877,7 @@ git push origin feature/amazing-feature
 #### 📋 Contribution Guidelines
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines on:
+
 - 💻 Code style and standards
 - 🧪 Testing requirements
 - 📝 Documentation standards
