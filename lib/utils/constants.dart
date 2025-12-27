@@ -81,11 +81,21 @@ class NeuralEngineConstants {
 /// Endurance/jaw tracking constants
 class EnduranceConstants {
   static const double defaultApertureThreshold = 0.18;
+  static const double apertureMin = 0.0;
+  static const double apertureMax = 0.6;
+  static const double apertureSafetyMin = 0.08;
+  static const double apertureSafetyMax = 0.55;
   static const double stabilityFloor = 55;
   static const double targetHoldSeconds = 1.5;
   static const double apertureStep = 0.02;
   static const double stabilityStep = 5;
   static const double timeStep = 0.5;
+  static const double readySeconds = 2.0;
+  static const double restSeconds = 4.0;
+  static const double maxSessionSeconds = 45.0;
+  static const double cooldownSeconds = 20.0;
+  static const double fatigueStopThreshold = 65.0;
+  static const double stabilityDropThreshold = 15.0;
 }
 
 /// Export service constants

@@ -91,6 +91,7 @@ void main() {
         endurance: const EnduranceSnapshot(
           aperture: 0.2,
           apertureStability: 70,
+          fatigueIndicator: 10,
           enduranceTime: 1.5,
           enduranceScore: 80,
           threshold: 0.18,

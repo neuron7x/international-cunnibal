@@ -103,6 +103,18 @@ graph LR
 </details>
 
 <details open>
+<summary><b>🧭 Facial Endurance Training</b> - Jaw Endurance, Stability, Control</summary>
+
+<br/>
+
+- Optional, consent-based jaw endurance sessions for comfort and control
+- On-device aperture tracking with objective, bounded metrics
+- Session flow with ready → hold → rest → summary and safety auto-pauses
+- No rankings or public comparisons by default
+
+</details>
+
+<details open>
 <summary><b>🔤 Symbol Dictation (A-Z)</b> - Rhythmic Synchronization</summary>
 
 <br/>

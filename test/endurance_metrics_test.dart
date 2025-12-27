@@ -28,6 +28,7 @@ void main() {
       final result = EnduranceMetrics.compute(samples: samples);
       expect(result.aperture, closeTo(0, 1e-6));
       expect(result.enduranceTime, closeTo(0, 1e-6));
+      expect(result.fatigueIndicator, closeTo(0, 1e-6));
       expect(result.enduranceScore, closeTo(0, 1e-6));
     });
 
@@ -37,6 +38,8 @@ void main() {
       expect(result.aperture, closeTo(0.22, 1e-4));
       expect(result.apertureStability, greaterThan(95));
       expect(result.enduranceTime, closeTo(1.4, 1e-3));
+      expect(result.fatigueIndicator, closeTo(0, 1e-6));
+      expect(result.enduranceScore, closeTo(80.5, 1e-2));
     });
 
     test('noise reduces stability', () {
@@ -53,6 +56,22 @@ void main() {
       expect(noisyResult.apertureStability, lessThan(cleanResult.apertureStability));
     });
 
+    test('fatigue detects stability degradation', () {
+      final samples = [
+        _sample(0.0, 0.22),
+        _sample(0.2, 0.22),
+        _sample(0.4, 0.22),
+        _sample(0.6, 0.22),
+        _sample(0.8, 0.20),
+        _sample(1.0, 0.24),
+        _sample(1.2, 0.20),
+        _sample(1.4, 0.24),
+      ];
+      final result = EnduranceMetrics.compute(samples: samples, apertureThreshold: 0.2);
+      expect(result.fatigueIndicator, closeTo(9.09, 0.1));
+      expect(result.apertureStability, lessThan(100));
+    });
+
     test('threshold inclusivity counts boundary samples', () {
       final samples = [
         _sample(0.0, 0.19),
@@ -65,6 +84,29 @@ void main() {
         apertureThreshold: 0.2,
       );
       expect(result.enduranceTime, closeTo(1.0, 1e-3));
+    });
+
+    test('no NaN or Inf propagation on degenerate input', () {
+      const sample = ApertureSample(
+        t: 0,
+        upperLip: Vector2(0.5, 0.5),
+        lowerLip: Vector2(0.5, 0.5),
+        leftCorner: Vector2(0.5, 0.5),
+        rightCorner: Vector2(0.5, 0.5),
+      );
+      final result = EnduranceMetrics.compute(samples: [sample, sample]);
+      expect(result.aperture.isNaN, isFalse);
+      expect(result.aperture.isInfinite, isFalse);
+      expect(result.enduranceScore.isNaN, isFalse);
+      expect(result.enduranceScore.isInfinite, isFalse);
+    });
+
+    test('deterministic output for identical input', () {
+      final samples = List.generate(6, (i) => _sample(i * 0.3, 0.23));
+      final first = EnduranceMetrics.compute(samples: samples, apertureThreshold: 0.2);
+      final second = EnduranceMetrics.compute(samples: samples, apertureThreshold: 0.2);
+      expect(first.enduranceScore, closeTo(second.enduranceScore, 1e-6));
+      expect(first.fatigueIndicator, closeTo(second.fatigueIndicator, 1e-6));
     });
 
     test('frame rate invariance keeps endurance time stable', () {

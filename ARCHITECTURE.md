@@ -17,7 +17,8 @@ lib/
 │   ├── symbol_dictation_service.dart
 │   └── github_export_service.dart
 ├── core/                     # Pure math / signal processing
-│   └── motion_metrics.dart
+│   ├── motion_metrics.dart
+│   └── endurance_metrics.dart
 ├── screens/                  # UI screens
 │   ├── home_screen.dart
 │   ├── tracking_screen.dart
@@ -141,8 +142,14 @@ All processing happens on-device:
 - **Symmetric skills**: Motion (tongue control) and Endurance (jaw aperture) run side by side with independent progression ladders.
 - **EnduranceEngine**: Consumes MediaPipe Face Mesh landmarks (13, 14, 78, 308) when available and falls back to bounded demo synthesis when sensors are absent. Outputs aperture, stability, endurance time, and normalized endurance score.
 - **Independent progression**: `GameLogicService` and `EnduranceGameLogicService` maintain separate targets/levels; no cross-coupling of rewards.
-- **Couple dashboard**: `CoupleDashboard` model presents consistency ↔ endurance, vector stability ↔ aperture stability, and level ↔ level without ranking.
+- **Couple dashboard**: `CoupleDashboard` model presents consistency ↔ endurance, vector accuracy ↔ aperture stability, and level ↔ level without ranking.
 - **Consent-first**: Endurance mode and comparisons are opt-in in the UI; no automatic partner comparisons are triggered.
+
+## Endurance Engine & Safety Guarantees
+
+- **Endurance engine role**: `EnduranceEngine` consumes aperture samples and computes deterministic, bounded metrics: aperture, stability (tremor index), endurance time, fatigue indicator, and a 0–100 endurance score.
+- **Session safety**: The endurance session flow is ready → hold → rest → summary with hard limits on aperture bounds, maximum session duration, cooldown intervals, and auto-stop on fatigue thresholds.
+- **Auto-pause controls**: Sudden stability drops trigger rest prompts; hold time only accumulates under stable, in-bounds conditions.
 
 ## Testing Strategy
 

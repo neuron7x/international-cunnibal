@@ -3,6 +3,7 @@ import 'package:international_cunnibal/core/endurance_metrics.dart';
 class EnduranceSnapshot {
   final double aperture;
   final double apertureStability;
+  final double fatigueIndicator;
   final double enduranceTime;
   final double enduranceScore;
   final double threshold;
@@ -10,6 +11,7 @@ class EnduranceSnapshot {
   const EnduranceSnapshot({
     required this.aperture,
     required this.apertureStability,
+    required this.fatigueIndicator,
     required this.enduranceTime,
     required this.enduranceScore,
     required this.threshold,
@@ -19,6 +21,7 @@ class EnduranceSnapshot {
     return EnduranceSnapshot(
       aperture: 0,
       apertureStability: 0,
+      fatigueIndicator: 0,
       enduranceTime: 0,
       enduranceScore: 0,
       threshold: threshold,
@@ -32,6 +35,7 @@ class EnduranceSnapshot {
     return EnduranceSnapshot(
       aperture: result.aperture,
       apertureStability: result.apertureStability,
+      fatigueIndicator: result.fatigueIndicator,
       enduranceTime: result.enduranceTime,
       enduranceScore: result.enduranceScore,
       threshold: threshold,
@@ -42,6 +46,7 @@ class EnduranceSnapshot {
     return {
       'aperture': aperture,
       'apertureStability': apertureStability,
+      'fatigueIndicator': fatigueIndicator,
       'enduranceTime': enduranceTime,
       'enduranceScore': enduranceScore,
       'threshold': threshold,

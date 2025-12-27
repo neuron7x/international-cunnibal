@@ -25,6 +25,7 @@ void main() {
         endurance: const EnduranceSnapshot(
           aperture: 0.25,
           apertureStability: 70,
+          fatigueIndicator: 5,
           enduranceTime: 2,
           enduranceScore: 75,
           threshold: 0.18,

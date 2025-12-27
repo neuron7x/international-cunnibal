@@ -47,7 +47,7 @@ class CoupleDashboard {
         rightValue: endurance.enduranceScore,
       ),
       directionVsStability: CoupleComparisonRow(
-        leftLabel: 'Vector Stability',
+        leftLabel: 'Vector Accuracy',
         leftValue: motion.directionStability,
         rightLabel: 'Aperture Stability',
         rightValue: endurance.apertureStability,

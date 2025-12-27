@@ -38,6 +38,8 @@ class EnduranceEngine {
     final result = EnduranceMetrics.compute(
       samples: _buffer,
       apertureThreshold: apertureThreshold,
+      apertureMin: EnduranceConstants.apertureMin,
+      apertureMax: EnduranceConstants.apertureMax,
     );
     return EnduranceSnapshot.fromResult(
       result,
@@ -46,8 +48,16 @@ class EnduranceEngine {
   }
 
   EnduranceSnapshot demoTick(double tSeconds) {
-    final phase = tSeconds * pi;
-    final base = 0.2 + 0.05 * sin(phase);
+    final cycle = tSeconds % 18.0;
+    double base;
+    if (cycle < 6.0) {
+      base = 0.22 + 0.015 * sin(tSeconds);
+    } else if (cycle < 12.0) {
+      base = 0.22 + 0.02 * sin(tSeconds * 4.0);
+    } else {
+      final fatigue = ((cycle - 12.0) / 6.0).clamp(0.0, 1.0);
+      base = 0.22 - 0.05 * fatigue + 0.01 * sin(tSeconds * 6.0);
+    }
     final sample = ApertureSample(
       t: tSeconds,
       upperLip: Vector2(0.5, 0.5 - base),
@@ -99,6 +109,8 @@ class EnduranceEngine {
     final result = EnduranceMetrics.compute(
       samples: _buffer,
       apertureThreshold: apertureThreshold,
+      apertureMin: EnduranceConstants.apertureMin,
+      apertureMax: EnduranceConstants.apertureMax,
     );
     return EnduranceSnapshot.fromResult(result, threshold: apertureThreshold);
   }

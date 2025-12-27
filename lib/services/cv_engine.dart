@@ -8,12 +8,13 @@ import 'package:international_cunnibal/utils/constants.dart';
 enum CvEngineMode { demo, camera }
 
 const double _demoJitterAmplitude = 0.01;
-const int _demoLandmarkCount = 8;
-const int _cameraLandmarkCount = 10;
-const int _cameraLandmarkCenterOffset = 5;
-const int _cameraLandmarkRowSize = 3;
-const double _cameraLandmarkSpread = 0.01;
+const int _faceMeshLandmarkCount = 309;
 const double _cameraSecondaryFrequencyScale = 0.8;
+const double _mouthWidth = 0.22;
+const double _apertureBaseline = 0.22;
+const double _apertureNoise = 0.04;
+const double _apertureFatigueDrop = 0.06;
+const double _apertureFatigueNoise = 0.06;
 
 abstract class CvEngine {
   Stream<TongueData> get stream;
@@ -62,6 +63,7 @@ class DemoCvEngine implements CvEngine {
         cos(time * BioTrackingConstants.simulationFrequencyMultiplier) *
             BioTrackingConstants.simulationAmplitudeY;
     final jitter = (_random.nextDouble() - 0.5) * _demoJitterAmplitude;
+    final aperture = _demoAperture(time, _random);
 
     final position = Offset(
       (0.5 + xWave + jitter).clamp(0.1, 0.9),
@@ -76,13 +78,11 @@ class DemoCvEngine implements CvEngine {
     _lastPosition = position;
     _lastVelocity = velocity;
 
-    final timeShift = time * 0.8;
-    final landmarks = List<Offset>.generate(
-      _demoLandmarkCount,
-      (i) => Offset(
-        position.dx + cos(timeShift + i) * _demoJitterAmplitude,
-        position.dy + sin(timeShift + i) * _demoJitterAmplitude,
-      ),
+    final landmarks = _buildFaceMeshLandmarks(
+      center: position,
+      aperture: aperture,
+      noise: _demoJitterAmplitude,
+      random: _random,
     );
 
     return TongueData(
@@ -110,6 +110,7 @@ class CameraCvEngine implements CvEngine {
   int _frame = 0;
   Offset _lastPosition = Offset.zero;
   double _lastVelocity = 0;
+  final Random _random = Random(13);
 
   @override
   CameraController? get cameraController => _controller;
@@ -167,6 +168,7 @@ class CameraCvEngine implements CvEngine {
             cos(time *
                 BioTrackingConstants.simulationFrequencyMultiplier *
                 _cameraSecondaryFrequencyScale);
+    final aperture = _demoAperture(time, _random);
 
     final position = Offset(x, y);
     final velocity =
@@ -177,12 +179,12 @@ class CameraCvEngine implements CvEngine {
     _lastPosition = position;
     _lastVelocity = velocity;
 
-    final landmarks = List<Offset>.generate(_cameraLandmarkCount, (i) {
-      return Offset(
-        x + (i - _cameraLandmarkCenterOffset) * _cameraLandmarkSpread,
-        y + (i % _cameraLandmarkRowSize - 1) * _cameraLandmarkSpread,
-      );
-    });
+    final landmarks = _buildFaceMeshLandmarks(
+      center: position,
+      aperture: aperture,
+      noise: 0.004,
+      random: _random,
+    );
 
     return TongueData(
       timestamp: DateTime.now(),
@@ -199,4 +201,50 @@ class CameraCvEngine implements CvEngine {
     _timer?.cancel();
     _timer = null;
   }
+}
+
+double _demoAperture(double tSeconds, Random random) {
+  final cycle = tSeconds % 18.0;
+  if (cycle < 6.0) {
+    return _apertureBaseline + sin(tSeconds) * 0.01;
+  }
+  if (cycle < 12.0) {
+    final noise = (random.nextDouble() - 0.5) * _apertureNoise;
+    return (_apertureBaseline + noise).clamp(0.08, 0.5);
+  }
+  final fatigueProgress = ((cycle - 12.0) / 6.0).clamp(0.0, 1.0);
+  final noise = (random.nextDouble() - 0.5) * (_apertureFatigueNoise * fatigueProgress);
+  return (_apertureBaseline - _apertureFatigueDrop * fatigueProgress + noise)
+      .clamp(0.06, 0.45);
+}
+
+List<Offset> _buildFaceMeshLandmarks({
+  required Offset center,
+  required double aperture,
+  required double noise,
+  required Random random,
+}) {
+  final landmarks = List<Offset>.filled(_faceMeshLandmarkCount, center);
+  final left = Offset((center.dx - _mouthWidth).clamp(0.0, 1.0), center.dy);
+  final right = Offset((center.dx + _mouthWidth).clamp(0.0, 1.0), center.dy);
+  final halfAperture = (aperture * _mouthWidth).clamp(0.01, 0.2) / 2;
+  final upper = Offset(center.dx, (center.dy - halfAperture).clamp(0.0, 1.0));
+  final lower = Offset(center.dx, (center.dy + halfAperture).clamp(0.0, 1.0));
+
+  landmarks[13] = upper;
+  landmarks[14] = lower;
+  landmarks[78] = left;
+  landmarks[308] = right;
+
+  for (var i = 0; i < 12; i++) {
+    final idx = (i * 9) % _faceMeshLandmarkCount;
+    final jitterX = (random.nextDouble() - 0.5) * noise;
+    final jitterY = (random.nextDouble() - 0.5) * noise;
+    landmarks[idx] = Offset(
+      (center.dx + jitterX).clamp(0.0, 1.0),
+      (center.dy + jitterY).clamp(0.0, 1.0),
+    );
+  }
+
+  return landmarks;
 }
