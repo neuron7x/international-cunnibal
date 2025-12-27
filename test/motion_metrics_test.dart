@@ -35,6 +35,14 @@ List<MotionSample> _linearMotion({
 
 void main() {
   group('MotionMetrics', () {
+    test('empty samples return zeros', () {
+      final metrics = MotionMetrics.compute(samples: const [], expectedAmplitude: 0.5);
+      expect(metrics.consistency, equals(0));
+      expect(metrics.frequency.hertz, equals(0));
+      expect(metrics.frequency.confidence, equals(0));
+      expect(metrics.intensity, equals(0));
+    });
+
     test('short signals return zeros', () {
       final metrics = MotionMetrics.compute(
         samples: [_sample(0.0, 0.4, 0.4)],
@@ -58,6 +66,32 @@ void main() {
       expect(metrics.frequency.hertz, closeTo(0, 1e-9));
       expect(metrics.frequency.confidence, closeTo(0, 1e-9));
       expect(metrics.intensity, closeTo(0, 1e-9));
+    });
+
+    test('constant series yields maximum consistency', () {
+      final samples = List.generate(30, (i) => _sample(i * 0.05, 0.4, 0.4));
+      final metrics = MotionMetrics.compute(
+        samples: samples,
+        expectedAmplitude: 0.5,
+      );
+      expect(metrics.consistency, equals(100));
+      expect(metrics.intensity, equals(0));
+      expect(metrics.frequency.hertz, equals(0));
+    });
+
+    test('non-finite samples are safely ignored', () {
+      final samples = [
+        _sample(0.0, 0.4, 0.4),
+        _sample(0.02, double.nan, 0.5),
+        _sample(0.04, 0.42, 0.4),
+      ];
+      final metrics = MotionMetrics.compute(
+        samples: samples,
+        expectedAmplitude: 0.5,
+      );
+      expect(metrics.consistency.isNaN, isFalse);
+      expect(metrics.intensity.isInfinite, isFalse);
+      expect(metrics.consistency, inInclusiveRange(0, 100));
     });
 
     test('consistency is high for constant velocity', () {
@@ -332,6 +366,89 @@ void main() {
       ).patternMatch.score;
 
       expect(loose, greaterThan(strict));
+    });
+
+    test('step function input stays bounded', () {
+      final samples = <MotionSample>[];
+      for (var i = 0; i < 40; i++) {
+        final x = i < 20 ? 0.4 : 0.6;
+        samples.add(_sample(i * 0.02, x, 0.5));
+      }
+      final metrics = MotionMetrics.compute(
+        samples: samples,
+        expectedAmplitude: 0.2,
+      );
+      expect(metrics.consistency, inInclusiveRange(0, 100));
+      expect(metrics.direction.stability, inInclusiveRange(0, 100));
+      expect(metrics.intensity, inInclusiveRange(0, 100));
+      expect(metrics.frequency.confidence, inInclusiveRange(0, 1));
+    });
+
+    test('alternating series stays finite and deterministic', () {
+      final samples = List.generate(
+        60,
+        (i) => _sample(i * 0.01, i.isEven ? 0.45 : 0.55, 0.5),
+      );
+      final first = MotionMetrics.compute(
+        samples: samples,
+        expectedAmplitude: 0.1,
+      );
+      final second = MotionMetrics.compute(
+        samples: samples,
+        expectedAmplitude: 0.1,
+      );
+      expect(first.consistency, closeTo(second.consistency, 1e-9));
+      expect(first.frequency.hertz, closeTo(second.frequency.hertz, 1e-9));
+      expect(first.intensity, closeTo(second.intensity, 1e-9));
+      expect(first.patternMatch.score, closeTo(second.patternMatch.score, 1e-9));
+    });
+
+    test('zero or negative dt stays finite', () {
+      final samples = [
+        _sample(0.1, 0.4, 0.4),
+        _sample(0.1, 0.41, 0.4),
+        _sample(0.09, 0.42, 0.4),
+      ];
+      final metrics = MotionMetrics.compute(
+        samples: samples,
+        expectedAmplitude: 0.5,
+      );
+      expect(metrics.consistency.isNaN, isFalse);
+      expect(metrics.intensity.isNaN, isFalse);
+      expect(metrics.frequency.confidence, inInclusiveRange(0, 1));
+    });
+
+    test('scaled series remain in valid ranges', () {
+      final base = _sineWave(frequencyHz: 1.0, amplitude: 0.1, samples: 80, dt: 0.02);
+      final scaled = _sineWave(frequencyHz: 1.0, amplitude: 0.3, samples: 80, dt: 0.02);
+      final baseMetrics = MotionMetrics.compute(samples: base, expectedAmplitude: 0.1);
+      final scaledMetrics = MotionMetrics.compute(samples: scaled, expectedAmplitude: 0.3);
+      expect(baseMetrics.consistency, inInclusiveRange(0, 100));
+      expect(baseMetrics.intensity, inInclusiveRange(0, 100));
+      expect(scaledMetrics.consistency, inInclusiveRange(0, 100));
+      expect(scaledMetrics.intensity, inInclusiveRange(0, 100));
+    });
+
+    test('noisy deterministic series stays finite', () {
+      final rng = Random(42);
+      final samples = <MotionSample>[];
+      var pos = const Vector2(0.5, 0.5);
+      for (var i = 0; i < 100; i++) {
+        pos = Vector2(
+          pos.x + (rng.nextDouble() - 0.5) * 0.02,
+          pos.y + (rng.nextDouble() - 0.5) * 0.02,
+        );
+        samples.add(_sample(i * 0.01, pos.x, pos.y));
+      }
+      final metrics = MotionMetrics.compute(
+        samples: samples,
+        expectedAmplitude: 0.4,
+      );
+      expect(metrics.consistency.isNaN, isFalse);
+      expect(metrics.intensity.isNaN, isFalse);
+      expect(metrics.frequency.confidence.isNaN, isFalse);
+      expect(metrics.consistency, inInclusiveRange(0, 100));
+      expect(metrics.frequency.confidence, inInclusiveRange(0, 1));
     });
 
     test('metrics are deterministic and bounded', () {

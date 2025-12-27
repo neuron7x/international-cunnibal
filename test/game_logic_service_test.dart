@@ -30,7 +30,7 @@ void main() {
           enduranceScore: 75,
           threshold: 0.18,
         ),
-        timestamp: DateTime.now(),
+        timestamp: DateTime.fromMillisecondsSinceEpoch(0),
       );
     }
 
@@ -64,7 +64,7 @@ void main() {
         intensity: base.intensity,
         patternScore: base.patternScore,
         endurance: base.endurance,
-        timestamp: DateTime.now(),
+        timestamp: DateTime.fromMillisecondsSinceEpoch(0),
       );
       game.ingest(lowDirection);
       expect(game.state.score, equals(baseline + 15)); // consistency+frequency only
@@ -82,10 +82,35 @@ void main() {
           intensity: 5,
           patternScore: 0,
           endurance: EnduranceSnapshot.empty(),
-          timestamp: DateTime.now(),
+          timestamp: DateTime.fromMillisecondsSinceEpoch(0),
         ));
       }
       expect(game.state.level, equals(1));
+    });
+
+    test('threshold boundaries count as hits', () {
+      final metrics = BiometricMetrics(
+        consistencyScore: game.state.targetConsistency,
+        frequency: game.state.targetFrequency,
+        frequencyConfidence: 0.9,
+        pcaVariance: const [50, 30, 20],
+        movementDirection: MovementDirection.right,
+        directionStability: 10,
+        intensity: 60,
+        patternScore: 80,
+        endurance: const EnduranceSnapshot(
+          aperture: 0.25,
+          apertureStability: 70,
+          fatigueIndicator: 5,
+          enduranceTime: 2,
+          enduranceScore: 75,
+          threshold: 0.18,
+        ),
+        timestamp: DateTime.fromMillisecondsSinceEpoch(0),
+      );
+
+      game.ingest(metrics);
+      expect(game.state.streak, equals(1));
     });
   });
 }

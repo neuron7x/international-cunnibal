@@ -6,6 +6,7 @@
 
 ### Автоматичні гейти
 - **Conventional Commits**: PR title та коміти відповідають формату Conventional Commits.
+- PR titles must be Conventional Commits: type: subject.
 - **Trunk-based**: PR тільки в `main`.
 - **Lint + Tests + Coverage**: лінт, unit tests і coverage-пороги блокують злиття.
 - **Metrics**: зміни в метриках вимагають оновлених тестів і бенчмарків.
@@ -13,6 +14,8 @@
   (UI-фасад CV живе у `lib/services/ui/`).
 - **Privacy**: заборонена персистенція raw video; зберігаються лише скелет/landmarks.
 - **Architecture**: чиста архітектура — domain без framework imports.
+- **Bidi safety**: заборонені bidi/Unicode control characters у вихідниках;
+  перед комітом перевіряйте `rg -n --pcre2 '[\\u202A-\\u202E\\u2066-\\u2069]'`.
 
 ### Обов'язкові артефакти
 - `docs/` — документація як гейт для metrics/ML/architecture.

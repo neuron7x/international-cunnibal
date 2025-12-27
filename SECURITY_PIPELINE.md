@@ -1,4 +1,3 @@
-````md
 # Security, Quality, and Control Pipeline
 
 ## Automated checks (run on every PR and pushes to `main`)
@@ -53,8 +52,6 @@ python tool/ci/check_metric_changes.py
 python tool/ci/check_doc_updates.py
 python tool/ci/check_doc_lint.py
 python tool/ci/check_latency_budget.py
-````
-
 ## What is protected
 
 * **Metrics & math**: changes in motion or metric logic must update tests;
@@ -63,6 +60,3 @@ python tool/ci/check_latency_budget.py
   must update architecture or user-facing documentation where relevant.
 * **Secrets & artifacts**: `.gitignore` blocks common secrets, credentials, and large ML artifacts;
   secret scanning enforces this at PR time.
-
-```
-```

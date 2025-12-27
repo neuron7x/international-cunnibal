@@ -6,7 +6,11 @@ Owned by the Metrics & Domain Logic RE (see CODEOWNERS).
 ## Guardrails
 - Every metric change **must** ship with a unit test update and a benchmark log.
 - Numeric outputs must be deterministic for the same inputs.
-- Metrics are bounded to defined ranges (e.g., 0-100 for scores).
+- Metrics are bounded to defined ranges:
+  - Score-like outputs clamp to `0..100`.
+  - Ratio/confidence outputs clamp to `0..1`.
+  - Non-finite inputs or intermediate values are treated as safe zeros.
+  - `enduranceTime` is always finite (non-finite durations become `0`).
 - The full metric constitution lives in [`docs/METRICS.md`](METRICS.md).
 
 ## Regression Baselines
@@ -19,3 +23,4 @@ Owned by the Metrics & Domain Logic RE (see CODEOWNERS).
 ## Gate Hooks
 - CI: `tool/ci/check_metric_changes.py` (tests required when metrics change).
 - CI: `tool/ci/check_latency_budget.py` (16ms budget).
+- Benchmark output is canonicalized as `MEAN_US=<int>` by `tool/benchmark_core.dart`.

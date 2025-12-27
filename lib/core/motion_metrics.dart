@@ -86,7 +86,8 @@ class MotionMetrics {
     List<MotionSample>? pattern,
     double patternTolerance = 0.1,
   }) {
-    if (samples.length < 2) {
+    final safeSamples = _sanitizeSamples(samples);
+    if (safeSamples.length < 2) {
       return MotionMetricsResult(
         consistency: 0,
         frequency: const FrequencyResult(hertz: 0, confidence: 0),
@@ -96,60 +97,85 @@ class MotionMetrics {
       );
     }
 
-    final displacements = _displacements(samples);
+    final displacements = _displacements(safeSamples);
     final totalMag = displacements.fold<double>(
       0,
       (sum, d) => sum + d.magnitude,
     );
-    final sampleRate = _sampleRate(samples);
+    final sampleRate = _sampleRate(safeSamples);
 
     if (totalMag < _eps) {
+      final sanitizedPattern =
+          pattern == null ? null : _sanitizeSamples(pattern);
       return MotionMetricsResult(
         consistency: 100,
         frequency: const FrequencyResult(hertz: 0, confidence: 0),
         direction: const DirectionResult(direction: Vector2(0, 0), stability: 0),
         intensity: 0,
-        patternMatch: pattern == null
+        patternMatch: sanitizedPattern == null
             ? const PatternMatchResult(score: 0, mse: 0)
             : _patternMatch(
-                samples,
-                pattern,
+                safeSamples,
+                sanitizedPattern,
                 expectedAmplitude: expectedAmplitude,
                 tolerance: patternTolerance,
               ),
       );
     }
 
-    final axis = _principalAxis(samples);
+    final axis = _principalAxis(safeSamples);
     final directionVector = _directionFromAxis(axis, displacements);
-    final speedStats = _speedStats(samples, displacements);
+    final speedStats = _speedStats(safeSamples, displacements);
     final consistency = _consistency(speedStats);
-    final freq = _frequency(samples, axis);
+    final freq = _frequency(safeSamples, axis);
     final intensity = _intensity(
-      samples,
+      safeSamples,
       speedStats.meanSpeed,
       sampleRate,
     );
     final directionStability = _directionStability(speedStats, directionVector);
+    final sanitizedPattern = pattern == null ? null : _sanitizeSamples(pattern);
     final patternResult = pattern == null
         ? const PatternMatchResult(score: 0, mse: 0)
         : _patternMatch(
-            samples,
-            pattern,
+            safeSamples,
+            sanitizedPattern ?? const [],
             expectedAmplitude: expectedAmplitude,
             tolerance: patternTolerance,
           );
 
     return MotionMetricsResult(
-      consistency: consistency,
-      frequency: freq,
+      consistency: _clampScore(consistency),
+      frequency: FrequencyResult(
+        hertz: _finiteOrZero(freq.hertz),
+        confidence: _clampConfidence(freq.confidence),
+      ),
       direction: DirectionResult(
         direction: directionVector,
-        stability: directionStability,
+        stability: _clampScore(directionStability),
       ),
-      intensity: intensity,
-      patternMatch: patternResult,
+      intensity: _clampScore(intensity),
+      patternMatch: PatternMatchResult(
+        score: _clampScore(patternResult.score),
+        mse: _finiteOrZero(patternResult.mse),
+      ),
     );
+  }
+
+  static List<MotionSample> _sanitizeSamples(List<MotionSample> samples) {
+    final sanitized = <MotionSample>[];
+    for (final sample in samples) {
+      if (!sample.t.isFinite) {
+        continue;
+      }
+      final x = sample.position.x;
+      final y = sample.position.y;
+      if (!x.isFinite || !y.isFinite) {
+        continue;
+      }
+      sanitized.add(sample);
+    }
+    return sanitized;
   }
 
   static List<Vector2> _displacements(List<MotionSample> samples) {
@@ -164,7 +190,8 @@ class MotionMetrics {
     if (samples.length < 2) return 0;
     final meanDt =
         (samples.last.t - samples.first.t) / max(1, (samples.length - 1));
-    return 1 / max(_eps, meanDt);
+    if (!meanDt.isFinite || meanDt <= _eps) return 0;
+    return 1 / meanDt;
   }
 
   static Vector2 _principalAxis(List<MotionSample> samples) {
@@ -222,14 +249,20 @@ class MotionMetrics {
     final speeds = <double>[];
     for (var i = 0; i < displacements.length; i++) {
       final dt = max(_eps, samples[i + 1].t - samples[i].t);
-      speeds.add(displacements[i].magnitude / dt);
+      final speed = displacements[i].magnitude / dt;
+      speeds.add(speed.isFinite ? speed : 0.0);
     }
-    final mean =
-        speeds.reduce((a, b) => a + b) / max(1, speeds.length);
-    final variance = speeds
-            .map((v) => (v - mean) * (v - mean))
-            .reduce((a, b) => a + b) /
-        max(1, speeds.length);
+    var sum = 0.0;
+    for (final v in speeds) {
+      sum += v;
+    }
+    final mean = sum / max(1, speeds.length);
+    var varianceSum = 0.0;
+    for (final v in speeds) {
+      final diff = v - mean;
+      varianceSum += diff * diff;
+    }
+    final variance = varianceSum / max(1, speeds.length);
     final std = sqrt(variance);
     final cv = std / (mean + _eps);
 
@@ -237,14 +270,20 @@ class MotionMetrics {
     if (speeds.length > 1) {
       final jerks = <double>[];
       for (var i = 1; i < speeds.length; i++) {
-        jerks.add(speeds[i] - speeds[i - 1]);
+        final jerk = speeds[i] - speeds[i - 1];
+        jerks.add(jerk.isFinite ? jerk : 0.0);
       }
-      final jerkMean =
-          jerks.reduce((a, b) => a + b) / max(1, jerks.length);
-      final jerkVar = jerks
-              .map((v) => (v - jerkMean) * (v - jerkMean))
-              .reduce((a, b) => a + b) /
-          max(1, jerks.length);
+      var jerkSum = 0.0;
+      for (final v in jerks) {
+        jerkSum += v;
+      }
+      final jerkMean = jerkSum / max(1, jerks.length);
+      var jerkVarSum = 0.0;
+      for (final v in jerks) {
+        final diff = v - jerkMean;
+        jerkVarSum += diff * diff;
+      }
+      final jerkVar = jerkVarSum / max(1, jerks.length);
       jerkStd = sqrt(jerkVar);
     }
     final jerkStdNormalized = jerkStd / (mean + _eps);
@@ -259,13 +298,13 @@ class MotionMetrics {
   static double _consistency(_SpeedStats stats) {
     final base = 100 - stats.cv * 100;
     final penalty = stats.jerkStdNormalized * 20;
-    return (base - penalty).clamp(0, 100);
+    return _clampScore(base - penalty);
   }
 
   static double _directionStability(_SpeedStats stats, Vector2 direction) {
     if (direction.magnitude < _eps) return 0;
     final penalty = stats.cv * 50 + stats.jerkStdNormalized * 20;
-    return (100 - penalty).clamp(0, 100);
+    return _clampScore(100 - penalty);
   }
 
   static FrequencyResult _frequency(List<MotionSample> samples, Vector2 axis) {
@@ -274,13 +313,28 @@ class MotionMetrics {
     }
 
     final sampleRate = _sampleRate(samples);
+    if (sampleRate <= _eps) {
+      return const FrequencyResult(hertz: 0, confidence: 0);
+    }
     final mean = _meanPosition(samples);
-    final signal =
-        samples.map((s) => (s.position - mean).dot(axis)).toList();
-    final signalMean =
-        signal.reduce((a, b) => a + b) / max(1, signal.length);
-    final centered = signal.map((v) => v - signalMean).toList();
-    final r0 = centered.map((v) => v * v).reduce((a, b) => a + b);
+    final signal = List<double>.filled(samples.length, 0.0, growable: false);
+    var sum = 0.0;
+    for (var i = 0; i < samples.length; i++) {
+      final value = (samples[i].position - mean).dot(axis);
+      if (!value.isFinite) {
+        return const FrequencyResult(hertz: 0, confidence: 0);
+      }
+      signal[i] = value;
+      sum += value;
+    }
+    final signalMean = sum / max(1, signal.length);
+    final centered = List<double>.filled(signal.length, 0.0, growable: false);
+    var r0 = 0.0;
+    for (var i = 0; i < signal.length; i++) {
+      final v = signal[i] - signalMean;
+      centered[i] = v;
+      r0 += v * v;
+    }
     if (r0.abs() < _eps) {
       return const FrequencyResult(hertz: 0, confidence: 0);
     }
@@ -343,11 +397,14 @@ class MotionMetrics {
       return const FrequencyResult(hertz: 0, confidence: 0);
     }
     final hz = sampleRate / refinedLag;
-    final confidence = (autocorr[localIndex].clamp(0.0, 1.0));
+    final confidence = _clampConfidence(autocorr[localIndex]);
     if (hz <= 0 || hz > sampleRate / 2) {
       return FrequencyResult(hertz: 0, confidence: confidence);
     }
-    return FrequencyResult(hertz: hz, confidence: confidence);
+    return FrequencyResult(
+      hertz: _finiteOrZero(hz),
+      confidence: confidence,
+    );
   }
 
   static Vector2 _directionFromAxis(
@@ -377,11 +434,12 @@ class MotionMetrics {
     double sampleRate,
   ) {
     if (samples.isEmpty) return 0;
+    if (!sampleRate.isFinite || sampleRate <= _eps) return 0;
     final spatialScale = _spatialScale(samples);
     const scale = 0.05;
     final denom = spatialScale * sampleRate * scale + _eps;
     final score = 100 * (meanSpeed / denom);
-    return score.clamp(0, 100);
+    return _clampScore(score);
   }
 
   static double _spatialScale(List<MotionSample> samples) {
@@ -417,11 +475,13 @@ class MotionMetrics {
       mse += (dx * dx + dy * dy);
     }
     mse /= target.length;
-    mse /= pow(max(_eps, expectedAmplitude), 2);
+    final safeAmplitude = expectedAmplitude.abs();
+    mse /= pow(max(_eps, safeAmplitude), 2);
 
-    final denom = tolerance * tolerance + _eps;
-    final score = (1 / (1 + mse / denom) * 100).clamp(0.0, 100.0);
-    return PatternMatchResult(score: score, mse: mse);
+    final safeTolerance = tolerance.abs();
+    final denom = safeTolerance * safeTolerance + _eps;
+    final score = _clampScore(1 / (1 + mse / denom) * 100);
+    return PatternMatchResult(score: score, mse: _finiteOrZero(mse));
   }
 
   static Vector2 _interpolate(List<MotionSample> samples, double t) {
@@ -441,6 +501,18 @@ class MotionMetrics {
       a.position.y + (b.position.y - a.position.y) * alpha,
     );
   }
+
+  static double _clampScore(double value) {
+    if (!value.isFinite) return 0.0;
+    return value.clamp(0.0, 100.0);
+  }
+
+  static double _clampConfidence(double value) {
+    if (!value.isFinite) return 0.0;
+    return value.clamp(0.0, 1.0);
+  }
+
+  static double _finiteOrZero(double value) => value.isFinite ? value : 0.0;
 }
 
 class _SpeedStats {
