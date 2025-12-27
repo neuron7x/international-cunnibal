@@ -166,6 +166,7 @@ class EnduranceSessionService {
     _phaseStart = null;
     _lastUpdate = null;
     _lastStability = null;
+    _cooldownUntil = null;
     _cooldownApplied = false;
     _state = EnduranceSessionState.initial(
       targetHoldSeconds: EnduranceConstants.targetHoldSeconds,
