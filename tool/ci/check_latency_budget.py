@@ -8,7 +8,7 @@ MAX_MICROS = 16000
 
 def main() -> int:
     result = subprocess.run(
-        ["dart", "run", "tool/benchmark_core.dart"],
+        ["flutter", "dart", "run", "tool/benchmark_core.dart"],
         check=True,
         capture_output=True,
         text=True,
