@@ -3,6 +3,7 @@ import 'package:international_cunnibal/screens/tracking_screen.dart';
 import 'package:international_cunnibal/screens/dictation_screen.dart';
 import 'package:international_cunnibal/screens/metrics_screen.dart';
 import 'package:international_cunnibal/screens/partner_mode_screen.dart';
+import 'package:international_cunnibal/screens/endurance_mode_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -76,6 +77,16 @@ class HomeScreen extends StatelessWidget {
                 onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(builder: (_) => const PartnerModeScreen()),
+                ),
+              ),
+              const SizedBox(height: 16),
+              _FeatureCard(
+                title: 'Endurance Mode',
+                description: 'Jaw aperture control & endurance (opt-in)',
+                icon: Icons.self_improvement,
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const EnduranceModeScreen()),
                 ),
               ),
               const SizedBox(height: 16),

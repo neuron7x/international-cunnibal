@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:international_cunnibal/models/endurance_snapshot.dart';
 import 'package:international_cunnibal/models/metrics.dart';
 import 'package:international_cunnibal/models/movement_direction.dart';
 import 'package:international_cunnibal/services/game_logic_service.dart';
@@ -21,6 +22,13 @@ void main() {
         directionStability: 40,
         intensity: 60,
         patternScore: 80,
+        endurance: const EnduranceSnapshot(
+          aperture: 0.25,
+          apertureStability: 70,
+          enduranceTime: 2,
+          enduranceScore: 75,
+          threshold: 0.18,
+        ),
         timestamp: DateTime.now(),
       );
     }
@@ -54,6 +62,7 @@ void main() {
         directionStability: 5,
         intensity: base.intensity,
         patternScore: base.patternScore,
+        endurance: base.endurance,
         timestamp: DateTime.now(),
       );
       game.ingest(lowDirection);
@@ -71,6 +80,7 @@ void main() {
           directionStability: 50,
           intensity: 5,
           patternScore: 0,
+          endurance: EnduranceSnapshot.empty(),
           timestamp: DateTime.now(),
         ));
       }

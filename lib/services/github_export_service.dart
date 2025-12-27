@@ -63,6 +63,7 @@ class GitHubExportService {
       return {
         'avgConsistency': 0.0,
         'avgFrequency': 0.0,
+        'avgEnduranceScore': 0.0,
         'totalSessions': 0,
       };
     }
@@ -74,6 +75,9 @@ class GitHubExportService {
     final avgFrequency = _metricsLog
         .map((m) => m.frequency)
         .reduce((a, b) => a + b) / _metricsLog.length;
+    final avgEndurance = _metricsLog
+        .map((m) => m.endurance.enduranceScore)
+        .reduce((a, b) => a + b) / _metricsLog.length;
 
     final avgSyncScore = _sessionsLog.isEmpty
         ? 0.0
@@ -84,6 +88,7 @@ class GitHubExportService {
     return {
       'avgConsistency': avgConsistency,
       'avgFrequency': avgFrequency,
+      'avgEnduranceScore': avgEndurance,
       'avgSynchronization': avgSyncScore,
       'totalSessions': _sessionsLog.length,
     };

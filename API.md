@@ -221,10 +221,28 @@ class TongueData {
 
 ```dart
 class BiometricMetrics {
-  final double consistencyScore;  // 0-100 (inverse std dev)
-  final double frequency;         // Hz
-  final List<double> pcaVariance; // [PC1, PC2, PC3] percentages
+  final double consistencyScore;      // 0-100 (inverse std dev)
+  final double frequency;             // Hz
+  final double frequencyConfidence;   // 0-1
+  final List<double> pcaVariance;     // [PC1, PC2, PC3] percentages
+  final MovementDirection movementDirection;
+  final double directionStability;    // 0-100
+  final double intensity;             // 0-100
+  final double patternScore;          // 0-100
+  final EnduranceSnapshot endurance;  // aperture, stability, time, score
   final DateTime timestamp;
+}
+```
+
+### EnduranceSnapshot
+
+```dart
+class EnduranceSnapshot {
+  final double aperture;           // normalized 0-1
+  final double apertureStability;  // 0-100
+  final double enduranceTime;      // seconds above threshold
+  final double enduranceScore;     // 0-100
+  final double threshold;          // aperture threshold used
 }
 ```
 

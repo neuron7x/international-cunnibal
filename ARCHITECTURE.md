@@ -104,6 +104,8 @@ Handles performance log generation and export:
 5. **Metrics Calculation** → BiometricMetrics
 6. **Metrics** → GitHubExportService (logging)
 7. **Export** → JSON file (on-device)
+8. **Jaw Endurance Loop (optional)** → EnduranceEngine → EnduranceGameLogicService
+9. **Couple Dashboard (opt-in)** → informational comparison only
 
 ## Design Patterns
 
@@ -133,6 +135,14 @@ All processing happens on-device:
 - No network requests for core functionality
 - Data stored locally only
 - User has full control over exports
+
+## Dual-Partner Skill Model
+
+- **Symmetric skills**: Motion (tongue control) and Endurance (jaw aperture) run side by side with independent progression ladders.
+- **EnduranceEngine**: Consumes MediaPipe Face Mesh landmarks (13, 14, 78, 308) when available and falls back to bounded demo synthesis when sensors are absent. Outputs aperture, stability, endurance time, and normalized endurance score.
+- **Independent progression**: `GameLogicService` and `EnduranceGameLogicService` maintain separate targets/levels; no cross-coupling of rewards.
+- **Couple dashboard**: `CoupleDashboard` model presents consistency ↔ endurance, vector stability ↔ aperture stability, and level ↔ level without ranking.
+- **Consent-first**: Endurance mode and comparisons are opt-in in the UI; no automatic partner comparisons are triggered.
 
 ## Testing Strategy
 

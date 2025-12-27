@@ -78,6 +78,16 @@ class NeuralEngineConstants {
   static const double velocityChangeThreshold = 0.5; // For consistency validation
 }
 
+/// Endurance/jaw tracking constants
+class EnduranceConstants {
+  static const double defaultApertureThreshold = 0.18;
+  static const double stabilityFloor = 55;
+  static const double targetHoldSeconds = 1.5;
+  static const double apertureStep = 0.02;
+  static const double stabilityStep = 5;
+  static const double timeStep = 0.5;
+}
+
 /// Export service constants
 class ExportConstants {
   static const int autoExportThreshold = 100; // Auto-export after N metrics
