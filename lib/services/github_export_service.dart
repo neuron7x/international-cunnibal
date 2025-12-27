@@ -34,8 +34,8 @@ class GitHubExportService {
 
   /// Export performance log to file
   /// Creates a JSON file with all metrics and sessions
-  Future<String> exportPerformanceLog() async {
-    final directory = await getApplicationDocumentsDirectory();
+  Future<String> exportPerformanceLog({Directory? directoryOverride}) async {
+    final directory = await _resolveExportDirectory(directoryOverride);
     final timestamp = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
     final filename = 'performance_log_$timestamp.json';
     final file = File('${directory.path}/$filename');
@@ -95,9 +95,26 @@ class GitHubExportService {
     _sessionsLog.clear();
   }
 
+  Future<Directory> _resolveExportDirectory(Directory? directoryOverride) async {
+    if (directoryOverride != null) {
+      if (!directoryOverride.existsSync()) {
+        await directoryOverride.create(recursive: true);
+      }
+      return directoryOverride;
+    }
+
+    try {
+      return await getApplicationDocumentsDirectory();
+    } catch (_) {
+      return Directory.systemTemp.createTemp(
+        'international_cunnibal_export_',
+      );
+    }
+  }
+
   /// Get export directory path
-  Future<String> getExportDirectory() async {
-    final directory = await getApplicationDocumentsDirectory();
+  Future<String> getExportDirectory({Directory? directoryOverride}) async {
+    final directory = await _resolveExportDirectory(directoryOverride);
     return directory.path;
   }
 }
