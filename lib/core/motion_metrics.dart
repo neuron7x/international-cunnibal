@@ -97,9 +97,12 @@ class MotionMetrics {
     }
 
     final displacements = _displacements(samples);
-    final velocities = _normalizedVelocities(samples, displacements, expectedAmplitude);
+    final totalMag = displacements.fold<double>(
+      0,
+      (sum, d) => sum + d.magnitude,
+    );
 
-    if (velocities.every((v) => v.abs() < _eps)) {
+    if (totalMag < _eps) {
       return MotionMetricsResult(
         consistency: 100,
         frequency: const FrequencyResult(hertz: 0, confidence: 0),
@@ -116,10 +119,17 @@ class MotionMetrics {
       );
     }
 
-    final consistency = _consistency(velocities);
-    final freq = _frequency(velocities, samples);
     final direction = _direction(displacements);
-    final intensity = _intensity(velocities);
+    final axis = direction.direction;
+    final speeds = _projectedSpeeds(samples, displacements, axis);
+    final speedMagnitudes = speeds.map((v) => v.abs()).toList();
+    final normalizedSpeeds = speedMagnitudes
+        .map((v) => v / max(_eps, expectedAmplitude))
+        .toList();
+
+    final consistency = _consistency(speedMagnitudes);
+    final freq = _frequency(samples, axis);
+    final intensity = _intensity(normalizedSpeeds);
     final patternResult = pattern == null
         ? const PatternMatchResult(score: 0, mse: 0)
         : _patternMatch(
@@ -146,35 +156,36 @@ class MotionMetrics {
     return out;
   }
 
-  static List<double> _normalizedVelocities(
+  static List<double> _projectedSpeeds(
     List<MotionSample> samples,
     List<Vector2> displacements,
-    double expectedAmplitude,
+    Vector2 axis,
   ) {
-    final velocities = <double>[];
+    final speeds = <double>[];
+    if (axis.magnitude < _eps) {
+      return List<double>.filled(displacements.length, 0);
+    }
     for (var i = 0; i < displacements.length; i++) {
       final dt = max(_eps, samples[i + 1].t - samples[i].t);
-      final normDisp = displacements[i].magnitude / max(_eps, expectedAmplitude);
-      velocities.add(normDisp / dt);
+      final signed = displacements[i].dot(axis);
+      speeds.add(signed / dt);
     }
-    return velocities;
+    return speeds;
   }
 
-  static double _consistency(List<double> velocities) {
-    if (velocities.isEmpty) return 0;
-    final mean = velocities.reduce((a, b) => a + b) / velocities.length;
-    final variance = velocities
-            .map((v) => (v - mean) * (v - mean))
-            .reduce((a, b) => a + b) /
-        velocities.length;
+  static double _consistency(List<double> speeds) {
+    if (speeds.isEmpty) return 0;
+    final mean = speeds.reduce((a, b) => a + b) / speeds.length;
+    final variance = speeds.map((v) => (v - mean) * (v - mean)).reduce((a, b) => a + b) /
+        speeds.length;
     final std = sqrt(variance);
-    final ratio = std / (mean.abs() + _eps);
+    final ratio = std / (mean + _eps);
     final score = 100 * (1 - ratio);
     return score.clamp(0, 100);
   }
 
-  static FrequencyResult _frequency(List<double> velocities, List<MotionSample> samples) {
-    if (velocities.length < 3) {
+  static FrequencyResult _frequency(List<MotionSample> samples, Vector2 axis) {
+    if (samples.length < 4 || axis.magnitude < _eps) {
       return const FrequencyResult(hertz: 0, confidence: 0);
     }
 
@@ -182,8 +193,10 @@ class MotionMetrics {
         (samples.last.t - samples.first.t) / max(1, (samples.length - 1));
     final sampleRate = 1 / max(_eps, meanDt);
 
-    final mean = velocities.reduce((a, b) => a + b) / velocities.length;
-    final centered = velocities.map((v) => v - mean).toList();
+    final projections = samples.map((s) => s.position.dot(axis)).toList();
+    final mean =
+        projections.reduce((a, b) => a + b) / projections.length;
+    final centered = projections.map((v) => v - mean).toList();
     final windowed = _applyHann(centered);
     final r0 = windowed.map((v) => v * v).reduce((a, b) => a + b);
     if (r0.abs() < _eps) {
@@ -193,7 +206,7 @@ class MotionMetrics {
     double bestR = 0;
     int bestLag = 0;
     final maxLag = windowed.length ~/ 2;
-    for (var lag = 1; lag <= maxLag; lag++) {
+    for (var lag = 2; lag <= maxLag; lag++) {
       double acc = 0;
       for (var i = 0; i + lag < windowed.length; i++) {
         acc += windowed[i] * windowed[i + lag];
@@ -204,24 +217,23 @@ class MotionMetrics {
       }
     }
 
-    if (bestLag == 0) {
+    if (bestLag == 0 || bestR.abs() < _eps) {
       return const FrequencyResult(hertz: 0, confidence: 0);
     }
 
-    final lagSeconds = bestLag / sampleRate;
-    final hz = 1 / max(_eps, lagSeconds);
+    final hz = sampleRate / bestLag;
     final confidence = (bestR / (r0 + _eps)).clamp(0.0, 1.0);
+    if (hz <= 0 || hz > sampleRate / 2) {
+      return FrequencyResult(hertz: 0, confidence: confidence);
+    }
+    if (confidence < 0.2) {
+      return FrequencyResult(hertz: 0, confidence: confidence);
+    }
     return FrequencyResult(hertz: hz, confidence: confidence);
   }
 
   static DirectionResult _direction(List<Vector2> displacements) {
     if (displacements.isEmpty) {
-      return const DirectionResult(direction: Vector2(0, 0), stability: 0);
-    }
-
-    final totalMag = displacements.fold<double>(
-        0, (sum, d) => sum + d.magnitude);
-    if (totalMag < _eps) {
       return const DirectionResult(direction: Vector2(0, 0), stability: 0);
     }
 
@@ -243,40 +255,54 @@ class MotionMetrics {
     cyy /= displacements.length;
 
     final trace = cxx + cyy;
-    if (trace.abs() < _eps) {
-      return const DirectionResult(direction: Vector2(0, 0), stability: 0);
-    }
-
-    final diff = cxx - cyy;
-    final discr = sqrt(diff * diff + 4 * cxy * cxy);
-    final lambda1 = 0.5 * (trace + discr);
-    final lambda2 = 0.5 * (trace - discr);
-    final maxLambda = lambda1 >= lambda2 ? lambda1 : lambda2;
-
     Vector2 eigen;
-    if (cxy.abs() > _eps) {
-      eigen = Vector2(maxLambda - cyy, cxy).normalized();
+    if (trace.abs() >= _eps) {
+      final diff = cxx - cyy;
+      final discr = sqrt(diff * diff + 4 * cxy * cxy);
+      final lambda1 = 0.5 * (trace + discr);
+      final lambda2 = 0.5 * (trace - discr);
+      final maxLambda = lambda1 >= lambda2 ? lambda1 : lambda2;
+
+      if (cxy.abs() > _eps) {
+        eigen = Vector2(maxLambda - cyy, cxy).normalized();
+      } else {
+        eigen = cxx >= cyy ? const Vector2(1, 0) : const Vector2(0, 1);
+      }
     } else {
-      eigen = cxx >= cyy ? const Vector2(1, 0) : const Vector2(0, 1);
+      eigen = const Vector2(0, 0);
     }
 
     final net = displacements
         .fold<Vector2>(const Vector2(0, 0), (s, d) => s + d);
-    final orient = net.dot(eigen);
-    if (orient < 0) {
-      eigen = eigen.scale(-1); // deterministic but aligned with net motion
+    if (eigen.magnitude < _eps) {
+      eigen = net.normalized();
+    }
+    if (eigen.magnitude < _eps) {
+      return const DirectionResult(direction: Vector2(0, 0), stability: 0);
+    }
+    if (net.dot(eigen) < 0) {
+      eigen = eigen.scale(-1);
     }
 
-    final stability = (maxLambda / (trace + _eps) * 100).clamp(0.0, 100.0);
+    var valid = 0;
+    var sumCos = 0.0;
+    for (final d in displacements) {
+      final mag = d.magnitude;
+      if (mag < _eps) continue;
+      final u = d.scale(1 / mag);
+      sumCos += (u.dot(eigen)).abs();
+      valid++;
+    }
+    final stability =
+        valid == 0 ? 0.0 : (100 * (sumCos / valid)).clamp(0.0, 100.0);
     return DirectionResult(direction: eigen, stability: stability);
   }
 
-  static double _intensity(List<double> velocities) {
-    if (velocities.isEmpty) return 0;
-    final energies = velocities.map((v) => v * v).toList();
-    final meanEnergy =
-        energies.reduce((a, b) => a + b) / energies.length;
-    final score = 100 * (meanEnergy / (meanEnergy + 1 + _eps));
+  static double _intensity(List<double> normalizedSpeeds) {
+    if (normalizedSpeeds.isEmpty) return 0;
+    final mean = normalizedSpeeds.reduce((a, b) => a + b) /
+        normalizedSpeeds.length;
+    final score = 100 * mean;
     return score.clamp(0, 100);
   }
 
