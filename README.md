@@ -4,27 +4,34 @@
 
 # 🧠 International Cunnibal
 
-### *Train, Dominate, Savor.*
+## *Train, Dominate, Savor.*
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Flutter-3.0+-02569B?style=for-the-badge&logo=flutter&logoColor=white" alt="Flutter" />
-  <img src="https://img.shields.io/badge/TensorFlow_Lite-FF6F00?style=for-the-badge&logo=tensorflow&logoColor=white" alt="TFLite" />
-  <img src="https://img.shields.io/badge/Dart-0175C2?style=for-the-badge&logo=dart&logoColor=white" alt="Dart" />
-  <img src="https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge" alt="License" />
+  <img src="https://img.shields.io/badge/Flutter-3.0+-02569B?style=for-the-badge&logo=flutter&logoColor=white"
+       alt="Flutter" />
+  <img src="https://img.shields.io/badge/TensorFlow_Lite-FF6F00?style=for-the-badge&logo=tensorflow&logoColor=white"
+       alt="TFLite" />
+  <img src="https://img.shields.io/badge/Dart-0175C2?style=for-the-badge&logo=dart&logoColor=white"
+       alt="Dart" />
+  <img src="https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge"
+       alt="License" />
 </p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/AI-On--Device-blueviolet?style=flat-square&logo=brain" alt="AI" />
   <img src="https://img.shields.io/badge/Privacy-First-success?style=flat-square&logo=shield" alt="Privacy" />
-  <img src="https://img.shields.io/badge/Real--Time-30_FPS-orange?style=flat-square&logo=speedtest" alt="Real-Time" />
-  <img src="https://img.shields.io/badge/Platform-Android%20%7C%20iOS-blue?style=flat-square&logo=mobile" alt="Platform" />
+  <img src="https://img.shields.io/badge/Real--Time-30_FPS-orange?style=flat-square&logo=speedtest"
+       alt="Real-Time" />
+  <img src="https://img.shields.io/badge/Platform-Android%20%7C%20iOS-blue?style=flat-square&logo=mobile"
+       alt="Platform" />
 </p>
 
 ### 🚀 Neural Biofeedback Engine for Precision Oral Biomechanics
 
 *Revolutionary sensory-motor synchronization training powered by Anokhin's Action Acceptor theory*
 
-[🎯 Features](#-features) • [📱 Demo](#-demo) • [🛠️ Quick Start](#-installation) • [📊 Architecture](#-architecture) • [🧭 Delivery Plan](docs/delivery_plan.md) • [🤝 Contributing](#-contributing)
+[🎯 Features](#-features) • [📱 Demo](#-demo) • [🛠️ Quick Start](#-installation) •
+[📊 Architecture](#-architecture) • [🧭 Delivery Plan](docs/delivery_plan.md) • [🤝 Contributing](#-contributing)
 
 ---
 
@@ -32,7 +39,9 @@
 
 ## 🌟 Overview
 
-**International Cunnibal** is a cutting-edge Flutter application that brings neuroscience to your fingertips. Built on **Anokhin's Action Acceptor theory**, this sophisticated neural biofeedback system provides real-time tongue biomechanics tracking and analysis through advanced on-device AI processing.
+**International Cunnibal** is a cutting-edge Flutter application that brings neuroscience to your fingertips.
+Built on **Anokhin's Action Acceptor theory**, this sophisticated neural biofeedback system provides real-time
+tongue biomechanics tracking and analysis through advanced on-device AI processing.
 
 <div align="center">
 
@@ -123,7 +132,7 @@ graph LR
 
 Partner-led training with **26 unique rhythm patterns** inspired by Morse code:
 
-```
+```text
 A: .-    (Short-Long)
 B: -...  (Long-Short-Short-Short)
 S: ...   (Short-Short-Short)
@@ -305,7 +314,9 @@ graph TB
 - 🎯 Landmark detection (10 points)
 - 📈 Velocity & acceleration tracking
 - 🔄 Real-time streaming to NeuralEngine
+
 ```
+
 </details>
 
 <details>
@@ -317,7 +328,9 @@ graph TB
 - ⏱️ Timing validation (0.2s/0.6s)
 - 📊 Synchronization scoring (0-100%)
 - 📈 Rhythm consistency analysis
+
 ```
+
 </details>
 
 <details>
@@ -329,7 +342,9 @@ graph TB
 - 🤖 Auto-export after 100 metrics
 - 📊 Summary statistics included
 - 💾 Local storage only
+
 ```
+
 </details>
 
 ### 📦 Data Models
@@ -445,6 +460,7 @@ flutter build apk --release
 ```
 
 **Requirements:**
+
 - Android SDK (API 21+)
 - Android Studio (optional)
 - USB Debugging enabled
@@ -466,6 +482,7 @@ flutter build ios --release
 ```
 
 **Requirements:**
+
 - macOS with Xcode 12+
 - iOS 12.0+
 - CocoaPods installed
@@ -500,6 +517,7 @@ flowchart LR
 5. ⏹️ Tap **"STOP TRACKING"** when done
 
 **Features Active:**
+
 - ✅ Position tracking (x, y coordinates)
 - ✅ Velocity calculation (pixels/second)
 - ✅ Action Acceptor validation
@@ -527,10 +545,12 @@ flowchart LR
 6. ⏹️ Tap **"STOP DICTATION"** when done
 
 **Pattern Examples:**
-```
+
+```text
 A (.-):    Short-Long
 S (...):   Short-Short-Short
 T (-):     Long
+
 ```
 
 ---
@@ -602,12 +622,15 @@ Exported logs include comprehensive data in **JSON format**:
 ## 📐 Motion Metrics (Technical)
 
 - **Consistency**: windowed motion-energy variance normalized by expected amplitude; bounded [0,100].
-- **Frequency**: Hann-windowed autocorrelation, reports dominant Hz plus confidence (0-1); low-variance signals -> confidence 0.
-- **Direction**: principal component of displacement covariance with deterministic orientation; stability = λmax/trace on [0,100].
+- **Frequency**: Hann-windowed autocorrelation, reports dominant Hz plus confidence (0-1);
+  low-variance signals -> confidence 0.
+- **Direction**: principal component of displacement covariance with deterministic orientation;
+  stability = λmax/trace on [0,100].
 - **Intensity**: normalized mean kinetic proxy `E/(E+1)` on [0,100].
 - **Pattern Match**: time-indexed vector-field MSE scaled by tolerance; score on [0,100].
 
 ## 👩‍🎓 Metrics Primer (Non-Technical)
+
 - Consistency: how steady the motion energy is.
 - Frequency: main rhythm (beats per second) plus confidence.
 - Direction: dominant axis of movement.
@@ -624,7 +647,7 @@ dart run tool/benchmark_core.dart  # benchmarks MotionMetrics core
 
 Benchmark note: MotionMetrics processes a 30 FPS window in well under 1 ms on a mid-range device (see tool output).
 
-#### 📍 Export Location
+### 📍 Export Location
 
 ```bash
 # Android
@@ -660,6 +683,7 @@ Benchmark note: MotionMetrics processes a 30 FPS window in well under 1 ms o
 <td width="50%">
 
 **📖 Theoretical Framework**
+
 - 🧠 Anokhin's Action Acceptor theory
 - 📅 Reference date: 2025-11-30
 - 🎯 Sensory-motor validation system
@@ -669,6 +693,7 @@ Benchmark note: MotionMetrics processes a 30 FPS window in well under 1 ms o
 <td width="50%">
 
 **🔧 Technical Implementation**
+
 - 📸 MediaPipe/TFLite integration
 - 📊 Metrics calculation methods
 - 🔒 On-device AI processing
@@ -766,7 +791,7 @@ graph LR
 
 Copyright © 2025 **International Cunnibal Project**
 
-```
+```text
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -782,7 +807,7 @@ See [LICENSE](LICENSE) file for full details.
 
 <div align="center">
 
-## 🌟 Star Us!
+## 🌟 Star Us
 
 If you find this project useful, please consider giving it a ⭐
 
@@ -817,7 +842,8 @@ Made with ❤️ using Flutter & TensorFlow Lite
 
 ## 🔒 Security & CI pipeline
 
-See [SECURITY_PIPELINE.md](SECURITY_PIPELINE.md) for the mandatory gates (CI, security scanning, doc/metric guardrails, and branch protection expectations) that every PR must satisfy.
+See [SECURITY_PIPELINE.md](SECURITY_PIPELINE.md) for the mandatory gates
+(CI, security scanning, doc/metric guardrails, and branch protection expectations) that every PR must satisfy.
 
 ## 🤝 Contributing
 
@@ -879,6 +905,7 @@ git push origin feature/amazing-feature
 #### 📋 Contribution Guidelines
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines on:
+
 - 💻 Code style and standards
 - 🧪 Testing requirements
 - 📝 Documentation standards

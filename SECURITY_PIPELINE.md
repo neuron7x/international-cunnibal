@@ -1,25 +1,32 @@
+````md
 # Security, Quality, and Control Pipeline
 
-### Automated checks (run on every PR and pushes to `main`)
-- **Flutter CI**: `flutter format --set-exit-if-changed lib test`, `flutter analyze`, `flutter test --coverage` (coverage artifact uploaded).
-- **CodeQL (GitHub Advanced Security)**: security-extended queries (build-less JS scan until Dart is supported).
+## Automated checks (run on every PR and pushes to `main`)
+
+- **Flutter CI**: `flutter format --set-exit-if-changed lib test`, `flutter analyze`,
+  `flutter test --coverage` (coverage artifact uploaded).
+- **CodeQL (GitHub Advanced Security)**: security-extended queries
+  (build-less JS scan until Dart is supported).
 - **Dependency Review**: blocks high-severity dependency risks during PR review.
 - **Secret Scan**: `gitleaks` ensures no secrets or tokens are committed.
 - **Docs & Intent Guard**:
   - Markdown linting when docs change.
-  - Requires docs updates when core/architecture code changes.
+  - Requires docs updates when core or architecture code changes.
   - Requires metric-focused tests to be touched when metric logic changes.
 - **CI Meta Guard**: blocks invalid action versions in workflows.
 - **Conventional Commits**: PR titles must follow Conventional Commits.
 
-### Dependency hygiene
-- **Dependabot**: weekly updates for GitHub Actions and Dart (pub) dependencies in grouped batches.
+## Dependency hygiene
 
-### Branch protection (configure in repository settings)
+- **Dependabot**: weekly updates for GitHub Actions and Dart (pub) dependencies,
+  delivered in grouped batches.
+
+## Branch protection (configure in repository settings)
+
 1. Protect `main`:
-   - Require pull requests, block direct pushes and force-pushes.
+   - Require pull requests; block direct pushes and force-pushes.
    - Require branches to be up to date before merging.
-   - Require status checks:
+   - Require the following status checks:
      - `Flutter CI / Format, analyze, test`
      - `CodeQL / CodeQL analysis`
      - `Dependency Review / dependency-review`
@@ -30,9 +37,11 @@
      - `CI Meta Guard / workflow-guard`
      - `Conventional Commits / semantic-pr`
    - Require at least one approving review.
-2. Enable GitHub Advanced Security features (CodeQL and secret scanning) in repository settings.
+2. Enable GitHub Advanced Security features (CodeQL and secret scanning)
+   in repository settings.
 
-### Local CI (mirrors GitHub Actions)
+## Local CI (mirrors GitHub Actions)
+
 ```bash
 flutter format .
 flutter analyze
@@ -44,9 +53,16 @@ python tool/ci/check_metric_changes.py
 python tool/ci/check_doc_updates.py
 python tool/ci/check_doc_lint.py
 python tool/ci/check_latency_budget.py
-```
+````
 
-### What is protected
-- **Metrics & math**: changes in motion/metric logic must update tests; CI runs coverage to guard deterministic ranges.
-- **Architecture & core logic**: PRs that modify core/services/models/utils must update docs (architecture or user-facing where relevant).
-- **Secrets & artifacts**: `.gitignore` blocks common secrets, credentials, and large ML artifacts; secret scanning workflow enforces this at PR time.
+## What is protected
+
+* **Metrics & math**: changes in motion or metric logic must update tests;
+  CI enforces deterministic ranges via coverage and metric guards.
+* **Architecture & core logic**: PRs that modify core, services, models, or utils
+  must update architecture or user-facing documentation where relevant.
+* **Secrets & artifacts**: `.gitignore` blocks common secrets, credentials, and large ML artifacts;
+  secret scanning enforces this at PR time.
+
+```
+```
