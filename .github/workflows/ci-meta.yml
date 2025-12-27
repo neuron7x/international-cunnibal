@@ -1,0 +1,19 @@
+name: CI Meta Guard
+
+on:
+  pull_request:
+
+jobs:
+  workflow-guard:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Enforce workflow action versions
+        run: |
+          set -euo pipefail
+          if rg -n "actions/(checkout|upload-artifact)@v6" .github/workflows; then
+            echo "Forbidden GitHub Actions versions detected. Use actions/checkout@v4 and actions/upload-artifact@v4."
+            exit 1
+          fi

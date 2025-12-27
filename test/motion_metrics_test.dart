@@ -94,6 +94,17 @@ void main() {
       expect(metrics.frequency.confidence, greaterThan(0.5));
     });
 
+    test('frequency is not doubled by abs projection', () {
+      const freq = 2.0;
+      final samples = _sineWave(frequencyHz: freq, amplitude: 0.35);
+      final metrics = MotionMetrics.compute(
+        samples: samples,
+        expectedAmplitude: 0.35,
+      );
+      expect(metrics.frequency.hertz, closeTo(freq, 0.2));
+      expect((metrics.frequency.hertz - 4.0).abs(), greaterThan(1.0));
+    });
+
     test('frequency confidence drops with mixed tones', () {
       final primary = _sineWave(frequencyHz: 2.0, amplitude: 0.3);
       final secondary = _sineWave(
@@ -126,6 +137,18 @@ void main() {
       );
       expect(metrics.direction.direction.x, closeTo(1, 1e-2));
       expect(metrics.direction.direction.y.abs(), lessThan(1e-2));
+      expect(metrics.direction.stability, greaterThan(80));
+    });
+
+    test('constant displacement yields stable direction', () {
+      final samples = List.generate(
+        40,
+        (i) => _sample(i * 0.02, 0.2 + 0.01 * i, 0.4),
+      );
+      final metrics = MotionMetrics.compute(
+        samples: samples,
+        expectedAmplitude: 0.5,
+      );
       expect(metrics.direction.stability, greaterThan(80));
     });
 
@@ -178,11 +201,45 @@ void main() {
       expect(movingIntensity, greaterThan(30));
     });
 
+    test('consistency stays bounded when mean speed is near zero', () {
+      final samples = <MotionSample>[];
+      var x = 0.5;
+      for (var i = 0; i < 60; i++) {
+        final dx = i.isEven ? 0.01 : -0.01;
+        x += dx;
+        samples.add(_sample(i * 0.02, x, 0.5));
+      }
+      final metrics = MotionMetrics.compute(
+        samples: samples,
+        expectedAmplitude: 0.5,
+      );
+      expect(metrics.consistency.isNaN, isFalse);
+      expect(metrics.consistency, inInclusiveRange(0, 100));
+    });
+
+    test('frequency confidence drops on noise', () {
+      final rng = Random(7);
+      final samples = <MotionSample>[];
+      var pos = const Vector2(0.5, 0.5);
+      for (var i = 0; i < 150; i++) {
+        pos = Vector2(
+          pos.x + (rng.nextDouble() - 0.5) * 0.03,
+          pos.y + (rng.nextDouble() - 0.5) * 0.03,
+        );
+        samples.add(MotionSample(t: i * 0.01, position: pos));
+      }
+      final metrics = MotionMetrics.compute(
+        samples: samples,
+        expectedAmplitude: 0.5,
+      );
+      expect(metrics.frequency.confidence, lessThan(0.3));
+    });
+
     test('pattern match rewards aligned trajectories', () {
       final target = _sineWave(frequencyHz: 1.5, amplitude: 0.3, samples: 60, dt: 0.02);
       final observedSame = _sineWave(frequencyHz: 1.5, amplitude: 0.3, samples: 60, dt: 0.02);
       final observedPhaseShift =
-          _sineWave(frequencyHz: 1.5, amplitude: 0.3, samples: 60, dt: 0.02, phase: pi / 2);
+        _sineWave(frequencyHz: 1.5, amplitude: 0.3, samples: 60, dt: 0.02, phase: pi / 2);
 
       final matched = MotionMetrics.compute(
         samples: observedSame,
