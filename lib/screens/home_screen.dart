@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:international_cunnibal/screens/tracking_screen.dart';
 import 'package:international_cunnibal/screens/dictation_screen.dart';
 import 'package:international_cunnibal/screens/metrics_screen.dart';
+import 'package:international_cunnibal/screens/partner_mode_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -28,7 +29,7 @@ class HomeScreen extends StatelessWidget {
               ),
               const SizedBox(height: 24),
               const Text(
-                'Neural Biofeedback Engine',
+                'Rhythm-based Tongue Trainer',
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -37,7 +38,7 @@ class HomeScreen extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               const Text(
-                'Train, Dominate, Savor',
+                'On-device biofeedback. No uploads. Just play and improve.',
                 style: TextStyle(
                   fontSize: 16,
                   fontStyle: FontStyle.italic,
@@ -65,6 +66,16 @@ class HomeScreen extends StatelessWidget {
                 onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(builder: (_) => const DictationScreen()),
+                ),
+              ),
+              const SizedBox(height: 16),
+              _FeatureCard(
+                title: 'Partner Mode',
+                description: 'Partner sets rhythm, you mirror in real time',
+                icon: Icons.favorite,
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const PartnerModeScreen()),
                 ),
               ),
               const SizedBox(height: 16),

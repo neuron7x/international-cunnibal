@@ -19,6 +19,7 @@ class SymbolDictationService {
   final List<double> _rhythmTimestamps = [];
   String _targetSymbol = 'A';
   DateTime? _sessionStartTime;
+  List<double>? _customPattern;
   
   StreamSubscription<TongueData>? _tongueDataSubscription;
   final StreamController<DictationSession> _sessionController = 
@@ -29,14 +30,37 @@ class SymbolDictationService {
   String get targetSymbol => _targetSymbol;
 
   /// Start a new dictation session with target symbol
-  void startSession(String symbol) {
-    if (symbol.length != 1 || !RegExp(r'^[A-Z]$').hasMatch(symbol)) {
+  void startSession(
+    String symbol, {
+    List<double>? customPattern,
+    String? sessionLabel,
+  }) {
+    final trimmedSymbol = symbol.trim();
+    if (customPattern == null &&
+        (trimmedSymbol.length != 1 || !RegExp(r'^[A-Z]$').hasMatch(trimmedSymbol))) {
       throw ArgumentError('Symbol must be a single letter A-Z');
     }
+    if (customPattern != null && trimmedSymbol.isEmpty) {
+      throw ArgumentError('Symbol is required when providing a custom pattern');
+    }
+    final trimmedLabel = sessionLabel?.trim();
+    if (trimmedLabel != null && trimmedLabel.isEmpty) {
+      throw ArgumentError('Session label cannot be empty');
+    }
 
-    _targetSymbol = symbol;
+    if (customPattern != null) {
+      if (customPattern.length < 2) {
+        throw ArgumentError('Custom pattern must include at least two beats');
+      }
+      if (customPattern.any((value) => value <= 0)) {
+        throw ArgumentError('Custom pattern values must be positive durations');
+      }
+    }
+
+    _targetSymbol = trimmedLabel?.isNotEmpty == true ? trimmedLabel! : trimmedSymbol;
     _sessionStartTime = DateTime.now();
     _rhythmTimestamps.clear();
+    _customPattern = customPattern;
 
     // Listen to tongue data for rhythm detection
     _tongueDataSubscription = _neuralEngine.tongueDataStream.listen(
@@ -115,7 +139,7 @@ class SymbolDictationService {
   /// Get expected rhythm pattern for symbol
   /// Each letter has a unique rhythm signature for dictation
   List<double> _getExpectedRhythm(String symbol) {
-    return RhythmPatterns.getPattern(symbol);
+    return _customPattern ?? RhythmPatterns.getPattern(symbol);
   }
 
   /// Stop current dictation session
@@ -123,6 +147,7 @@ class SymbolDictationService {
     _tongueDataSubscription?.cancel();
     _tongueDataSubscription = null;
     _sessionStartTime = null;
+    _customPattern = null;
   }
 
   void dispose() {
