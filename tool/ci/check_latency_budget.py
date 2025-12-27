@@ -2,12 +2,13 @@
 import re
 import subprocess
 import sys
+from typing import Optional
 
 MAX_MICROS = 16000
 SAMPLE_OUTPUT = "MEAN_US=1234"
 
 
-def parse_mean_us(output: str) -> float | None:
+def parse_mean_us(output: str) -> Optional[float]:
     match = re.search(r"MEAN_US=([0-9]+)", output)
     if not match:
         return None
