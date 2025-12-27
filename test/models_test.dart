@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:international_cunnibal/models/tongue_data.dart';
 import 'package:international_cunnibal/models/metrics.dart';
 import 'package:international_cunnibal/models/dictation_session.dart';
+import 'package:international_cunnibal/models/movement_direction.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -62,6 +63,8 @@ void main() {
         consistencyScore: 85.0,
         frequency: 2.5,
         pcaVariance: [60.0, 30.0, 10.0],
+        movementDirection: MovementDirection.right,
+        directionStability: 40,
         timestamp: DateTime.now(),
       );
 
@@ -75,6 +78,8 @@ void main() {
         consistencyScore: 85.0,
         frequency: 2.5,
         pcaVariance: [60.0, 30.0, 10.0],
+        movementDirection: MovementDirection.left,
+        directionStability: 25,
         timestamp: DateTime(2025, 12, 26),
       );
 

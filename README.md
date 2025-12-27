@@ -406,6 +406,12 @@ flutter pub get
 
 # 4️⃣ Run the app
 flutter run
+
+# Demo/simulation mode runs by default (no ML models needed)
+# Quick logic loops:
+# dart run tool/run_demo.dart
+# dart run tool/verify_logic.dart
+# dart run tool/benchmark_core.dart
 ```
 
 #### 🎯 Platform-Specific Setup

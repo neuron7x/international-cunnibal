@@ -1,7 +1,8 @@
 import 'dart:async';
-import 'dart:math';
 import 'package:international_cunnibal/models/tongue_data.dart';
 import 'package:international_cunnibal/models/metrics.dart';
+import 'package:international_cunnibal/services/game_logic_service.dart';
+import 'package:international_cunnibal/services/signal_processor.dart';
 import 'package:international_cunnibal/utils/constants.dart';
 
 /// NeuralEngine service implementing Anokhin's Action Acceptor
@@ -16,9 +17,9 @@ class NeuralEngine {
   factory NeuralEngine() => _instance;
   NeuralEngine._internal();
 
-  final StreamController<TongueData> _tongueDataController = 
+  final StreamController<TongueData> _tongueDataController =
       StreamController<TongueData>.broadcast();
-  final StreamController<BiometricMetrics> _metricsController = 
+  final StreamController<BiometricMetrics> _metricsController =
       StreamController<BiometricMetrics>.broadcast();
 
   Stream<TongueData> get tongueDataStream => _tongueDataController.stream;
@@ -26,6 +27,8 @@ class NeuralEngine {
 
   final List<TongueData> _dataBuffer = [];
   final int _bufferSize = NeuralEngineConstants.bufferSize;
+  final SignalProcessor _signalProcessor = SignalProcessor();
+  final GameLogicService _gameLogic = GameLogicService();
   
   bool _isProcessing = false;
   Timer? _metricsTimer;
@@ -44,6 +47,7 @@ class NeuralEngine {
         if (_dataBuffer.isNotEmpty) {
           final metrics = _calculateMetrics();
           _metricsController.add(metrics);
+          _gameLogic.ingest(metrics);
         }
       },
     );
@@ -100,112 +104,13 @@ class NeuralEngine {
   /// Calculate biometric metrics
   BiometricMetrics _calculateMetrics() {
     if (_dataBuffer.isEmpty) {
-      return BiometricMetrics(
-        consistencyScore: 0.0,
-        frequency: 0.0,
-        pcaVariance: [0.0, 0.0, 0.0],
-        timestamp: DateTime.now(),
-      );
+      return BiometricMetrics.empty();
     }
 
-    // Consistency Score (Standard Deviation)
-    final velocities = _dataBuffer.map((d) => d.velocity).toList();
-    final consistencyScore = _calculateConsistencyScore(velocities);
-
-    // Frequency (Hz) - movements per second
-    final frequency = _calculateFrequency();
-
-    // Vector PCA for dimensional reduction
-    final pcaVariance = _calculatePCA();
-
-    return BiometricMetrics(
-      consistencyScore: consistencyScore,
-      frequency: frequency,
-      pcaVariance: pcaVariance,
-      timestamp: DateTime.now(),
-    );
-  }
-
-  /// Calculate consistency score using standard deviation
-  /// Lower std dev = higher consistency
-  double _calculateConsistencyScore(List<double> values) {
-    if (values.isEmpty) return 0.0;
-    
-    final mean = values.reduce((a, b) => a + b) / values.length;
-    final variance = values
-        .map((v) => pow(v - mean, 2))
-        .reduce((a, b) => a + b) / values.length;
-    final stdDev = sqrt(variance);
-    
-    // Normalize to 0-100 scale (inverse, so lower stdDev = higher score)
-    // Scaling factor explanation: A stdDev of 2.0 maps to 0% consistency,
-    // while a stdDev of 0 maps to 100% consistency. This creates an
-    // intuitive linear scale where typical movement variation (stdDev ~0.5-1.5)
-    // maps to 25-92% consistency scores.
-    return (100 - (stdDev * NeuralEngineConstants.stdDevScalingFactor)).clamp(0.0, 100.0);
-  }
-
-  /// Calculate movement frequency in Hz
-  double _calculateFrequency() {
-    if (_dataBuffer.length < 2) return 0.0;
-    
-    // Count peaks in velocity data
-    int peaks = 0;
-    for (int i = 1; i < _dataBuffer.length - 1; i++) {
-      if (_dataBuffer[i].velocity > _dataBuffer[i - 1].velocity &&
-          _dataBuffer[i].velocity > _dataBuffer[i + 1].velocity) {
-        peaks++;
-      }
-    }
-    
-    // Calculate time span
-    final timeSpan = _dataBuffer.last.timestamp
-        .difference(_dataBuffer.first.timestamp)
-        .inMilliseconds / 1000.0;
-    
-    return timeSpan > 0 ? peaks / timeSpan : 0.0;
-  }
-
-  /// Calculate PCA variance for dimensional reduction
-  /// Simplified PCA for 3 principal components
-  List<double> _calculatePCA() {
-    if (_dataBuffer.length < 3) return [0.0, 0.0, 0.0];
-    
-    // Extract position vectors
-    final positions = _dataBuffer
-        .map((d) => d.position)
-        .toList();
-    
-    // Calculate variance along each axis (simplified PCA)
-    final xValues = positions.map((p) => p.dx).toList();
-    final yValues = positions.map((p) => p.dy).toList();
-    
-    final xVariance = _calculateVariance(xValues);
-    final yVariance = _calculateVariance(yValues);
-    final totalVariance = xVariance + yVariance;
-    
-    if (totalVariance == 0) return [0.0, 0.0, 0.0];
-    
-    // Return explained variance ratios
-    return [
-      (xVariance / totalVariance) * 100,
-      (yVariance / totalVariance) * 100,
-      0.0, // Third component (could be expanded for 3D tracking)
-    ];
-  }
-
-  double _calculateVariance(List<double> values) {
-    if (values.isEmpty) return 0.0;
-    
-    final mean = values.reduce((a, b) => a + b) / values.length;
-    return values
-        .map((v) => pow(v - mean, 2))
-        .reduce((a, b) => a + b) / values.length;
+    return _signalProcessor.calculate(_dataBuffer);
   }
 
   void dispose() {
     stop();
-    _tongueDataController.close();
-    _metricsController.close();
   }
 }

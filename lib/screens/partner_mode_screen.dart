@@ -50,7 +50,7 @@ class _PartnerModeScreenState extends State<PartnerModeScreen> {
 
   Future<void> _initializeServices() async {
     try {
-      await _bioTracking.initializeCamera();
+      await _bioTracking.prepare();
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
