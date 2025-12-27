@@ -35,12 +35,11 @@
 - **Game logic**: scoring and leveling (`lib/services/game_logic_service.dart`, `lib/services/endurance_game_logic_service.dart`)
 
 ### 1.3 CI / Workflows / Required Checks
-- **Flutter CI** (format/analyze/test/coverage + guards)
-- **Docs/Intent Guard** (docs changes required for core changes)
-- **Dependency Review** (fail on high)
-- **Secret Scan (gitleaks)**
-- **CodeQL** (placeholder buildless scan)
 - **CI Meta Guard** (action version guard)
+- **Code Scanning Results / CodeQL**
+- **CodeQL** (placeholder buildless scan)
+- **Documentation and Intent Guard** (docs required for core changes, metric test coverage enforcement)
+- **Secret Scan (gitleaks)**
 
 See `.github/workflows/*.yml` and `SECURITY_PIPELINE.md`.
 
@@ -283,7 +282,7 @@ See `.github/workflows/*.yml` and `SECURITY_PIPELINE.md`.
 ---
 
 ## 4) Release Checklist (step-by-step)
-1. **All CI green** (Flutter CI, CodeQL, Dependency Review, Secret Scan, Docs Guard)
+1. **All CI green** (CI Meta Guard, CodeQL, Code Scanning Results, Secret Scan, Docs & Intent Guard)
 2. **Metrics constitution** and regression suite passing
 3. **Privacy**: consent screen + policies + data-flow verification
 4. **No raw video storage** verified by tests and architecture

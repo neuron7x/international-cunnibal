@@ -26,15 +26,12 @@ This repository enforces the 2025 Technical Constitution. All contributions must
 
 ### Required PR checks
 Make sure these checks are green before requesting review:
-- `Flutter CI / Format, analyze, test`
+- `CI Meta Guard / workflow-guard`
+- `Code Scanning Results / CodeQL`
 - `CodeQL / CodeQL analysis`
-- `Dependency Review / dependency-review`
-- `Secret Scan / gitleaks`
-- `Documentation and Intent Guard / docs-lint`
 - `Documentation and Intent Guard / intent-guard`
 - `Documentation and Intent Guard / metrics-guard`
-- `CI Meta Guard / workflow-guard`
-- `Conventional Commits / semantic-pr`
+- `Secret Scan / gitleaks`
 
 ## DVC Workflow for Models
 1. `dvc add ml-ops/models/<model-name>.tflite`
