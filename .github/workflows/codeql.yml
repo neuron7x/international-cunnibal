@@ -18,12 +18,12 @@ jobs:
       actions: read
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
+        uses: github/codeql-action/init@v4
         with:
           # Dart is not yet supported by CodeQL; run a build-less JavaScript scan to keep
           # GitHub Advanced Security checks active until native Dart coverage is available.
@@ -32,6 +32,6 @@ jobs:
           queries: security-extended
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v3
+        uses: github/codeql-action/analyze@v4
         with:
           category: "/language:javascript"
