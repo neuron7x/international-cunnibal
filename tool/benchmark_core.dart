@@ -21,6 +21,9 @@ Future<void> main() async {
 
   final perRunUs = watch.elapsedMicroseconds / 200;
   // ignore: avoid_print
-  print('Processed 200 iterations in ${watch.elapsedMilliseconds}ms '
-      '(~${perRunUs.toStringAsFixed(1)}µs per run)');
+  print(
+    'BENCHMARK motion_metrics iterations=200 '
+    'total_ms=${watch.elapsedMilliseconds} '
+    'per_run_us=${perRunUs.toStringAsFixed(1)}',
+  );
 }

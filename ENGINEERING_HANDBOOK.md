@@ -9,7 +9,8 @@
 - **Trunk-based**: PR тільки в `main`.
 - **Lint + Tests + Coverage**: лінт, unit tests і coverage-пороги блокують злиття.
 - **Metrics**: зміни в метриках вимагають оновлених тестів і бенчмарків.
-- **ML/CV**: моделі лише через DVC + обов'язкові model cards та benchmark logs.
+- **ML/CV**: моделі лише через DVC + обов'язкові model cards та benchmark logs
+  (UI-фасад CV живе у `lib/services/ui/`).
 - **Privacy**: заборонена персистенція raw video; зберігаються лише скелет/landmarks.
 - **Architecture**: чиста архітектура — domain без framework imports.
 

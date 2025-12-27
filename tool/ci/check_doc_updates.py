@@ -10,14 +10,15 @@ METRIC_PATHS = (
 )
 
 ML_PATHS = (
-    "lib/services/cv_engine.dart",
-    "lib/services/bio_tracking_service.dart",
+    "lib/services/ui/cv_engine.dart",
+    "lib/services/ui/bio_tracking_service.dart",
     "lib/models/tongue_data.dart",
     "ml-ops/",
 )
 
 ARCH_PATHS = (
     "lib/services/",
+    "lib/services/ui/",
     "lib/utils/",
     "lib/core/",
     "lib/models/",

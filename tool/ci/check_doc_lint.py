@@ -2,13 +2,26 @@
 import pathlib
 import sys
 
-DOC_FILES = [
-    pathlib.Path("ENGINEERING_HANDBOOK.md"),
-    pathlib.Path("CONTRIBUTING.md"),
-    pathlib.Path("ARCHITECTURE.md"),
-]
+DOC_FILES = sorted(pathlib.Path(".").rglob("*.md"))
 
-DOC_FILES.extend(pathlib.Path("docs").glob("*.md"))
+
+def _first_heading_line(lines: list[str]) -> str | None:
+    idx = 0
+    while idx < len(lines) and not lines[idx].strip():
+        idx += 1
+    if idx >= len(lines):
+        return None
+    if lines[idx].strip() == "---":
+        idx += 1
+        while idx < len(lines) and lines[idx].strip() != "---":
+            idx += 1
+        if idx < len(lines):
+            idx += 1
+    while idx < len(lines) and not lines[idx].strip():
+        idx += 1
+    if idx >= len(lines):
+        return None
+    return lines[idx]
 
 
 def main() -> int:
@@ -20,11 +33,11 @@ def main() -> int:
         for idx, line in enumerate(lines, start=1):
             if line.rstrip() != line:
                 failures.append(f"{doc}:{idx} has trailing whitespace.")
-        for line in lines:
-            if line.strip():
-                if not line.startswith("#"):
-                    failures.append(f"{doc} must start with a markdown heading.")
-                break
+        first_heading = _first_heading_line(lines)
+        if first_heading is None:
+            continue
+        if not first_heading.startswith("# "):
+            failures.append(f"{doc} must start with a markdown '# ' heading.")
 
     if failures:
         for failure in failures:

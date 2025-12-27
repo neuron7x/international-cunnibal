@@ -233,7 +233,7 @@ JSON export with comprehensive data (Reference: 2025-11-30):
 - Summary statistics included
 
 **Files:**
-- `lib/services/github_export_service.dart` - Export service
+- `lib/services/ui/github_export_service.dart` - Export service
 - `lib/screens/metrics_screen.dart` - Export UI
 
 ---

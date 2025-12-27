@@ -35,6 +35,17 @@ List<MotionSample> _linearMotion({
 
 void main() {
   group('MotionMetrics', () {
+    test('short signals return zeros', () {
+      final metrics = MotionMetrics.compute(
+        samples: [_sample(0.0, 0.4, 0.4)],
+        expectedAmplitude: 0.5,
+      );
+      expect(metrics.consistency, equals(0));
+      expect(metrics.frequency.hertz, equals(0));
+      expect(metrics.frequency.confidence, equals(0));
+      expect(metrics.intensity, equals(0));
+    });
+
     test('zero motion yields zero freq, confidence, intensity', () {
       final samples = List.generate(
         20,
@@ -92,6 +103,15 @@ void main() {
       );
       expect(metrics.frequency.hertz, closeTo(freq, 0.1));
       expect(metrics.frequency.confidence, greaterThan(0.5));
+    });
+
+    test('frequency confidence stays within bounds', () {
+      final samples = _sineWave(frequencyHz: 1.2, amplitude: 0.3);
+      final metrics = MotionMetrics.compute(
+        samples: samples,
+        expectedAmplitude: 0.3,
+      );
+      expect(metrics.frequency.confidence, inInclusiveRange(0, 1));
     });
 
     test('frequency is not doubled by abs projection', () {
@@ -210,6 +230,23 @@ void main() {
 
       expect(zeroIntensity, closeTo(0, 1e-6));
       expect(movingIntensity, greaterThan(30));
+    });
+
+    test('scaled signals increase intensity but keep frequency stable', () {
+      final base = _sineWave(frequencyHz: 1.5, amplitude: 0.15);
+      final scaled = _sineWave(frequencyHz: 1.5, amplitude: 0.3);
+      final baseMetrics = MotionMetrics.compute(
+        samples: base,
+        expectedAmplitude: 0.15,
+      );
+      final scaledMetrics = MotionMetrics.compute(
+        samples: scaled,
+        expectedAmplitude: 0.3,
+      );
+
+      expect(baseMetrics.frequency.hertz, closeTo(1.5, 0.2));
+      expect(scaledMetrics.frequency.hertz, closeTo(1.5, 0.2));
+      expect(scaledMetrics.intensity, greaterThan(baseMetrics.intensity));
     });
 
     test('consistency stays bounded when mean speed is near zero', () {

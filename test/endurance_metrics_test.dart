@@ -19,6 +19,13 @@ ApertureSample _sample(double t, double apertureValue) {
 
 void main() {
   group('EnduranceMetrics', () {
+    test('short samples return zeros', () {
+      final result = EnduranceMetrics.compute(samples: [_sample(0.0, 0.2)]);
+      expect(result.aperture, equals(0));
+      expect(result.enduranceScore, equals(0));
+      expect(result.apertureStability, equals(0));
+    });
+
     test('zero aperture stays bounded', () {
       final samples = [
         _sample(0.0, 0),
@@ -40,6 +47,17 @@ void main() {
       expect(result.enduranceTime, closeTo(1.4, 1e-3));
       expect(result.fatigueIndicator, closeTo(0, 1e-6));
       expect(result.enduranceScore, closeTo(80.5, 1e-2));
+    });
+
+    test('aperture clamps to configured max', () {
+      final samples = List.generate(6, (i) => _sample(i * 0.2, 0.8));
+      final result = EnduranceMetrics.compute(
+        samples: samples,
+        apertureThreshold: 0.2,
+        apertureMax: 0.4,
+      );
+      expect(result.aperture, lessThanOrEqualTo(0.4));
+      expect(result.enduranceScore, inInclusiveRange(0, 100));
     });
 
     test('noise reduces stability', () {

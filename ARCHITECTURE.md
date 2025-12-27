@@ -82,9 +82,9 @@ Handles performance log generation and export:
 
 **Responsibilities:**
 - Log all metrics and sessions
-- Generate JSON export files
+- Build aggregated JSON payloads
 - Calculate summary statistics
-- Provide export directory management
+- Delegate file I/O to `ExportFileWriter` in `lib/utils/export_file_writer.dart`
 
 **Export Format:**
 ```json
@@ -107,7 +107,7 @@ Handles performance log generation and export:
 4. **Validated TongueData** → UI (via Stream)
 5. **Metrics Calculation** → BiometricMetrics
 6. **Metrics** → GitHubExportService (logging)
-7. **Export** → JSON file (on-device)
+7. **Export** → JSON file (on-device) via `ExportFileWriter`
 8. **Jaw Endurance Loop (optional)** → EnduranceEngine → EnduranceGameLogicService
 9. **Couple Dashboard (opt-in)** → informational comparison only
 
