@@ -1,0 +1,11 @@
+# Ignore auto-generated and vendored files
+node_modules/
+vendor/
+.git/
+
+# Ignore build artifacts
+build/
+dist/
+
+# Ignore DVC cache
+.dvc/
