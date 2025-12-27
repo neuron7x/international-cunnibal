@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import fnmatch
 import os
 import subprocess
 import sys
@@ -20,6 +21,14 @@ MODEL_EXTENSIONS = (
 MODEL_DIR = "ml-ops/models/"
 MODEL_CARD_DIR = "ml-ops/model_cards/"
 BENCH_DIR = "ml-ops/benchmarks/"
+MODEL_BENCHMARK_PATTERN = "model_benchmark_*.md"
+
+
+def matches_benchmark_pattern(changed_files: list[str], pattern: str) -> bool:
+    return any(
+        fnmatch.fnmatch(path, f"{BENCH_DIR}{pattern}")
+        for path in changed_files
+    )
 
 
 def git_ls_files() -> list[str]:
@@ -56,7 +65,7 @@ def main() -> int:
 
     if model_changed:
         card_changed = any(path.startswith(MODEL_CARD_DIR) for path in changed)
-        bench_changed = any(path.startswith(BENCH_DIR) for path in changed)
+        bench_changed = matches_benchmark_pattern(changed, MODEL_BENCHMARK_PATTERN)
         if not card_changed:
             failures.append("Model change requires model card update in ml-ops/model_cards/.")
         if not bench_changed:

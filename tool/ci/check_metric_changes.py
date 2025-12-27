@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import fnmatch
 import os
 import subprocess
 import sys
@@ -16,6 +17,14 @@ TEST_PATHS = (
 )
 
 BENCHMARK_PATH = "ml-ops/benchmarks/"
+METRICS_BENCHMARK_PATTERN = "metrics_benchmark_*.md"
+
+
+def matches_benchmark_pattern(changed_files: list[str], pattern: str) -> bool:
+    return any(
+        fnmatch.fnmatch(path, f"{BENCHMARK_PATH}{pattern}")
+        for path in changed_files
+    )
 
 
 def get_changed_files(base_ref: str) -> list[str]:
@@ -37,7 +46,7 @@ def main() -> int:
         return 0
 
     tests_changed = any(path.startswith(TEST_PATHS) for path in changed)
-    bench_changed = any(path.startswith(BENCHMARK_PATH) for path in changed)
+    bench_changed = matches_benchmark_pattern(changed, METRICS_BENCHMARK_PATTERN)
 
     failures = []
     if not tests_changed:
