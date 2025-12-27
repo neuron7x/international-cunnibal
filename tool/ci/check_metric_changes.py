@@ -10,6 +10,7 @@ METRIC_PATHS = (
     "lib/services/neural_engine.dart",
     "lib/services/endurance_engine.dart",
     "lib/services/endurance_game_logic_service.dart",
+    "lib/services/game_logic_service.dart",
 )
 
 TEST_PATHS = (

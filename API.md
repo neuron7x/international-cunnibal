@@ -169,7 +169,7 @@ void logMetrics(BiometricMetrics metrics)
 
 **Side Effects:**
 - Adds to metrics log
-- Auto-exports after 100 entries
+- Triggers auto-export callback after 100 entries (if provided)
 
 #### `logSession(DictationSession session)`
 Logs a dictation session.
@@ -181,19 +181,21 @@ void logSession(DictationSession session)
 **Parameters:**
 - `session`: DictationSession object to log
 
-#### `exportPerformanceLog()`
-Exports performance log to JSON file.
+#### `buildExportPayload()`
+Builds the export payload (aggregated summary only).
 
 ```dart
-Future<String> exportPerformanceLog()
+Map<String, dynamic> buildExportPayload()
 ```
 
-**Returns:** Future with file path of exported log
+**Returns:** JSON-ready payload map
 
-**File Format:**
-- JSON with metrics, sessions, and summary
-- Named: `performance_log_YYYYMMDD_HHMMSS.json`
-- Location: Application documents directory
+#### `buildExportPayloadJson({bool pretty = true})`
+Builds the export payload as JSON string.
+
+```dart
+String buildExportPayloadJson({bool pretty = true})
+```
 
 #### `clearLogs()`
 Clears all logged data.

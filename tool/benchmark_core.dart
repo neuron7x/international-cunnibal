@@ -14,16 +14,13 @@ Future<void> main() async {
   });
 
   final watch = Stopwatch()..start();
-  for (int i = 0; i < 200; i++) {
+  const iterations = 200;
+  for (int i = 0; i < iterations; i++) {
     MotionMetrics.compute(samples: samples, expectedAmplitude: 0.3);
   }
   watch.stop();
 
-  final perRunUs = watch.elapsedMicroseconds / 200;
+  final perRunUs = watch.elapsedMicroseconds / iterations;
   // ignore: avoid_print
-  print(
-    'BENCHMARK motion_metrics iterations=200 '
-    'total_ms=${watch.elapsedMilliseconds} '
-    'per_run_us=${perRunUs.toStringAsFixed(1)}',
-  );
+  print('MEAN_US=${perRunUs.toStringAsFixed(1)}');
 }

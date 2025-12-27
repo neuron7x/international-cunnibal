@@ -12,6 +12,7 @@
 - **ML/CV**: моделі лише через DVC + обов'язкові model cards та benchmark logs
   (UI-фасад CV живе у `lib/services/ui/`).
 - **Privacy**: заборонена персистенція raw video; зберігаються лише скелет/landmarks.
+- **Exports**: `GitHubExportService` генерує лише агреговані payload-и (без raw даних).
 - **Architecture**: чиста архітектура — domain без framework imports.
 
 ### Обов'язкові артефакти

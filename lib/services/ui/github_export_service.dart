@@ -1,9 +1,7 @@
 import 'dart:convert';
-import 'package:intl/intl.dart';
 import 'package:international_cunnibal/models/metrics.dart';
 import 'package:international_cunnibal/models/dictation_session.dart';
 import 'package:international_cunnibal/utils/constants.dart';
-import 'package:international_cunnibal/utils/export_file_writer.dart';
 
 /// GitHub Performance Log Export Service
 /// Automated export of performance logs for GitHub integration
@@ -12,18 +10,20 @@ class GitHubExportService {
   static final GitHubExportService _instance = GitHubExportService._internal();
   factory GitHubExportService() => _instance;
   GitHubExportService._internal({
-    ExportFileWriter? fileWriter,
+    void Function(Map<String, dynamic> payload)? onAutoExport,
     DateTime Function()? now,
-  })  : _fileWriter = fileWriter ?? const ExportFileWriter(),
+  })  : _onAutoExport = onAutoExport,
         _now = now ?? DateTime.now;
 
   GitHubExportService.testing({
-    required ExportFileWriter fileWriter,
+    void Function(Map<String, dynamic> payload)? onAutoExport,
     DateTime Function()? now,
-  })  : _fileWriter = fileWriter,
+  })  : _onAutoExport = onAutoExport,
         _now = now ?? DateTime.now;
 
-  final ExportFileWriter _fileWriter;
+  static const int _schemaVersion = 1;
+
+  final void Function(Map<String, dynamic> payload)? _onAutoExport;
   final DateTime Function() _now;
 
   final List<BiometricMetrics> _metricsLog = [];
@@ -35,7 +35,7 @@ class GitHubExportService {
     
     // Auto-export if we have enough entries
     if (_metricsLog.length >= ExportConstants.autoExportThreshold) {
-      exportPerformanceLog();
+      _onAutoExport?.call(buildExportPayload());
     }
   }
 
@@ -46,62 +46,38 @@ class GitHubExportService {
 
   /// Export performance log to file
   /// Creates a JSON file with all metrics and sessions
-  Future<String> exportPerformanceLog({String? directoryOverridePath}) async {
-    final now = _now();
-    final timestamp = DateFormat('yyyyMMdd_HHmmss').format(now);
-    final filename = 'performance_log_$timestamp.json';
+  Map<String, dynamic> buildExportPayload() {
+    final exportedAt = _now().toUtc();
+    final metricsCount = _metricsLog.length;
+    final sessionsCount = _sessionsLog.length;
 
-    final data = {
-      'exportTimestamp': now.toIso8601String(),
+    return {
+      'schemaVersion': _schemaVersion,
+      'exportedAtUtc': exportedAt.toIso8601String(),
       'appVersion': ExportConstants.appVersion,
-      'totalMetrics': _metricsLog.length,
-      'totalSessions': _sessionsLog.length,
-      'metrics': _metricsLog.map((m) => m.toJson()).toList(),
-      'sessions': _sessionsLog.map((s) => s.toJson()).toList(),
+      'counts': {
+        'metricsCount': metricsCount,
+        'sessionsCount': sessionsCount,
+      },
       'summary': _generateSummary(),
+      'sessions': _buildSessionSummaries(),
     };
+  }
 
-    return _fileWriter.writeJson(
-      filename: filename,
-      jsonPayload: const JsonEncoder.withIndent('  ').convert(data),
-      directoryOverridePath: directoryOverridePath,
-    );
+  String buildExportPayloadJson({bool pretty = true}) {
+    final encoder = pretty
+        ? const JsonEncoder.withIndent('  ')
+        : const JsonEncoder();
+    return encoder.convert(buildExportPayload());
   }
 
   /// Generate summary statistics
   Map<String, dynamic> _generateSummary() {
-    if (_metricsLog.isEmpty) {
-      return {
-        'avgConsistency': 0.0,
-        'avgFrequency': 0.0,
-        'avgEnduranceScore': 0.0,
-        'totalSessions': 0,
-      };
-    }
-
-    final avgConsistency = _metricsLog
-        .map((m) => m.consistencyScore)
-        .reduce((a, b) => a + b) / _metricsLog.length;
-
-    final avgFrequency = _metricsLog
-        .map((m) => m.frequency)
-        .reduce((a, b) => a + b) / _metricsLog.length;
-    final avgEndurance = _metricsLog
-        .map((m) => m.endurance.enduranceScore)
-        .reduce((a, b) => a + b) / _metricsLog.length;
-
-    final avgSyncScore = _sessionsLog.isEmpty
-        ? 0.0
-        : _sessionsLog
-            .map((s) => s.synchronizationScore)
-            .reduce((a, b) => a + b) / _sessionsLog.length;
-
+    final metricsSummary = _aggregateMetrics();
+    final sessionSummary = _aggregateSessions();
     return {
-      'avgConsistency': avgConsistency,
-      'avgFrequency': avgFrequency,
-      'avgEnduranceScore': avgEndurance,
-      'avgSynchronization': avgSyncScore,
-      'totalSessions': _sessionsLog.length,
+      'metrics': metricsSummary,
+      'sessions': sessionSummary,
     };
   }
 
@@ -111,10 +87,94 @@ class GitHubExportService {
     _sessionsLog.clear();
   }
 
-  /// Get export directory path
-  Future<String> getExportDirectory({String? directoryOverridePath}) async {
-    return _fileWriter.resolveDirectoryPath(
-      directoryOverridePath: directoryOverridePath,
-    );
+  Map<String, dynamic> _aggregateMetrics() {
+    if (_metricsLog.isEmpty) {
+      return _emptyMetricAggregates();
+    }
+
+    return {
+      'consistencyScore': _statsFor(_metricsLog.map((m) => m.consistencyScore)),
+      'frequency': _statsFor(_metricsLog.map((m) => m.frequency)),
+      'frequencyConfidence':
+          _statsFor(_metricsLog.map((m) => m.frequencyConfidence)),
+      'directionStability':
+          _statsFor(_metricsLog.map((m) => m.directionStability)),
+      'intensity': _statsFor(_metricsLog.map((m) => m.intensity)),
+      'patternScore': _statsFor(_metricsLog.map((m) => m.patternScore)),
+      'enduranceScore':
+          _statsFor(_metricsLog.map((m) => m.endurance.enduranceScore)),
+    };
+  }
+
+  Map<String, dynamic> _aggregateSessions() {
+    if (_sessionsLog.isEmpty) {
+      return {
+        'meanSynchronization': 0.0,
+        'minSynchronization': 0.0,
+        'maxSynchronization': 0.0,
+        'meanRhythmConsistency': 0.0,
+      };
+    }
+
+    final syncScores = _sessionsLog.map((s) => s.synchronizationScore);
+    final rhythmScores = _sessionsLog.map((s) => s.rhythmConsistency);
+
+    return {
+      'meanSynchronization': _mean(syncScores),
+      'minSynchronization': syncScores.reduce(_min),
+      'maxSynchronization': syncScores.reduce(_max),
+      'meanRhythmConsistency': _mean(rhythmScores),
+    };
+  }
+
+  List<Map<String, dynamic>> _buildSessionSummaries() {
+    return _sessionsLog.map((session) {
+      final durationSeconds = session.rhythmTimestamps.isEmpty
+          ? 0.0
+          : (session.rhythmTimestamps.last - session.rhythmTimestamps.first)
+              .clamp(0.0, double.infinity);
+      return {
+        'targetSymbol': session.targetSymbol,
+        'startTimeUtc': session.startTime.toUtc().toIso8601String(),
+        'durationSeconds': durationSeconds,
+        'synchronizationScore': session.synchronizationScore,
+        'rhythmConsistency': session.rhythmConsistency,
+      };
+    }).toList();
+  }
+
+  Map<String, dynamic> _statsFor(Iterable<double> values) {
+    final list = values.toList();
+    if (list.isEmpty) {
+      return {'mean': 0.0, 'min': 0.0, 'max': 0.0};
+    }
+    final minValue = list.reduce(_min);
+    final maxValue = list.reduce(_max);
+    return {
+      'mean': _mean(list),
+      'min': minValue,
+      'max': maxValue,
+    };
+  }
+
+  double _mean(Iterable<double> values) {
+    final list = values.toList();
+    if (list.isEmpty) return 0.0;
+    return list.reduce((a, b) => a + b) / list.length;
+  }
+
+  double _min(double a, double b) => a < b ? a : b;
+  double _max(double a, double b) => a > b ? a : b;
+
+  Map<String, dynamic> _emptyMetricAggregates() {
+    return {
+      'consistencyScore': {'mean': 0.0, 'min': 0.0, 'max': 0.0},
+      'frequency': {'mean': 0.0, 'min': 0.0, 'max': 0.0},
+      'frequencyConfidence': {'mean': 0.0, 'min': 0.0, 'max': 0.0},
+      'directionStability': {'mean': 0.0, 'min': 0.0, 'max': 0.0},
+      'intensity': {'mean': 0.0, 'min': 0.0, 'max': 0.0},
+      'patternScore': {'mean': 0.0, 'min': 0.0, 'max': 0.0},
+      'enduranceScore': {'mean': 0.0, 'min': 0.0, 'max': 0.0},
+    };
   }
 }

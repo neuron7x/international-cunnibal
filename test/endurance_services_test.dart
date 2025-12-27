@@ -53,6 +53,21 @@ void main() {
       expect(first.aperture, closeTo(second.aperture, 1e-6));
       expect(first.enduranceScore, closeTo(second.enduranceScore, 1e-6));
     });
+
+    test('ingestLandmarks falls back when landmarks are missing', () {
+      final engine = EnduranceEngine(bufferSize: 2);
+      final snapshot = engine.ingestLandmarks(tSeconds: 0.0, landmarks: const []);
+      expect(snapshot.enduranceScore, equals(0));
+    });
+
+    test('reset clears buffer for fresh start', () {
+      final engine = EnduranceEngine(bufferSize: 3);
+      engine.ingestSample(_sample(0.0, 0.25));
+      engine.ingestSample(_sample(0.5, 0.25));
+      engine.reset();
+      final snapshot = engine.snapshot();
+      expect(snapshot.enduranceScore, equals(0));
+    });
   });
 
   group('EnduranceSessionService', () {
@@ -80,6 +95,35 @@ void main() {
       expect(state.phase, equals(EnduranceSessionPhase.rest));
       expect(state.autoPaused, isTrue);
     });
+
+    test('rest transitions to summary after rest window', () {
+      final service = EnduranceSessionService();
+      service.start(0);
+      service.ingest(
+        snapshot: _snapshot(),
+        tSeconds: EnduranceConstants.readySeconds + 0.1,
+      );
+      service.ingest(
+        snapshot: _snapshot(stability: 10),
+        tSeconds: EnduranceConstants.readySeconds + 0.2,
+      );
+      final state = service.ingest(
+        snapshot: _snapshot(),
+        tSeconds: EnduranceConstants.readySeconds +
+            EnduranceConstants.restSeconds +
+            0.3,
+      );
+      expect(state.phase, equals(EnduranceSessionPhase.summary));
+    });
+
+    test('cooldown prevents immediate restart', () {
+      final service = EnduranceSessionService();
+      service.start(0);
+      service.stop(1.0);
+      service.start(1.1);
+      expect(service.state.canStart, isFalse);
+      expect(service.state.cooldownRemainingSeconds, greaterThan(0));
+    });
   });
 
   group('EnduranceGameLogicService', () {
@@ -99,6 +143,27 @@ void main() {
       expect(service.state.streak, equals(0));
       expect(service.state.targetAperture,
           greaterThanOrEqualTo(EnduranceConstants.defaultApertureThreshold));
+    });
+
+    test('miss resets streak without levelling', () {
+      final service = EnduranceGameLogicService();
+      service.reset();
+      final hit = _snapshot(
+        aperture: 0.3,
+        stability: EnduranceConstants.stabilityFloor + 10,
+        enduranceTime: EnduranceConstants.targetHoldSeconds + 0.5,
+      );
+      final miss = _snapshot(
+        aperture: 0.1,
+        stability: EnduranceConstants.stabilityFloor - 1,
+        enduranceTime: 0,
+      );
+
+      service.ingest(hit);
+      expect(service.state.streak, equals(1));
+      service.ingest(miss);
+      expect(service.state.streak, equals(0));
+      expect(service.state.level, equals(1));
     });
   });
 }

@@ -7,11 +7,10 @@ REQUIRED_USAGE = "LandmarkPrivacyFilter"
 BIO_TRACKING = pathlib.Path("lib/services/ui/bio_tracking_service.dart")
 
 RAW_VIDEO_PATTERNS = (
-    "import 'dart:io'",
-    'import "dart:io"',
-    "File(",
-    "writeAsBytes",
-    "writeAsString",
+    re.compile(r"^\s*import\s+['\"]dart:io['\"]", re.MULTILINE),
+    re.compile(r"\bFile\s*\(", re.MULTILINE),
+    re.compile(r"\bwriteAsBytes\s*\(", re.MULTILINE),
+    re.compile(r"\bwriteAsString\s*\(", re.MULTILINE),
 )
 
 VIDEO_EXTENSION_RE = re.compile(r"\.(mp4|mov|avi|mkv|webm|m4v|hevc)\b", re.IGNORECASE)
@@ -45,9 +44,9 @@ def main() -> int:
                 f"Video extension reference found in forbidden zone: {file}."
             )
         for pattern in RAW_VIDEO_PATTERNS:
-            if pattern in contents:
+            if pattern.search(contents):
                 failures.append(
-                    f"Raw video persistence pattern '{pattern}' found in {file}."
+                    f"Raw video persistence pattern '{pattern.pattern}' found in {file}."
                 )
 
     if failures:

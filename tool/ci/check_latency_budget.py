@@ -14,7 +14,7 @@ def main() -> int:
         text=True,
     )
     output = result.stdout.strip()
-    match = re.search(r"per_run_us=([0-9.]+)", output)
+    match = re.search(r"MEAN_US=([0-9.]+)", output)
     if not match:
         print("ERROR: Unable to parse benchmark output.")
         print(output)

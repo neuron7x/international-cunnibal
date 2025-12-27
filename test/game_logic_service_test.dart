@@ -87,5 +87,32 @@ void main() {
       }
       expect(game.state.level, equals(1));
     });
+
+    test('streak resets on miss', () {
+      game.ingest(_goodMetrics());
+      expect(game.state.streak, equals(1));
+      game.ingest(BiometricMetrics(
+        consistencyScore: 10,
+        frequency: 0.5,
+        frequencyConfidence: 0.2,
+        pcaVariance: const [0, 0, 0],
+        movementDirection: MovementDirection.right,
+        directionStability: 5,
+        intensity: 5,
+        patternScore: 0,
+        endurance: EnduranceSnapshot.empty(),
+        timestamp: DateTime.now(),
+      ));
+      expect(game.state.streak, equals(0));
+    });
+
+    test('targets clamp at configured maximums', () {
+      for (int i = 0; i < 18; i++) {
+        game.ingest(_goodMetrics());
+      }
+
+      expect(game.state.targetConsistency, lessThanOrEqualTo(95));
+      expect(game.state.targetFrequency, lessThanOrEqualTo(3.0));
+    });
   });
 }

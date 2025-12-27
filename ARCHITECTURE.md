@@ -84,18 +84,35 @@ Handles performance log generation and export:
 - Log all metrics and sessions
 - Build aggregated JSON payloads
 - Calculate summary statistics
-- Delegate file I/O to `ExportFileWriter` in `lib/utils/export_file_writer.dart`
+- Expose payloads to UI/share layers (no direct file I/O in services)
 
 **Export Format:**
 ```json
 {
-  "exportTimestamp": "ISO8601",
+  "schemaVersion": 1,
+  "exportedAtUtc": "ISO8601",
   "appVersion": "1.0.0",
-  "totalMetrics": 100,
-  "totalSessions": 10,
-  "metrics": [...],
-  "sessions": [...],
-  "summary": {...}
+  "counts": {
+    "metricsCount": 100,
+    "sessionsCount": 10
+  },
+  "summary": {
+    "metrics": {
+      "consistencyScore": {"mean": 80, "min": 60, "max": 95}
+    },
+    "sessions": {
+      "meanSynchronization": 88.5
+    }
+  },
+  "sessions": [
+    {
+      "targetSymbol": "A",
+      "startTimeUtc": "ISO8601",
+      "durationSeconds": 1.2,
+      "synchronizationScore": 90,
+      "rhythmConsistency": 92.1
+    }
+  ]
 }
 ```
 
@@ -107,7 +124,7 @@ Handles performance log generation and export:
 4. **Validated TongueData** → UI (via Stream)
 5. **Metrics Calculation** → BiometricMetrics
 6. **Metrics** → GitHubExportService (logging)
-7. **Export** → JSON file (on-device) via `ExportFileWriter`
+7. **Export** → JSON payload surfaced to UI/share
 8. **Jaw Endurance Loop (optional)** → EnduranceEngine → EnduranceGameLogicService
 9. **Couple Dashboard (opt-in)** → informational comparison only
 

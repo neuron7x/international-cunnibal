@@ -191,43 +191,40 @@ Each letter has a unique Morse code-inspired rhythm:
 
 ### 6.2 Automated GitHub Performance Log Exports
 **Implementation:**
-JSON export with comprehensive data (Reference: 2025-11-30):
+Aggregated JSON export payload (Reference: 2025-11-30):
 
 **Export Format:**
 ```json
 {
-  "exportTimestamp": "ISO8601",
+  "schemaVersion": 1,
+  "exportedAtUtc": "ISO8601",
   "appVersion": "1.0.0",
-  "totalMetrics": 100,
-  "totalSessions": 10,
-  "metrics": [
-    {
-      "timestamp": "ISO8601",
-      "consistencyScore": 85.5,
-      "frequency": 2.3,
-      "pcaVariance": [65.0, 30.0, 5.0]
+  "counts": {
+    "metricsCount": 100,
+    "sessionsCount": 10
+  },
+  "summary": {
+    "metrics": {
+      "consistencyScore": { "mean": 85.5, "min": 70.0, "max": 95.0 }
+    },
+    "sessions": {
+      "meanSynchronization": 78.2
     }
-  ],
+  },
   "sessions": [
     {
       "targetSymbol": "A",
-      "startTime": "ISO8601",
-      "rhythmTimestamps": [0.0, 0.5, 1.0],
+      "startTimeUtc": "ISO8601",
+      "durationSeconds": 1.0,
       "synchronizationScore": 78.2,
       "rhythmConsistency": 82.1
     }
-  ],
-  "summary": {
-    "avgConsistency": 85.5,
-    "avgFrequency": 2.3,
-    "avgSynchronization": 78.2,
-    "totalSessions": 10
-  }
+  ]
 }
 ```
 
 **Features:**
-- Auto-export after 100 metrics entries
+- Auto-export callback after 100 metrics entries
 - Manual export via dashboard
 - Timestamped filenames
 - Summary statistics included

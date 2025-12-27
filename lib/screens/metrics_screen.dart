@@ -45,11 +45,16 @@ class _MetricsScreenState extends State<MetricsScreen> {
     setState(() => _isExporting = true);
 
     try {
-      final filePath = await _exportService.exportPerformanceLog();
+      final payload = _exportService.buildExportPayload();
+      final counts = payload['counts'] as Map<String, dynamic>;
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Exported to: $filePath'),
+            content: Text(
+              'Export payload ready: '
+              '${counts['metricsCount']} metrics, '
+              '${counts['sessionsCount']} sessions.',
+            ),
             duration: const Duration(seconds: 3),
           ),
         );

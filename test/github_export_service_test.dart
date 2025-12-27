@@ -1,6 +1,3 @@
-import 'dart:convert';
-import 'dart:io';
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:international_cunnibal/models/dictation_session.dart';
 import 'package:international_cunnibal/models/endurance_snapshot.dart';
@@ -8,90 +5,15 @@ import 'package:international_cunnibal/models/metrics.dart';
 import 'package:international_cunnibal/models/movement_direction.dart';
 import 'package:international_cunnibal/services/ui/github_export_service.dart';
 import 'package:international_cunnibal/utils/constants.dart';
-import 'package:international_cunnibal/utils/export_file_writer.dart';
-
-class _FakeExportFileWriter extends ExportFileWriter {
-  int writeCount = 0;
-  String? lastPayload;
-  String? lastFilename;
-
-  @override
-  Future<String> writeJson({
-    required String filename,
-    required String jsonPayload,
-    String? directoryOverridePath,
-  }) async {
-    writeCount += 1;
-    lastFilename = filename;
-    lastPayload = jsonPayload;
-    return directoryOverridePath == null
-        ? 'memory://$filename'
-        : '$directoryOverridePath/$filename';
-  }
-
-  @override
-  Future<String> resolveDirectoryPath({String? directoryOverridePath}) async {
-    return directoryOverridePath ?? 'memory://exports';
-  }
-}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('GitHubExportService', () {
-    test('exports performance log to provided directory', () async {
-      final service = GitHubExportService.testing(
-        fileWriter: const ExportFileWriter(),
-        now: () => DateTime(2025, 12, 26, 12, 30),
-      );
-      service.clearLogs();
-      final tempDir =
-          await Directory.systemTemp.createTemp('github_export_service_test');
-
-      service.logMetrics(
-        BiometricMetrics(
-          consistencyScore: 80,
-          frequency: 2.0,
-          frequencyConfidence: 0.9,
-          pcaVariance: const [50.0, 30.0, 20.0],
-          movementDirection: MovementDirection.right,
-          directionStability: 50,
-          intensity: 60,
-          patternScore: 75,
-          endurance: EnduranceSnapshot.empty(),
-          timestamp: DateTime(2025, 12, 26),
-        ),
-      );
-
-      service.logSession(
-        DictationSession(
-          targetSymbol: 'A',
-          startTime: DateTime(2025, 12, 26),
-          rhythmTimestamps: const [0.0, 0.5, 1.0],
-          synchronizationScore: 90,
-        ),
-      );
-
-      final exportPath = await service.exportPerformanceLog(
-        directoryOverridePath: tempDir.path,
-      );
-      final file = File(exportPath);
-
-      expect(file.existsSync(), isTrue);
-
-      final content = jsonDecode(await file.readAsString()) as Map;
-      expect(content['totalMetrics'], equals(1));
-      expect(content['totalSessions'], equals(1));
-      expect(content['summary']['avgSynchronization'], equals(90));
-
-      service.clearLogs();
-      await tempDir.delete(recursive: true);
-    });
-
     test('auto-export triggers at threshold', () async {
-      final writer = _FakeExportFileWriter();
+      Map<String, dynamic>? lastPayload;
       final service = GitHubExportService.testing(
-        fileWriter: writer,
+        onAutoExport: (payload) => lastPayload = payload,
         now: () => DateTime(2025, 12, 26, 12, 45),
       );
       service.clearLogs();
@@ -113,14 +35,13 @@ void main() {
         );
       }
 
-      expect(writer.writeCount, equals(1));
-      expect(writer.lastFilename, contains('performance_log_'));
+      expect(lastPayload, isNotNull);
+      final counts = lastPayload!['counts'] as Map<String, dynamic>;
+      expect(counts['metricsCount'], equals(ExportConstants.autoExportThreshold));
     });
 
-    test('clearLogs clears both queues', () async {
-      final writer = _FakeExportFileWriter();
+    test('clearLogs clears both queues', () {
       final service = GitHubExportService.testing(
-        fileWriter: writer,
         now: () => DateTime(2025, 12, 26, 13, 0),
       );
       service.clearLogs();
@@ -149,11 +70,53 @@ void main() {
       );
 
       service.clearLogs();
-      await service.exportPerformanceLog();
+      final payload = service.buildExportPayload();
+      final counts = payload['counts'] as Map<String, dynamic>;
+      expect(counts['metricsCount'], equals(0));
+      expect(counts['sessionsCount'], equals(0));
+    });
 
-      final payload = jsonDecode(writer.lastPayload ?? '{}') as Map;
-      expect(payload['totalMetrics'], equals(0));
-      expect(payload['totalSessions'], equals(0));
+    test('payload contains required keys and avoids raw fields', () {
+      final service = GitHubExportService.testing(
+        now: () => DateTime.utc(2025, 12, 26, 13, 30),
+      );
+      service.clearLogs();
+
+      service.logMetrics(
+        BiometricMetrics(
+          consistencyScore: 82,
+          frequency: 1.8,
+          frequencyConfidence: 0.88,
+          pcaVariance: const [50.0, 30.0, 20.0],
+          movementDirection: MovementDirection.right,
+          directionStability: 55,
+          intensity: 65,
+          patternScore: 74,
+          endurance: EnduranceSnapshot.empty(),
+          timestamp: DateTime(2025, 12, 26),
+        ),
+      );
+      service.logSession(
+        DictationSession(
+          targetSymbol: 'B',
+          startTime: DateTime.utc(2025, 12, 26, 13, 0),
+          rhythmTimestamps: const [0.0, 0.4, 0.9],
+          synchronizationScore: 92,
+        ),
+      );
+
+      final payload = service.buildExportPayload();
+
+      expect(payload['schemaVersion'], equals(1));
+      expect(DateTime.parse(payload['exportedAtUtc'] as String).isUtc, isTrue);
+      expect(payload['appVersion'], equals(ExportConstants.appVersion));
+      expect(payload['counts'], isA<Map<String, dynamic>>());
+      expect(payload['summary'], isA<Map<String, dynamic>>());
+      expect(payload['sessions'], isA<List<dynamic>>());
+
+      final payloadString = payload.toString();
+      expect(payloadString.contains('rhythmTimestamps'), isFalse);
+      expect(payloadString.contains('pcaVariance'), isFalse);
     });
   });
 }

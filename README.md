@@ -562,7 +562,7 @@ flowchart LR
     A[🏠 Home] -->|Navigate| B[📊 Dashboard]
     B -->|View| C[📈 Metrics]
     C -->|Tap| D[📤 Export]
-    D -->|Save| E[💾 JSON Log]
+    D -->|Build| E[🧾 JSON Payload]
 ```
 
 1. 🏠 Navigate to **"Metrics Dashboard"** from home screen
@@ -571,7 +571,7 @@ flowchart LR
    - 🔄 **Movement Frequency** (Hz)
    - 📐 **Vector PCA** (principal components)
 3. 📤 Tap the **download icon** to export performance logs
-4. 💾 Logs are saved as **JSON files** with timestamp
+4. 🧾 Export builds a **JSON payload** for sharing or manual saving
 
 ---
 
@@ -587,33 +587,34 @@ Exported logs include comprehensive data in **JSON format**:
 
 ```json
 {
-  "exportTimestamp": "2025-12-26T12:00:00.000Z",
+  "schemaVersion": 1,
+  "exportedAtUtc": "2025-12-26T12:00:00.000Z",
   "appVersion": "1.0.0",
-  "totalMetrics": 150,
-  "totalSessions": 12,
-  "metrics": [
-    {
-      "timestamp": "2025-12-26T12:00:00Z",
-      "consistencyScore": 85.5,
-      "frequency": 2.3,
-      "pcaVariance": [65.0, 30.0, 5.0]
+  "counts": {
+    "metricsCount": 150,
+    "sessionsCount": 12
+  },
+  "summary": {
+    "metrics": {
+      "consistencyScore": { "mean": 85.5, "min": 70.0, "max": 95.0 },
+      "frequency": { "mean": 2.3, "min": 1.2, "max": 3.1 }
+    },
+    "sessions": {
+      "meanSynchronization": 78.2,
+      "minSynchronization": 60.0,
+      "maxSynchronization": 92.0,
+      "meanRhythmConsistency": 82.1
     }
-  ],
+  },
   "sessions": [
     {
       "targetSymbol": "A",
-      "startTime": "2025-12-26T12:00:00Z",
-      "rhythmTimestamps": [0.0, 0.5, 1.0],
+      "startTimeUtc": "2025-12-26T12:00:00Z",
+      "durationSeconds": 1.0,
       "synchronizationScore": 78.2,
       "rhythmConsistency": 82.1
     }
-  ],
-  "summary": {
-    "avgConsistency": 85.5,
-    "avgFrequency": 2.3,
-    "avgSynchronization": 78.2,
-    "totalSessions": 12
-  }
+  ]
 }
 ```
 
@@ -647,26 +648,15 @@ dart run tool/benchmark_core.dart  # benchmarks MotionMetrics core
 
 Benchmark note: MotionMetrics processes a 30 FPS window in well under 1 ms on a mid-range device (see tool output).
 
-### 📍 Export Location
-
-```bash
-# Android
-/storage/emulated/0/Documents/performance_log_20251226_120000.json
-
-# iOS
-/var/mobile/Containers/Data/Application/.../Documents/performance_log_20251226_120000.json
-```
-
 #### 🎯 What's Included
 
 | Section | Content |
 |---------|---------|
 | ⏰ **Timestamp** | Export date and time |
 | 📱 **App Version** | Version identifier |
-| 📊 **Metrics** | All recorded biometric data |
-| 🔤 **Sessions** | Symbol dictation session data |
-| 📈 **Summary** | Aggregated statistics (averages, totals) |
-| 🎵 **Rhythm** | Detailed timing analysis for each session |
+| 📊 **Metrics** | Aggregated biometric ranges (mean/min/max) |
+| 🔤 **Sessions** | Session summaries only (no raw timestamps) |
+| 📈 **Summary** | Aggregated statistics and counts |
 
 ---
 
