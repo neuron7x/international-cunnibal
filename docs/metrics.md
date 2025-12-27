@@ -23,3 +23,4 @@ Owned by the Metrics & Domain Logic RE (see CODEOWNERS).
 ## Gate Hooks
 - CI: `tool/ci/check_metric_changes.py` (tests required when metrics change).
 - CI: `tool/ci/check_latency_budget.py` (16ms budget).
+- Benchmark output is canonicalized as `MEAN_US=<int>` by `tool/benchmark_core.dart`.
