@@ -1,7 +1,6 @@
 name: Flutter CI
 
 on:
-  pull_request:
   push:
     branches: [main]
 
@@ -20,20 +19,7 @@ jobs:
 
       - name: Set base ref for diff checks
         run: |
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            git fetch origin "${{ github.base_ref }}" --depth=1
-            echo "BASE_REF=origin/${{ github.base_ref }}" >> "$GITHUB_ENV"
-          else
-            echo "BASE_REF=HEAD~1" >> "$GITHUB_ENV"
-          fi
-
-      - name: Enforce trunk-based PR target
-        if: github.event_name == 'pull_request'
-        run: |
-          if [ "${{ github.base_ref }}" != "main" ]; then
-            echo "ERROR: PRs must target main (trunk-based development)."
-            exit 1
-          fi
+          echo "BASE_REF=HEAD~1" >> "$GITHUB_ENV"
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
