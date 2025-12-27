@@ -15,15 +15,20 @@ import 'package:international_cunnibal/utils/constants.dart';
 class NeuralEngine {
   static final NeuralEngine _instance = NeuralEngine._internal();
   factory NeuralEngine() => _instance;
-  NeuralEngine._internal() {
-    _resetControllers();
+  NeuralEngine._internal();
+
+  StreamController<TongueData>? _tongueDataController;
+  StreamController<BiometricMetrics>? _metricsController;
+
+  Stream<TongueData> get tongueDataStream {
+    _ensureControllers();
+    return _tongueDataController!.stream;
   }
 
-  late StreamController<TongueData> _tongueDataController;
-  late StreamController<BiometricMetrics> _metricsController;
-
-  Stream<TongueData> get tongueDataStream => _tongueDataController.stream;
-  Stream<BiometricMetrics> get metricsStream => _metricsController.stream;
+  Stream<BiometricMetrics> get metricsStream {
+    _ensureControllers();
+    return _metricsController!.stream;
+  }
 
   final List<TongueData> _dataBuffer = [];
   final int _bufferSize = NeuralEngineConstants.bufferSize;
@@ -34,6 +39,15 @@ class NeuralEngine {
     _tongueDataController = StreamController<TongueData>.broadcast();
     _metricsController = StreamController<BiometricMetrics>.broadcast();
   }
+
+  void _ensureControllers() {
+    if (_tongueDataController == null ||
+        _metricsController == null ||
+        _tongueDataController!.isClosed ||
+        _metricsController!.isClosed) {
+      _resetControllers();
+    }
+  }
   
   bool _isProcessing = false;
   Timer? _metricsTimer;
@@ -41,6 +55,7 @@ class NeuralEngine {
   /// Start the neural engine processing
   void start() {
     if (_isProcessing) return;
+    _ensureControllers();
     
     _isProcessing = true;
     _dataBuffer.clear();
@@ -51,7 +66,7 @@ class NeuralEngine {
       (_) {
         if (_dataBuffer.isNotEmpty) {
           final metrics = _calculateMetrics();
-          _metricsController.add(metrics);
+          _metricsController!.add(metrics);
           _gameLogic.ingest(metrics);
         }
       },
@@ -69,6 +84,7 @@ class NeuralEngine {
   /// Implements the Action Acceptor pattern for sensory-motor validation
   void processTongueData(TongueData data) {
     if (!_isProcessing) return;
+    _ensureControllers();
 
     // Add to buffer, maintaining buffer size
     _dataBuffer.add(data);
@@ -82,7 +98,7 @@ class NeuralEngine {
     // 3. Validate motor command execution
     final validated = _validateAction(data);
     
-    _tongueDataController.add(validated);
+    _tongueDataController!.add(validated);
   }
 
   /// Validate action using Anokhin's Action Acceptor principle
@@ -117,8 +133,9 @@ class NeuralEngine {
 
   void dispose() {
     stop();
-    _tongueDataController.close();
-    _metricsController.close();
-    _resetControllers();
+    _tongueDataController?.close();
+    _metricsController?.close();
+    _tongueDataController = null;
+    _metricsController = null;
   }
 }

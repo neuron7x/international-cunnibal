@@ -12,6 +12,15 @@ class GameLogicService {
 
   static const int _directionStabilityThreshold = 10;
   static const int _levelStreakThreshold = 3;
+  static const int _consistencyReward = 10;
+  static const int _frequencyReward = 5;
+  static const int _directionReward = 3;
+  static const double _consistencyStep = 5;
+  static const double _consistencyMin = 60;
+  static const double _consistencyMax = 95;
+  static const double _frequencyStep = 0.1;
+  static const double _frequencyMin = 1.0;
+  static const double _frequencyMax = 3.0;
 
   GameState _state = const GameState(
     level: 1,
@@ -32,9 +41,9 @@ class GameLogicService {
     var score = _state.score;
     var streak = _state.streak;
 
-    if (hitConsistency) score += 10;
-    if (hitFrequency) score += 5;
-    if (hitDirection) score += 3;
+    if (hitConsistency) score += _consistencyReward;
+    if (hitFrequency) score += _frequencyReward;
+    if (hitDirection) score += _directionReward;
 
     if (hitConsistency && hitFrequency) {
       streak += 1;
@@ -48,8 +57,10 @@ class GameLogicService {
 
     if (streak >= _levelStreakThreshold) {
       level += 1;
-      targetConsistency = (targetConsistency + 5).clamp(60, 95);
-      targetFrequency = (targetFrequency + 0.1).clamp(1.0, 3.0);
+      targetConsistency =
+          (targetConsistency + _consistencyStep).clamp(_consistencyMin, _consistencyMax);
+      targetFrequency =
+          (targetFrequency + _frequencyStep).clamp(_frequencyMin, _frequencyMax);
       streak = 0;
     }
 

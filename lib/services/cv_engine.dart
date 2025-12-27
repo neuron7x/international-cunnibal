@@ -8,6 +8,11 @@ import 'package:international_cunnibal/utils/constants.dart';
 enum CvEngineMode { demo, camera }
 
 const double _demoJitterAmplitude = 0.01;
+const int _demoLandmarkCount = 8;
+const int _cameraLandmarkCount = 10;
+const int _cameraLandmarkCenterOffset = 5;
+const int _cameraLandmarkRowSize = 3;
+const double _cameraLandmarkSpread = 0.01;
 
 abstract class CvEngine {
   Stream<TongueData> get stream;
@@ -72,7 +77,7 @@ class DemoCvEngine implements CvEngine {
 
     final timeShift = time * 0.8;
     final landmarks = List<Offset>.generate(
-      8,
+      _demoLandmarkCount,
       (i) => Offset(
         position.dx + cos(timeShift + i) * _demoJitterAmplitude,
         position.dy + sin(timeShift + i) * _demoJitterAmplitude,
@@ -169,13 +174,12 @@ class CameraCvEngine implements CvEngine {
     _lastPosition = position;
     _lastVelocity = velocity;
 
-    final landmarks = List<Offset>.generate(
-      10,
-      (i) => Offset(
-        x + (i - 5) * 0.01,
-        y + (i % 3 - 1) * 0.01,
-      ),
-    );
+    final landmarks = List<Offset>.generate(_cameraLandmarkCount, (i) {
+      return Offset(
+        x + (i - _cameraLandmarkCenterOffset) * _cameraLandmarkSpread,
+        y + (i % _cameraLandmarkRowSize - 1) * _cameraLandmarkSpread,
+      );
+    });
 
     return TongueData(
       timestamp: DateTime.now(),

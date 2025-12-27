@@ -85,7 +85,9 @@ class SignalProcessor {
     final sampleCount = buffer.length;
     if (sampleCount < 2) return (MovementDirection.steady, 0.0);
 
-    final start = buffer[max(0, sampleCount - _directionSampleWindowSize)].position;
+    final startIndex = sampleCount - _directionSampleWindowSize;
+    final safeStartIndex = startIndex < 0 ? 0 : startIndex;
+    final start = buffer[safeStartIndex].position;
     final end = buffer.last.position;
     final delta = end - start;
 
