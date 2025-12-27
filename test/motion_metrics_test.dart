@@ -318,5 +318,20 @@ void main() {
       expect(first.intensity, inInclusiveRange(0, 100));
       expect(first.patternMatch.score, inInclusiveRange(0, 100));
     });
+
+    test('pattern match stays bounded for short targets', () {
+      final observed = _sineWave(frequencyHz: 1.2, amplitude: 0.2, samples: 30, dt: 0.04);
+      final target = _sineWave(frequencyHz: 1.2, amplitude: 0.2, samples: 3, dt: 0.04);
+
+      final metrics = MotionMetrics.compute(
+        samples: observed,
+        expectedAmplitude: 0.2,
+        pattern: target,
+        patternTolerance: 0.1,
+      );
+
+      expect(metrics.patternMatch.score, inInclusiveRange(0, 100));
+      expect(metrics.patternMatch.mse, greaterThanOrEqualTo(0));
+    });
   });
 }
