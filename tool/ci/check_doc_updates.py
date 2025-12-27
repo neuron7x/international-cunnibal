@@ -38,6 +38,31 @@ def get_changed_files(base_ref: str) -> list[str]:
     return [line.strip() for line in result.stdout.splitlines() if line.strip()]
 
 
+def git_ref_exists(ref: str) -> bool:
+    candidates = [ref]
+    if not ref.startswith("refs/"):
+        candidates.append(f"refs/remotes/{ref}")
+        candidates.append(f"refs/heads/{ref}")
+    for candidate in candidates:
+        result = subprocess.run(
+            ["git", "show-ref", "--verify", "--quiet", candidate],
+            check=False,
+        )
+        if result.returncode == 0:
+            return True
+    return False
+
+
+def git_revision_exists(revision: str) -> bool:
+    result = subprocess.run(
+        ["git", "rev-parse", "--verify", "--quiet", revision],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    return result.returncode == 0
+
+
 def any_matches(changed: list[str], prefixes: tuple[str, ...]) -> bool:
     return any(path.startswith(prefixes) or path in prefixes for path in changed)
 
@@ -48,6 +73,10 @@ def any_docs_changed(changed: list[str], docs: set[str]) -> bool:
 
 def main() -> int:
     base_ref = os.environ.get("BASE_REF", "origin/main")
+    if not git_ref_exists(base_ref):
+        base_ref = "HEAD~1"
+        if not git_revision_exists(base_ref):
+            base_ref = "HEAD"
     changed = get_changed_files(base_ref)
 
     failures = []

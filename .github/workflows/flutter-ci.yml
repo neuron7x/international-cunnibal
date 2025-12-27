@@ -21,10 +21,16 @@ jobs:
       - name: Set base ref for diff checks
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            git fetch origin "${{ github.base_ref }}" --depth=1
-            echo "BASE_REF=origin/${{ github.base_ref }}" >> "$GITHUB_ENV"
+            if [ -n "${{ github.base_ref }}" ]; then
+              git fetch origin "${{ github.base_ref }}" --depth=1
+              echo "BASE_REF=origin/${{ github.base_ref }}" >> "$GITHUB_ENV"
+            else
+              git fetch origin main --depth=1
+              echo "BASE_REF=origin/main" >> "$GITHUB_ENV"
+            fi
           else
-            echo "BASE_REF=HEAD~1" >> "$GITHUB_ENV"
+            git fetch origin main --depth=1
+            echo "BASE_REF=origin/main" >> "$GITHUB_ENV"
           fi
 
       - name: Enforce trunk-based PR target
