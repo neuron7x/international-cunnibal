@@ -54,10 +54,15 @@ class EnduranceMetrics {
       );
     }
 
-    final boundedThreshold = apertureThreshold.clamp(apertureMin, apertureMax);
+    final minAperture = min(apertureMin, apertureMax);
+    final maxAperture = max(apertureMin, apertureMax);
+    final boundedThreshold = apertureThreshold.clamp(minAperture, maxAperture);
     final apertures = samples
-        .map((sample) =>
-            _apertureForSample(sample, apertureMin: apertureMin, apertureMax: apertureMax))
+        .map((sample) => _apertureForSample(
+              sample,
+              apertureMin: minAperture,
+              apertureMax: maxAperture,
+            ))
         .toList();
     final meanAperture = _mean(apertures);
     final stability = _stability(apertures, meanAperture);
@@ -67,8 +72,9 @@ class EnduranceMetrics {
 
     final totalDuration =
         totalWindowSeconds ?? max(_eps, samples.last.t - samples.first.t);
-    final normalizedTime = (enduranceTime / max(_eps, totalDuration)).clamp(0.0, 1.0);
-    final apertureScore = (meanAperture * 100).clamp(0.0, 100.0);
+    final normalizedTime =
+        _clampRatio(enduranceTime / max(_eps, totalDuration));
+    final apertureScore = _clampScore(meanAperture * 100);
     final enduranceScore = _score(
       apertureScore: apertureScore,
       stability: stability,
@@ -77,11 +83,11 @@ class EnduranceMetrics {
     );
 
     return EnduranceMetricsResult(
-      aperture: meanAperture.clamp(0.0, 1.0),
-      apertureStability: stability,
-      fatigueIndicator: fatigue,
-      enduranceTime: enduranceTime,
-      enduranceScore: enduranceScore,
+      aperture: _clampRatio(meanAperture),
+      apertureStability: _clampScore(stability),
+      fatigueIndicator: _clampScore(fatigue),
+      enduranceTime: _finiteOrZero(enduranceTime),
+      enduranceScore: _clampScore(enduranceScore),
     );
   }
 
@@ -92,8 +98,10 @@ class EnduranceMetrics {
   }) {
     final vertical = (s.upperLip - s.lowerLip).magnitude;
     final width = (s.leftCorner - s.rightCorner).magnitude;
-    if (width < _eps) return 0;
-    return (vertical / width).clamp(apertureMin, apertureMax);
+    if (!vertical.isFinite || !width.isFinite || width < _eps) return 0;
+    final value = vertical / width;
+    if (!value.isFinite) return 0;
+    return value.clamp(apertureMin, apertureMax);
   }
 
   static double _mean(List<double> values) {
@@ -106,7 +114,7 @@ class EnduranceMetrics {
   }
 
   static double _stability(List<double> apertures, double mean) {
-    if (mean < _eps || apertures.length < 2) return 0;
+    if (!mean.isFinite || mean.abs() < _eps || apertures.length < 2) return 0;
     var sum = 0.0;
     for (final v in apertures) {
       final diff = v - mean;
@@ -115,7 +123,7 @@ class EnduranceMetrics {
     final variance = sum / apertures.length;
     final std = sqrt(variance);
     final ratio = std / (mean.abs() + _eps);
-    return (100 * (1 - ratio)).clamp(0.0, 100.0);
+    return _clampScore(100 * (1 - ratio));
   }
 
   static double _fatigue(List<double> apertures) {
@@ -131,7 +139,7 @@ class EnduranceMetrics {
     final dropRatio =
         ((firstStability - secondStability) / max(_eps, firstStability))
             .clamp(0.0, 1.0);
-    return (dropRatio * 100).clamp(0.0, 100.0);
+    return _clampScore(dropRatio * 100);
   }
 
   static double _enduranceTime(
@@ -151,7 +159,7 @@ class EnduranceMetrics {
         acc += dt * 0.5;
       }
     }
-    return acc;
+    return _finiteOrZero(acc);
   }
 
   /// Endurance score combines stability, time-on-target, and mean aperture.
@@ -166,9 +174,21 @@ class EnduranceMetrics {
     required double normalizedTime,
     required double fatigue,
   }) {
-    final timeScore = (normalizedTime * 100).clamp(0.0, 100.0);
+    final timeScore = _clampScore(normalizedTime * 100);
     final base = 0.4 * stability + 0.35 * timeScore + 0.25 * apertureScore;
     final penalty = 0.3 * fatigue;
-    return (base - penalty).clamp(0.0, 100.0);
+    return _clampScore(base - penalty);
   }
+
+  static double _clampScore(double value) {
+    if (!value.isFinite) return 0.0;
+    return value.clamp(0.0, 100.0);
+  }
+
+  static double _clampRatio(double value) {
+    if (!value.isFinite) return 0.0;
+    return value.clamp(0.0, 1.0);
+  }
+
+  static double _finiteOrZero(double value) => value.isFinite ? value : 0.0;
 }

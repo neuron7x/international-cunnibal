@@ -19,6 +19,13 @@ ApertureSample _sample(double t, double apertureValue) {
 
 void main() {
   group('EnduranceMetrics', () {
+    test('empty samples return zeros', () {
+      final result = EnduranceMetrics.compute(samples: const []);
+      expect(result.aperture, equals(0));
+      expect(result.enduranceScore, equals(0));
+      expect(result.apertureStability, equals(0));
+    });
+
     test('short samples return zeros', () {
       final result = EnduranceMetrics.compute(samples: [_sample(0.0, 0.2)]);
       expect(result.aperture, equals(0));
@@ -143,6 +150,58 @@ void main() {
 
       expect(fastResult.enduranceTime, closeTo(slowResult.enduranceTime, 0.05));
       expect(fastResult.enduranceScore, closeTo(slowResult.enduranceScore, 5));
+    });
+
+    test('step function apertures remain bounded', () {
+      final samples = <ApertureSample>[];
+      for (var i = 0; i < 10; i++) {
+        final value = i < 5 ? 0.15 : 0.3;
+        samples.add(_sample(i * 0.2, value));
+      }
+      final result = EnduranceMetrics.compute(
+        samples: samples,
+        apertureThreshold: 0.2,
+      );
+      expect(result.aperture, inInclusiveRange(0, 1));
+      expect(result.apertureStability, inInclusiveRange(0, 100));
+      expect(result.enduranceScore, inInclusiveRange(0, 100));
+    });
+
+    test('alternating apertures stay deterministic', () {
+      final samples = List.generate(
+        12,
+        (i) => _sample(i * 0.2, i.isEven ? 0.18 : 0.26),
+      );
+      final first = EnduranceMetrics.compute(samples: samples, apertureThreshold: 0.2);
+      final second = EnduranceMetrics.compute(samples: samples, apertureThreshold: 0.2);
+      expect(first.aperture, closeTo(second.aperture, 1e-9));
+      expect(first.enduranceScore, closeTo(second.enduranceScore, 1e-9));
+    });
+
+    test('scaled apertures stay within bounds', () {
+      final base = List.generate(8, (i) => _sample(i * 0.2, 0.2));
+      final scaled = List.generate(8, (i) => _sample(i * 0.2, 0.4));
+      final baseResult = EnduranceMetrics.compute(samples: base, apertureThreshold: 0.2);
+      final scaledResult =
+          EnduranceMetrics.compute(samples: scaled, apertureThreshold: 0.2);
+      expect(baseResult.aperture, inInclusiveRange(0, 1));
+      expect(scaledResult.aperture, inInclusiveRange(0, 1));
+      expect(baseResult.enduranceScore, inInclusiveRange(0, 100));
+      expect(scaledResult.enduranceScore, inInclusiveRange(0, 100));
+    });
+
+    test('noisy deterministic series stays finite', () {
+      final rng = Random(9);
+      final samples = List.generate(12, (i) {
+        final jitter = (rng.nextDouble() - 0.5) * 0.04;
+        return _sample(i * 0.2, (0.22 + jitter).clamp(0.0, 1.0));
+      });
+      final result = EnduranceMetrics.compute(samples: samples, apertureThreshold: 0.2);
+      expect(result.aperture.isNaN, isFalse);
+      expect(result.apertureStability.isNaN, isFalse);
+      expect(result.enduranceScore.isNaN, isFalse);
+      expect(result.apertureStability, inInclusiveRange(0, 100));
+      expect(result.enduranceScore, inInclusiveRange(0, 100));
     });
   });
 }

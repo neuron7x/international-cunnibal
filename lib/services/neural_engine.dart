@@ -60,7 +60,7 @@ class NeuralEngine {
   Timer? _metricsTimer;
 
   /// Start the neural engine processing
-  void start() {
+  void start({bool enableTimer = true}) {
     if (_isProcessing) return;
     _ensureControllers();
     final metricsController = _metricsController;
@@ -71,16 +71,18 @@ class NeuralEngine {
     _enduranceEngine.reset();
     
     // Calculate metrics every second
-    _metricsTimer = Timer.periodic(
-      Duration(seconds: NeuralEngineConstants.metricsUpdateIntervalSeconds),
-      (_) {
-        if (_dataBuffer.isNotEmpty) {
-          final metrics = _calculateMetrics();
-          metricsController.add(metrics);
-          _gameLogic.ingest(metrics);
-        }
-      },
-    );
+    if (enableTimer) {
+      _metricsTimer = Timer.periodic(
+        Duration(seconds: NeuralEngineConstants.metricsUpdateIntervalSeconds),
+        (_) {
+          if (_dataBuffer.isNotEmpty) {
+            final metrics = _calculateMetrics();
+            metricsController.add(metrics);
+            _gameLogic.ingest(metrics);
+          }
+        },
+      );
+    }
   }
 
   /// Stop the neural engine processing
@@ -185,6 +187,9 @@ class NeuralEngine {
     );
   }
 
+  /// Calculates a metrics snapshot without relying on timers.
+  BiometricMetrics calculateMetricsNow() => _calculateMetrics();
+
   MovementDirection _toDirection(Vector2 v) {
     if (v.magnitude < 1e-6) return MovementDirection.steady;
     if (v.x.abs() >= v.y.abs()) {
@@ -196,35 +201,44 @@ class NeuralEngine {
   /// Calculate PCA variance for dimensional reduction
   /// Simplified PCA for 3 principal components
   List<double> _calculatePCA() {
-    if (_dataBuffer.length < 3) return [0.0, 0.0, 0.0];
+    if (_dataBuffer.length < 3) return const [0.0, 0.0, 0.0];
     
-    final positions = _dataBuffer
-        .map((d) => d.position)
-        .toList();
-    
-    final xValues = positions.map((p) => p.dx).toList();
-    final yValues = positions.map((p) => p.dy).toList();
-    
+    final xValues = <double>[];
+    final yValues = <double>[];
+    for (final data in _dataBuffer) {
+      xValues.add(data.position.dx);
+      yValues.add(data.position.dy);
+    }
+
     final xVariance = _calculateVariance(xValues);
     final yVariance = _calculateVariance(yValues);
     final totalVariance = xVariance + yVariance;
-    
-    if (totalVariance == 0) return [0.0, 0.0, 0.0];
-    
-    return [
-      (xVariance / totalVariance) * 100,
-      (yVariance / totalVariance) * 100,
-      0.0,
-    ];
+
+    if (totalVariance <= 0 || !totalVariance.isFinite) {
+      return const [0.0, 0.0, 0.0];
+    }
+
+    final xPercent = ((xVariance / totalVariance) * 100).clamp(0.0, 100.0);
+    final yPercent = ((yVariance / totalVariance) * 100).clamp(0.0, 100.0);
+
+    return [xPercent, yPercent, 0.0];
   }
 
   double _calculateVariance(List<double> values) {
     if (values.isEmpty) return 0.0;
-    
-    final mean = values.reduce((a, b) => a + b) / values.length;
-    return values
-        .map((v) => (v - mean) * (v - mean))
-        .reduce((a, b) => a + b) / values.length;
+
+    var sum = 0.0;
+    for (final v in values) {
+      sum += v;
+    }
+    final mean = sum / values.length;
+    var varianceSum = 0.0;
+    for (final v in values) {
+      final diff = v - mean;
+      varianceSum += diff * diff;
+    }
+    final variance = varianceSum / values.length;
+    return variance.isFinite ? variance : 0.0;
   }
 
   void _ingestEndurance(TongueData data) {

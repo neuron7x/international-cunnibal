@@ -76,7 +76,7 @@ class EnduranceEngine {
     double tSeconds,
     List<Vector2> landmarks,
   ) {
-    if (landmarks.length > 308) {
+    if (landmarks.length >= 309) {
       return ApertureSample(
         t: tSeconds,
         upperLip: landmarks[13],

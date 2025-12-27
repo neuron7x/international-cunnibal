@@ -80,6 +80,20 @@ void main() {
       expect(state.phase, equals(EnduranceSessionPhase.rest));
       expect(state.autoPaused, isTrue);
     });
+
+    test('safe hold does not grow when time does not advance', () {
+      final service = EnduranceSessionService();
+      service.start(0);
+      final first = service.ingest(
+        snapshot: _snapshot(),
+        tSeconds: EnduranceConstants.readySeconds + 0.1,
+      );
+      final state = service.ingest(
+        snapshot: _snapshot(),
+        tSeconds: EnduranceConstants.readySeconds + 0.1,
+      );
+      expect(state.safeHoldSeconds, closeTo(first.safeHoldSeconds, 1e-9));
+    });
   });
 
   group('EnduranceGameLogicService', () {
@@ -99,6 +113,33 @@ void main() {
       expect(service.state.streak, equals(0));
       expect(service.state.targetAperture,
           greaterThanOrEqualTo(EnduranceConstants.defaultApertureThreshold));
+    });
+
+    test('threshold boundaries count as hits', () {
+      final service = EnduranceGameLogicService();
+      service.reset();
+      final snapshot = _snapshot(
+        aperture: service.state.targetAperture,
+        stability: service.state.targetStability,
+        enduranceTime: service.state.targetTime,
+      );
+
+      service.ingest(snapshot);
+      expect(service.state.streak, equals(1));
+    });
+
+    test('no progress does not increase streak', () {
+      final service = EnduranceGameLogicService();
+      service.reset();
+      final snapshot = _snapshot(
+        aperture: service.state.targetAperture - 0.01,
+        stability: service.state.targetStability - 1,
+        enduranceTime: service.state.targetTime - 0.1,
+      );
+
+      service.ingest(snapshot);
+      expect(service.state.streak, equals(0));
+      expect(service.state.level, equals(1));
     });
   });
 }

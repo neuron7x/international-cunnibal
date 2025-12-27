@@ -34,18 +34,19 @@ class SymbolDictationService {
     String symbol, {
     List<double>? customPattern,
     String? sessionLabel,
+    DateTime? startTime,
   }) {
     final trimmedSymbol = symbol.trim();
-    if (customPattern == null &&
-        (trimmedSymbol.length != 1 || !RegExp(r'^[A-Z]$').hasMatch(trimmedSymbol))) {
+    if (trimmedSymbol.length != 1 ||
+        !RegExp(r'^[A-Z]$').hasMatch(trimmedSymbol)) {
       throw ArgumentError('Symbol must be a single letter A-Z');
-    }
-    if (customPattern != null && trimmedSymbol.isEmpty) {
-      throw ArgumentError('Symbol is required when providing a custom pattern');
     }
     final trimmedLabel = sessionLabel?.trim();
     if (trimmedLabel != null && trimmedLabel.isEmpty) {
       throw ArgumentError('Session label cannot be empty');
+    }
+    if (trimmedLabel != null && !RegExp(r'^[A-Z]+$').hasMatch(trimmedLabel)) {
+      throw ArgumentError('Session label must be uppercase A-Z characters');
     }
 
     if (customPattern != null) {
@@ -58,7 +59,7 @@ class SymbolDictationService {
     }
 
     _targetSymbol = trimmedLabel?.isNotEmpty == true ? trimmedLabel! : trimmedSymbol;
-    _sessionStartTime = DateTime.now();
+    _sessionStartTime = startTime ?? DateTime.now();
     _rhythmTimestamps.clear();
     _customPattern = customPattern;
 
@@ -130,9 +131,11 @@ class SymbolDictationService {
       totalError += error;
     }
 
+    if (compareLength == 0) return 0.0;
+
     final avgError = totalError / compareLength;
     final score = 100.0 / (1.0 + avgError);
-    
+
     return score.clamp(0.0, 100.0);
   }
 
