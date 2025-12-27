@@ -19,6 +19,7 @@ must comply with the gates below.
 - Commit messages and PR titles **must** follow Conventional Commits:
   - `feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`, `perf:`, `ci:`
 - Commit messages are linted in CI via `commitlint` to enforce the format.
+- Example PR title: `refactor: optimize metrics export pipeline`
 
 ## Required Gates (Do Not Bypass)
 - **Lint + tests + coverage** must pass.
