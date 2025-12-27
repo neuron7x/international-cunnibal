@@ -13,9 +13,12 @@ lib/
 │   └── dictation_session.dart
 ├── services/                 # Business logic layer
 │   ├── neural_engine.dart
-│   ├── bio_tracking_service.dart
 │   ├── symbol_dictation_service.dart
-│   └── github_export_service.dart
+│   ├── ui/                   # UI/platform-facing services
+│   │   ├── bio_tracking_service.dart
+│   │   ├── cv_engine.dart
+│   │   └── github_export_service.dart
+│   └── endurance_session_service.dart
 ├── core/                     # Pure math / signal processing
 │   ├── motion_metrics.dart
 │   └── endurance_metrics.dart

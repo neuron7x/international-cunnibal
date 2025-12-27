@@ -1,13 +1,13 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
-import 'package:international_cunnibal/services/bio_tracking_service.dart';
+import 'package:international_cunnibal/services/ui/bio_tracking_service.dart';
 import 'package:international_cunnibal/services/neural_engine.dart';
 import 'package:international_cunnibal/models/tongue_data.dart';
 import 'package:international_cunnibal/models/game_state.dart';
 import 'package:international_cunnibal/services/game_logic_service.dart';
 import 'package:international_cunnibal/widgets/tracking_overlay.dart';
-import 'package:international_cunnibal/services/cv_engine.dart';
+import 'package:international_cunnibal/services/ui/cv_engine.dart';
 
 bool isTrackingControlEnabled({
   required bool isDemoMode,
