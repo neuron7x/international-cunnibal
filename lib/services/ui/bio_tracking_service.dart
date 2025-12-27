@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:camera/camera.dart';
 import 'package:international_cunnibal/models/tongue_data.dart';
 import 'package:international_cunnibal/services/neural_engine.dart';
-import 'package:international_cunnibal/services/cv_engine.dart';
+import 'package:international_cunnibal/services/ui/cv_engine.dart';
 import 'package:international_cunnibal/utils/landmark_privacy.dart';
 
 /// Bio-Tracking service for real-time tongue biomechanics

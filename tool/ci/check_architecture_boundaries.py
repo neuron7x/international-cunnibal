@@ -2,24 +2,31 @@
 import pathlib
 import sys
 
-FORBIDDEN_IMPORTS = (
+FORBIDDEN_DOMAIN_IMPORTS = (
     "package:flutter",
     "dart:ui",
     "package:camera",
-)
-
-CORE_DIR = pathlib.Path("lib/core")
-SERVICES_DIR = pathlib.Path("lib/services")
-
-FORBIDDEN_SERVICE_IMPORTS = (
     "package:international_cunnibal/screens",
     "package:international_cunnibal/widgets",
 )
 
+DOMAIN_DIRS = (
+    pathlib.Path("lib/core"),
+    pathlib.Path("lib/services"),
+)
+UI_SERVICE_DIR = pathlib.Path("lib/services/ui")
 
-def scan_forbidden_imports(path: pathlib.Path, forbidden: tuple[str, ...]) -> list[str]:
+
+def scan_forbidden_imports(
+    path: pathlib.Path,
+    forbidden: tuple[str, ...],
+    *,
+    exclude: pathlib.Path | None = None,
+) -> list[str]:
     failures = []
     for file in path.rglob("*.dart"):
+        if exclude is not None and exclude in file.parents:
+            continue
         contents = file.read_text(encoding="utf-8")
         for token in forbidden:
             if token in contents:
@@ -29,10 +36,15 @@ def scan_forbidden_imports(path: pathlib.Path, forbidden: tuple[str, ...]) -> li
 
 def main() -> int:
     failures = []
-    if CORE_DIR.exists():
-        failures.extend(scan_forbidden_imports(CORE_DIR, FORBIDDEN_IMPORTS))
-    if SERVICES_DIR.exists():
-        failures.extend(scan_forbidden_imports(SERVICES_DIR, FORBIDDEN_SERVICE_IMPORTS))
+    for domain_dir in DOMAIN_DIRS:
+        if domain_dir.exists():
+            failures.extend(
+                scan_forbidden_imports(
+                    domain_dir,
+                    FORBIDDEN_DOMAIN_IMPORTS,
+                    exclude=UI_SERVICE_DIR,
+                )
+            )
 
     if failures:
         for failure in failures:
