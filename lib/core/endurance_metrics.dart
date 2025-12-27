@@ -70,8 +70,10 @@ class EnduranceMetrics {
         _enduranceTime(apertures, samples, threshold: boundedThreshold);
     final fatigue = _fatigue(apertures);
 
+    final rawDuration = samples.last.t - samples.first.t;
+    final safeDuration = rawDuration.isFinite ? rawDuration : 0.0;
     final totalDuration =
-        totalWindowSeconds ?? max(_eps, samples.last.t - samples.first.t);
+        totalWindowSeconds ?? max(_eps, safeDuration);
     final normalizedTime =
         _clampRatio(enduranceTime / max(_eps, totalDuration));
     final apertureScore = _clampScore(meanAperture * 100);
@@ -151,7 +153,8 @@ class EnduranceMetrics {
     for (var i = 1; i < apertures.length; i++) {
       final onPrev = apertures[i - 1] >= threshold;
       final onNow = apertures[i] >= threshold;
-      final dt = max(_eps, samples[i].t - samples[i - 1].t);
+      final rawDt = samples[i].t - samples[i - 1].t;
+      final dt = rawDt.isFinite ? max(_eps, rawDt) : 0.0;
       if (onPrev && onNow) {
         acc += dt;
       } else if (onPrev || onNow) {

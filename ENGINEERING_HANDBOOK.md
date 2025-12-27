@@ -13,6 +13,8 @@
   (UI-фасад CV живе у `lib/services/ui/`).
 - **Privacy**: заборонена персистенція raw video; зберігаються лише скелет/landmarks.
 - **Architecture**: чиста архітектура — domain без framework imports.
+- **Bidi safety**: заборонені bidi/Unicode control characters у вихідниках;
+  перед комітом перевіряйте `rg -n --pcre2 '[\\u202A-\\u202E\\u2066-\\u2069]'`.
 
 ### Обов'язкові артефакти
 - `docs/` — документація як гейт для metrics/ML/architecture.

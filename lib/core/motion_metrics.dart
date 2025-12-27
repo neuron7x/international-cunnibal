@@ -86,7 +86,8 @@ class MotionMetrics {
     List<MotionSample>? pattern,
     double patternTolerance = 0.1,
   }) {
-    if (samples.length < 2) {
+    final safeSamples = _sanitizeSamples(samples);
+    if (safeSamples.length < 2) {
       return MotionMetricsResult(
         consistency: 0,
         frequency: const FrequencyResult(hertz: 0, confidence: 0),
@@ -96,46 +97,49 @@ class MotionMetrics {
       );
     }
 
-    final displacements = _displacements(samples);
+    final displacements = _displacements(safeSamples);
     final totalMag = displacements.fold<double>(
       0,
       (sum, d) => sum + d.magnitude,
     );
-    final sampleRate = _sampleRate(samples);
+    final sampleRate = _sampleRate(safeSamples);
 
     if (totalMag < _eps) {
+      final sanitizedPattern =
+          pattern == null ? null : _sanitizeSamples(pattern);
       return MotionMetricsResult(
         consistency: 100,
         frequency: const FrequencyResult(hertz: 0, confidence: 0),
         direction: const DirectionResult(direction: Vector2(0, 0), stability: 0),
         intensity: 0,
-        patternMatch: pattern == null
+        patternMatch: sanitizedPattern == null
             ? const PatternMatchResult(score: 0, mse: 0)
             : _patternMatch(
-                samples,
-                pattern,
+                safeSamples,
+                sanitizedPattern,
                 expectedAmplitude: expectedAmplitude,
                 tolerance: patternTolerance,
               ),
       );
     }
 
-    final axis = _principalAxis(samples);
+    final axis = _principalAxis(safeSamples);
     final directionVector = _directionFromAxis(axis, displacements);
-    final speedStats = _speedStats(samples, displacements);
+    final speedStats = _speedStats(safeSamples, displacements);
     final consistency = _consistency(speedStats);
-    final freq = _frequency(samples, axis);
+    final freq = _frequency(safeSamples, axis);
     final intensity = _intensity(
-      samples,
+      safeSamples,
       speedStats.meanSpeed,
       sampleRate,
     );
     final directionStability = _directionStability(speedStats, directionVector);
+    final sanitizedPattern = pattern == null ? null : _sanitizeSamples(pattern);
     final patternResult = pattern == null
         ? const PatternMatchResult(score: 0, mse: 0)
         : _patternMatch(
-            samples,
-            pattern,
+            safeSamples,
+            sanitizedPattern ?? const [],
             expectedAmplitude: expectedAmplitude,
             tolerance: patternTolerance,
           );
@@ -156,6 +160,22 @@ class MotionMetrics {
         mse: _finiteOrZero(patternResult.mse),
       ),
     );
+  }
+
+  static List<MotionSample> _sanitizeSamples(List<MotionSample> samples) {
+    final sanitized = <MotionSample>[];
+    for (final sample in samples) {
+      if (!sample.t.isFinite) {
+        continue;
+      }
+      final x = sample.position.x;
+      final y = sample.position.y;
+      if (!x.isFinite || !y.isFinite) {
+        continue;
+      }
+      sanitized.add(sample);
+    }
+    return sanitized;
   }
 
   static List<Vector2> _displacements(List<MotionSample> samples) {

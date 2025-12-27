@@ -46,6 +46,18 @@ void main() {
       expect(result.enduranceScore, closeTo(0, 1e-6));
     });
 
+    test('non-finite timestamps do not propagate NaN', () {
+      final samples = [
+        _sample(0.0, 0.2),
+        _sample(double.nan, 0.2),
+        _sample(0.4, 0.2),
+      ];
+      final result = EnduranceMetrics.compute(samples: samples, apertureThreshold: 0.2);
+      expect(result.enduranceScore.isNaN, isFalse);
+      expect(result.enduranceTime.isNaN, isFalse);
+      expect(result.enduranceScore, inInclusiveRange(0, 100));
+    });
+
     test('constant aperture yields high stability', () {
       final samples = List.generate(8, (i) => _sample(i * 0.2, 0.22));
       final result = EnduranceMetrics.compute(samples: samples, apertureThreshold: 0.2);
@@ -176,6 +188,18 @@ void main() {
       final second = EnduranceMetrics.compute(samples: samples, apertureThreshold: 0.2);
       expect(first.aperture, closeTo(second.aperture, 1e-9));
       expect(first.enduranceScore, closeTo(second.enduranceScore, 1e-9));
+    });
+
+    test('zero or negative dt stays finite', () {
+      final samples = [
+        _sample(0.2, 0.24),
+        _sample(0.2, 0.24),
+        _sample(0.1, 0.24),
+      ];
+      final result = EnduranceMetrics.compute(samples: samples, apertureThreshold: 0.2);
+      expect(result.enduranceTime.isNaN, isFalse);
+      expect(result.enduranceScore.isNaN, isFalse);
+      expect(result.enduranceTime, inInclusiveRange(0, 1));
     });
 
     test('scaled apertures stay within bounds', () {

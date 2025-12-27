@@ -2,6 +2,8 @@
 
 ## Clean Architecture Boundaries
 - **Domain** (`lib/core/`): pure math only, no framework imports.
+- **Domain metrics invariants**: calculations must be deterministic, sanitize
+  non-finite inputs, and clamp outputs to documented ranges.
 - **Services** (`lib/services/`, `lib/services/ui/`): orchestration and business logic;
   no raw file I/O in UI-facing services.
 - **CV engines**: behind strict interfaces (`CvEngine`).
