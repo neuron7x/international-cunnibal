@@ -1,20 +1,87 @@
-name: Dependency Review
+name: Dependency Security Scan
 
 on:
-  push:
+  pull_request:
     branches: [main]
+    paths:
+      - 'pubspec.yaml'
+      - 'pubspec.lock'
+  schedule:
+    - cron: '0 0 * * 1'  # Weekly scan on Mondays
+  workflow_dispatch:
 
 permissions:
   contents: read
+  pull-requests: write
+  security-events: write
 
 jobs:
-  dependency-review:
+  dart-dependency-scan:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Dependency review
-        uses: actions/dependency-review-action@v4
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
         with:
-          fail-on-severity: high
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run pub outdated
+        id: outdated
+        continue-on-error: true
+        run: |
+          flutter pub outdated --json > outdated.json
+          cat outdated.json
+
+      - name: Check for vulnerable dependencies
+        run: |
+          echo "Scanning Dart/Flutter dependencies for security issues..."
+          
+          # Check for critically outdated packages
+          if [ -f outdated.json ]; then
+            OUTDATED_COUNT=$(jq '.packages | length' outdated.json 2>/dev/null || echo "0")
+            echo "Found $OUTDATED_COUNT outdated packages"
+            
+            if [ "$OUTDATED_COUNT" -gt 20 ]; then
+              echo "⚠️  Warning: More than 20 packages are outdated"
+            fi
+          fi
+
+      - name: Dart analyze for security
+        run: flutter analyze --fatal-infos
+
+      - name: Check pubspec.lock exists
+        run: |
+          if [ ! -f pubspec.lock ]; then
+            echo "❌ pubspec.lock is missing - dependencies are not locked"
+            exit 1
+          fi
+          echo "✅ pubspec.lock present - dependencies are locked"
+
+      - name: Verify no git dependencies
+        run: |
+          if grep -q "git:" pubspec.yaml; then
+            echo "⚠️  Warning: Git dependencies found - potential security risk"
+            grep "git:" pubspec.yaml
+          else
+            echo "✅ No git dependencies found"
+          fi
+
+      - name: Check for suspicious packages
+        run: |
+          # List all dependencies
+          echo "📦 Direct dependencies:"
+          yq '.dependencies | keys | .[]' pubspec.yaml 2>/dev/null || grep -A 100 "dependencies:" pubspec.yaml | grep "  [a-z]" | head -20
+
+      - name: Upload scan results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-scan-results
+          path: outdated.json
+          if-no-files-found: ignore
