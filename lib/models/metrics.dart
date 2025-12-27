@@ -86,7 +86,8 @@ class BiometricMetrics {
         'intensity: ${intensity.toStringAsFixed(1)}, '
         'pattern: ${patternScore.toStringAsFixed(1)}, '
         'endurance: ${endurance.enduranceScore.toStringAsFixed(1)} '
-        '(aperture ${endurance.aperture.toStringAsFixed(3)}), '
+        '(aperture ${endurance.aperture.toStringAsFixed(3)}, '
+        'fatigue ${endurance.fatigueIndicator.toStringAsFixed(1)}), '
         'PCA: [${pcaVariance.map((v) => v.toStringAsFixed(1)).join(", ")}]'
         ')';
   }

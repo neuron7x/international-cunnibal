@@ -229,6 +229,11 @@ class _MetricsScreenState extends State<MetricsScreen> {
                                   '${_currentMetrics!.endurance.apertureStability.toStringAsFixed(1)}%',
                             ),
                             _ChipStat(
+                              label: 'Fatigue',
+                              value:
+                                  '${_currentMetrics!.endurance.fatigueIndicator.toStringAsFixed(1)}%',
+                            ),
+                            _ChipStat(
                               label: 'Hold Time',
                               value:
                                   '${_currentMetrics!.endurance.enduranceTime.toStringAsFixed(2)}s',
@@ -307,7 +312,7 @@ class _MetricsScreenState extends State<MetricsScreen> {
               if (_enduranceOptIn) ...[
                 const SizedBox(height: 16),
                 SwitchListTile(
-                  title: const Text('Couple Dashboard (opt-in)'),
+                  title: const Text('Comparison Dashboard (opt-in)'),
                   subtitle: const Text('Side-by-side without ranking'),
                   value: _showComparisons,
                   onChanged: (value) {
@@ -463,7 +468,7 @@ class _CoupleDashboardCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'Couple Skill Dashboard',
+              'Comparison Dashboard',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
