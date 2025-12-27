@@ -15,9 +15,12 @@ void main() {
       return BiometricMetrics(
         consistencyScore: 90,
         frequency: 2.0,
+        frequencyConfidence: 0.9,
         pcaVariance: const [50, 30, 20],
         movementDirection: MovementDirection.right,
         directionStability: 40,
+        intensity: 60,
+        patternScore: 80,
         timestamp: DateTime.now(),
       );
     }

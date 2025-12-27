@@ -21,9 +21,12 @@ void main() {
         BiometricMetrics(
           consistencyScore: 80,
           frequency: 2.0,
+          frequencyConfidence: 0.9,
           pcaVariance: const [50.0, 30.0, 20.0],
           movementDirection: MovementDirection.right,
           directionStability: 50,
+          intensity: 60,
+          patternScore: 75,
           timestamp: DateTime(2025, 12, 26),
         ),
       );

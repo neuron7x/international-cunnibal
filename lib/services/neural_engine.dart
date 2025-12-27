@@ -1,8 +1,8 @@
 import 'dart:async';
+import 'package:international_cunnibal/core/motion_metrics.dart';
 import 'package:international_cunnibal/models/tongue_data.dart';
 import 'package:international_cunnibal/models/metrics.dart';
 import 'package:international_cunnibal/services/game_logic_service.dart';
-import 'package:international_cunnibal/services/signal_processor.dart';
 import 'package:international_cunnibal/utils/constants.dart';
 
 /// NeuralEngine service implementing Anokhin's Action Acceptor
@@ -32,7 +32,6 @@ class NeuralEngine {
 
   final List<TongueData> _dataBuffer = [];
   final int _bufferSize = NeuralEngineConstants.bufferSize;
-  final SignalProcessor _signalProcessor = SignalProcessor();
   final GameLogicService _gameLogic = GameLogicService();
 
   void _resetControllers() {
@@ -134,7 +133,73 @@ class NeuralEngine {
       return BiometricMetrics.empty();
     }
 
-    return _signalProcessor.calculate(_dataBuffer);
+    final samples = _dataBuffer
+        .map((d) => MotionSample(
+              t: d.timestamp.millisecondsSinceEpoch / 1000.0,
+              position: Vector2(d.position.dx, d.position.dy),
+            ))
+        .toList();
+
+    final motion = MotionMetrics.compute(
+      samples: samples,
+      expectedAmplitude: NeuralEngineConstants.expectedAmplitude,
+    );
+
+    final pca = _calculatePCA();
+
+    return BiometricMetrics(
+      consistencyScore: motion.consistency,
+      frequency: motion.frequency.hertz,
+      frequencyConfidence: motion.frequency.confidence,
+      pcaVariance: pca,
+      movementDirection: _toDirection(motion.direction.direction),
+      directionStability: motion.direction.stability,
+      intensity: motion.intensity,
+      patternScore: motion.patternMatch.score,
+      timestamp: DateTime.now(),
+    );
+  }
+
+  MovementDirection _toDirection(Vector2 v) {
+    if (v.magnitude < 1e-6) return MovementDirection.steady;
+    if (v.x.abs() >= v.y.abs()) {
+      return v.x >= 0 ? MovementDirection.right : MovementDirection.left;
+    }
+    return v.y >= 0 ? MovementDirection.down : MovementDirection.up;
+  }
+
+  /// Calculate PCA variance for dimensional reduction
+  /// Simplified PCA for 3 principal components
+  List<double> _calculatePCA() {
+    if (_dataBuffer.length < 3) return [0.0, 0.0, 0.0];
+    
+    final positions = _dataBuffer
+        .map((d) => d.position)
+        .toList();
+    
+    final xValues = positions.map((p) => p.dx).toList();
+    final yValues = positions.map((p) => p.dy).toList();
+    
+    final xVariance = _calculateVariance(xValues);
+    final yVariance = _calculateVariance(yValues);
+    final totalVariance = xVariance + yVariance;
+    
+    if (totalVariance == 0) return [0.0, 0.0, 0.0];
+    
+    return [
+      (xVariance / totalVariance) * 100,
+      (yVariance / totalVariance) * 100,
+      0.0,
+    ];
+  }
+
+  double _calculateVariance(List<double> values) {
+    if (values.isEmpty) return 0.0;
+    
+    final mean = values.reduce((a, b) => a + b) / values.length;
+    return values
+        .map((v) => (v - mean) * (v - mean))
+        .reduce((a, b) => a + b) / values.length;
   }
 
   void dispose() {

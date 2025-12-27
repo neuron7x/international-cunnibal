@@ -68,6 +68,7 @@ class NeuralEngineConstants {
   
   // Metrics calculation
   static const int metricsUpdateIntervalSeconds = 1;
+  static const double expectedAmplitude = 0.4; // normalized amplitude reference
   
   // Consistency score calculation
   static const double stdDevScalingFactor = 50.0;

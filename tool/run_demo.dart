@@ -1,11 +1,10 @@
 import 'dart:async';
+import 'package:international_cunnibal/core/motion_metrics.dart';
 import 'package:international_cunnibal/models/tongue_data.dart';
 import 'package:international_cunnibal/services/cv_engine.dart';
-import 'package:international_cunnibal/services/signal_processor.dart';
 
 Future<void> main() async {
   final engine = DemoCvEngine();
-  final processor = SignalProcessor();
   final buffer = <TongueData>[];
 
   await engine.prepare();
@@ -14,7 +13,15 @@ Future<void> main() async {
   final subscription = engine.stream.listen((sample) {
     buffer.add(sample);
     if (buffer.length > 120) buffer.removeAt(0);
-    final metrics = processor.calculate(buffer);
+    final metrics = MotionMetrics.compute(
+      samples: buffer
+          .map((t) => MotionSample(
+                t: t.timestamp.millisecondsSinceEpoch / 1000.0,
+                position: Vector2(t.position.dx, t.position.dy),
+              ))
+          .toList(),
+      expectedAmplitude: 0.4,
+    );
     // ignore: avoid_print
     print(metrics);
   });

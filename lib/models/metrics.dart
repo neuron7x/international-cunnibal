@@ -9,6 +9,8 @@ class BiometricMetrics {
 
   /// Movement frequency in Hz
   final double frequency;
+  /// Frequency confidence (0-1)
+  final double frequencyConfidence;
 
   /// PCA variance explained by principal components [PC1, PC2, PC3]
   /// Represents dimensional reduction of movement patterns
@@ -20,14 +22,23 @@ class BiometricMetrics {
   /// Stability of the dominant direction (0-100)
   final double directionStability;
 
+  /// Intensity proxy (0-100)
+  final double intensity;
+
+  /// Optional pattern match score (0-100)
+  final double patternScore;
+
   final DateTime timestamp;
 
   const BiometricMetrics({
     required this.consistencyScore,
     required this.frequency,
+    required this.frequencyConfidence,
     required this.pcaVariance,
     required this.movementDirection,
     required this.directionStability,
+    required this.intensity,
+    required this.patternScore,
     required this.timestamp,
   });
 
@@ -35,9 +46,12 @@ class BiometricMetrics {
     return BiometricMetrics(
       consistencyScore: 0,
       frequency: 0,
+      frequencyConfidence: 0,
       pcaVariance: const [0, 0, 0],
       movementDirection: MovementDirection.steady,
       directionStability: 0,
+      intensity: 0,
+      patternScore: 0,
       timestamp: DateTime.now(),
     );
   }
@@ -47,9 +61,12 @@ class BiometricMetrics {
       'timestamp': timestamp.toIso8601String(),
       'consistencyScore': consistencyScore,
       'frequency': frequency,
+      'frequencyConfidence': frequencyConfidence,
       'pcaVariance': pcaVariance,
       'movementDirection': movementDirection.label,
       'directionStability': directionStability,
+      'intensity': intensity,
+      'patternScore': patternScore,
     };
   }
 
@@ -57,9 +74,10 @@ class BiometricMetrics {
   String toString() {
     return 'BiometricMetrics('
         'consistency: ${consistencyScore.toStringAsFixed(1)}%, '
-        'frequency: ${frequency.toStringAsFixed(2)}Hz, '
-        'direction: ${movementDirection.label} '
-        '(${directionStability.toStringAsFixed(1)}), '
+        'frequency: ${frequency.toStringAsFixed(2)}Hz@${(frequencyConfidence * 100).toStringAsFixed(0)}%, '
+        'direction: ${movementDirection.label} (${directionStability.toStringAsFixed(1)}), '
+        'intensity: ${intensity.toStringAsFixed(1)}, '
+        'pattern: ${patternScore.toStringAsFixed(1)}, '
         'PCA: [${pcaVariance.map((v) => v.toStringAsFixed(1)).join(", ")}]'
         ')';
   }
