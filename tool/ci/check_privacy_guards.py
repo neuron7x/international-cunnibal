@@ -1,28 +1,27 @@
 #!/usr/bin/env python3
 import pathlib
+import re
 import sys
 
 REQUIRED_USAGE = "LandmarkPrivacyFilter"
-BIO_TRACKING = pathlib.Path("lib/services/bio_tracking_service.dart")
+BIO_TRACKING = pathlib.Path("lib/services/ui/bio_tracking_service.dart")
 
 RAW_VIDEO_PATTERNS = (
-    "dart:io",
+    "import 'dart:io'",
+    'import "dart:io"',
     "File(",
     "writeAsBytes",
     "writeAsString",
 )
 
-VIDEO_EXTENSIONS = (
-    ".mp4",
-    ".mov",
-    ".avi",
-    ".mkv",
-    ".webm",
-    ".m4v",
-    ".hevc",
-)
+VIDEO_EXTENSION_RE = re.compile(r"\.(mp4|mov|avi|mkv|webm|m4v|hevc)\b", re.IGNORECASE)
 
-SCAN_DIRS = [pathlib.Path("lib/services"), pathlib.Path("lib/screens")]
+FORBIDDEN_DIRS = [
+    pathlib.Path("lib/core"),
+    pathlib.Path("lib/services"),
+    pathlib.Path("lib/services/ui"),
+    pathlib.Path("lib/screens"),
+]
 
 
 def main() -> int:
@@ -33,18 +32,23 @@ def main() -> int:
         if REQUIRED_USAGE not in contents:
             failures.append("BioTrackingService must apply LandmarkPrivacyFilter.")
 
-    for directory in SCAN_DIRS:
+    scanned_files = set()
+    for directory in FORBIDDEN_DIRS:
         if not directory.exists():
             continue
         for file in directory.rglob("*.dart"):
-            contents = file.read_text(encoding="utf-8")
-            if not any(extension in contents for extension in VIDEO_EXTENSIONS):
-                continue
-            for pattern in RAW_VIDEO_PATTERNS:
-                if pattern in contents:
-                    failures.append(
-                        f"Raw video persistence pattern '{pattern}' found in {file}."
-                    )
+            scanned_files.add(file)
+    for file in sorted(scanned_files):
+        contents = file.read_text(encoding="utf-8")
+        if VIDEO_EXTENSION_RE.search(contents):
+            failures.append(
+                f"Video extension reference found in forbidden zone: {file}."
+            )
+        for pattern in RAW_VIDEO_PATTERNS:
+            if pattern in contents:
+                failures.append(
+                    f"Raw video persistence pattern '{pattern}' found in {file}."
+                )
 
     if failures:
         for failure in failures:

@@ -254,7 +254,7 @@ class DictationSession {
   final DateTime startTime;
   final List<double> rhythmTimestamps;    // Seconds from start
   final double synchronizationScore;      // 0-100
-  
+
   // Computed property
   double get rhythmConsistency;           // 0-100
 }

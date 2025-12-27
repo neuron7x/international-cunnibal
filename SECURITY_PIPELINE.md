@@ -1,4 +1,4 @@
-## Security, Quality, and Control Pipeline
+# Security, Quality, and Control Pipeline
 
 ### Automated checks (run on every PR and pushes to `main`)
 - **Flutter CI**: `flutter format --set-exit-if-changed lib test`, `flutter analyze`, `flutter test --coverage` (coverage artifact uploaded).
@@ -32,11 +32,18 @@
    - Require at least one approving review.
 2. Enable GitHub Advanced Security features (CodeQL and secret scanning) in repository settings.
 
-### Local verification (fail fast)
+### Local CI (mirrors GitHub Actions)
 ```bash
-flutter format --set-exit-if-changed lib test
+flutter format .
 flutter analyze
 flutter test --coverage
+python tool/ci/check_coverage.py
+python tool/ci/check_privacy_guards.py
+python tool/ci/check_architecture_boundaries.py
+python tool/ci/check_metric_changes.py
+python tool/ci/check_doc_updates.py
+python tool/ci/check_doc_lint.py
+python tool/ci/check_latency_budget.py
 ```
 
 ### What is protected
