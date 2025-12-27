@@ -6,8 +6,15 @@ import 'package:international_cunnibal/services/neural_engine.dart';
 import 'package:international_cunnibal/models/tongue_data.dart';
 import 'package:international_cunnibal/models/game_state.dart';
 import 'package:international_cunnibal/services/game_logic_service.dart';
-import 'package:international_cunnibal/services/cv_engine.dart';
 import 'package:international_cunnibal/widgets/tracking_overlay.dart';
+import 'package:international_cunnibal/services/cv_engine.dart';
+
+bool isTrackingControlEnabled({
+  required bool isDemoMode,
+  required bool cameraReady,
+}) {
+  return isDemoMode || cameraReady;
+}
 
 class TrackingScreen extends StatefulWidget {
   const TrackingScreen({super.key});
@@ -80,6 +87,10 @@ class _TrackingScreenState extends State<TrackingScreen> {
   Widget build(BuildContext context) {
     final cameraController = _bioTracking.cameraController;
     final isInitialized = cameraController?.value.isInitialized ?? false;
+    final controlEnabled = isTrackingControlEnabled(
+      isDemoMode: _bioTracking.isDemoMode,
+      cameraReady: isInitialized,
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -244,7 +255,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
                     width: double.infinity,
                     height: 56,
                     child: ElevatedButton(
-                      onPressed: isInitialized ? _toggleTracking : null,
+                      onPressed: controlEnabled ? _toggleTracking : null,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: _isTracking ? Colors.red : Colors.green,
                         foregroundColor: Colors.white,

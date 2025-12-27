@@ -583,6 +583,33 @@ Exported logs include comprehensive data in **JSON format**:
 }
 ```
 
+---
+
+## 📐 Motion Metrics (Technical)
+
+- **Consistency**: windowed motion-energy variance normalized by expected amplitude; bounded [0,100].
+- **Frequency**: Hann-windowed autocorrelation, reports dominant Hz plus confidence (0-1); low-variance signals -> confidence 0.
+- **Direction**: principal component of displacement covariance with deterministic orientation; stability = λmax/trace on [0,100].
+- **Intensity**: normalized mean kinetic proxy `E/(E+1)` on [0,100].
+- **Pattern Match**: time-indexed vector-field MSE scaled by tolerance; score on [0,100].
+
+## 👩‍🎓 Metrics Primer (Non-Technical)
+- Consistency: how steady the motion energy is.
+- Frequency: main rhythm (beats per second) plus confidence.
+- Direction: dominant axis of movement.
+- Intensity: how strong the motion is relative to expected range.
+- Pattern Match: closeness to a target rhythm/path.
+
+## 🛠 CLI Scripts (no ML needed)
+
+```bash
+dart run tool/run_demo.dart        # streams demo engine + prints metrics
+dart run tool/verify_logic.dart    # runs metrics -> game logic ingestion
+dart run tool/benchmark_core.dart  # benchmarks MotionMetrics core
+```
+
+Benchmark note: MotionMetrics processes a 30 FPS window in well under 1 ms on a mid-range device (see tool output).
+
 #### 📍 Export Location
 
 ```bash

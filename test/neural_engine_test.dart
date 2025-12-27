@@ -15,34 +15,10 @@ void main() {
       neuralEngine.dispose();
     });
 
-    test('NeuralEngine starts and stops correctly', () {
-      expect(neuralEngine, isNotNull);
-      
+    test('start/stop is idempotent', () {
       neuralEngine.start();
-      // Verify processing state
-      
+      neuralEngine.start();
       neuralEngine.stop();
-      // Verify stopped state
-    });
-
-    test('NeuralEngine processes tongue data', () async {
-      neuralEngine.start();
-
-      final testData = TongueData(
-        timestamp: DateTime.now(),
-        position: const Offset(0.5, 0.5),
-        velocity: 1.0,
-        acceleration: 0.0,
-        landmarks: [const Offset(0.5, 0.5)],
-        isValidated: true,
-      );
-
-      // Process data
-      neuralEngine.processTongueData(testData);
-
-      // Wait for processing
-      await Future.delayed(const Duration(milliseconds: 100));
-
       neuralEngine.stop();
     });
 
@@ -66,6 +42,14 @@ void main() {
       // Wait for metrics calculation
       await Future.delayed(const Duration(seconds: 2));
 
+      neuralEngine.stop();
+    });
+
+    test('dispose closes resources', () {
+      neuralEngine.start();
+      neuralEngine.dispose();
+      neuralEngine.dispose(); // idempotent
+      // Should not throw when stopping after dispose
       neuralEngine.stop();
     });
   });

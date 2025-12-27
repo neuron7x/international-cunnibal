@@ -39,6 +39,42 @@ void main() {
       }
 
       expect(game.state.level, greaterThan(initialLevel));
+      expect(game.state.streak, equals(0));
+    });
+
+    test('direction stability gating', () {
+      final baseline = game.state.score;
+      final base = _goodMetrics();
+      final lowDirection = BiometricMetrics(
+        consistencyScore: base.consistencyScore,
+        frequency: base.frequency,
+        frequencyConfidence: base.frequencyConfidence,
+        pcaVariance: base.pcaVariance,
+        movementDirection: base.movementDirection,
+        directionStability: 5,
+        intensity: base.intensity,
+        patternScore: base.patternScore,
+        timestamp: DateTime.now(),
+      );
+      game.ingest(lowDirection);
+      expect(game.state.score, equals(baseline + 15)); // consistency+frequency only
+    });
+
+    test('low metrics do not level up', () {
+      for (int i = 0; i < 5; i++) {
+        game.ingest(BiometricMetrics(
+          consistencyScore: 10,
+          frequency: 0.5,
+          frequencyConfidence: 0.2,
+          pcaVariance: const [0, 0, 0],
+          movementDirection: MovementDirection.right,
+          directionStability: 50,
+          intensity: 5,
+          patternScore: 0,
+          timestamp: DateTime.now(),
+        ));
+      }
+      expect(game.state.level, equals(1));
     });
   });
 }
