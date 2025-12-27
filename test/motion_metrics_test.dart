@@ -162,6 +162,17 @@ void main() {
       expect(metrics.direction.direction.y, greaterThan(0));
     });
 
+    test('smooth sine retains stable dominant direction', () {
+      final samples = _sineWave(frequencyHz: 2.0, amplitude: 0.35);
+      final metrics = MotionMetrics.compute(
+        samples: samples,
+        expectedAmplitude: 0.35,
+      );
+      expect(metrics.direction.direction.x.abs(), greaterThan(0.9));
+      expect(metrics.direction.direction.y.abs(), lessThan(0.1));
+      expect(metrics.direction.stability, greaterThan(65));
+    });
+
     test('random walk yields low consistency and direction stability', () {
       final rng = Random(3);
       final samples = <MotionSample>[];

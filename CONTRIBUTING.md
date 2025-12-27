@@ -24,6 +24,18 @@ This repository enforces the 2025 Technical Constitution. All contributions must
 - **Model changes** require DVC tracking, model cards, and benchmark logs.
 - **Docs are a gate** for metrics, ML/CV, and architecture changes.
 
+### Required PR checks
+Make sure these checks are green before requesting review:
+- `Flutter CI / Format, analyze, test`
+- `CodeQL / CodeQL analysis`
+- `Dependency Review / dependency-review`
+- `Secret Scan / gitleaks`
+- `Documentation and Intent Guard / docs-lint`
+- `Documentation and Intent Guard / intent-guard`
+- `Documentation and Intent Guard / metrics-guard`
+- `CI Meta Guard / workflow-guard`
+- `Conventional Commits / semantic-pr`
+
 ## DVC Workflow for Models
 1. `dvc add ml-ops/models/<model-name>.tflite`
 2. Commit the generated `.dvc` file.
