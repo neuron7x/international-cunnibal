@@ -1,5 +1,24 @@
 # Pull Request
 
+## ⚠️ Title Format Required
+**Your PR title MUST follow [Conventional Commits](https://www.conventionalcommits.org/):**
+- `feat:` New features
+- `fix:` Bug fixes  
+- `docs:` Documentation changes
+- `refactor:` Code refactoring
+- `ci:` CI/CD changes
+- `test:` Tests
+- `perf:` Performance
+- `chore:` Maintenance
+- `build:` Build system
+- `revert:` Revert changes
+
+**Example:** `feat: add Flutter-native dependency security scanner`
+
+*This is enforced by the `semantic-pr` workflow and will block merging if not followed.*
+
+---
+
 ## Purpose
 <!-- What problem are we solving? -->
 
