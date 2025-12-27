@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'package:camera/camera.dart';
+import 'package:international_cunnibal/models/tongue_data.dart';
 import 'package:international_cunnibal/services/neural_engine.dart';
 import 'package:international_cunnibal/services/cv_engine.dart';
+import 'package:international_cunnibal/utils/landmark_privacy.dart';
 
 /// Bio-Tracking service for real-time tongue biomechanics
 /// Uses MediaPipe/TFLite for on-device AI processing
@@ -44,7 +46,7 @@ class BioTrackingService {
     _isTracking = true;
     _neuralEngine.start();
 
-    _engineSubscription = _engine.stream.listen(_neuralEngine.processTongueData);
+    _engineSubscription = _engine.stream.listen(_onSample);
     await _engine.start();
   }
 
@@ -74,5 +76,12 @@ class BioTrackingService {
   void dispose() {
     stopTracking();
     _cameraEngine.cameraController?.dispose();
+  }
+
+  void _onSample(TongueData data) {
+    final filtered = data.copyWith(
+      landmarks: LandmarkPrivacyFilter.stripFaceLandmarks(data.landmarks),
+    );
+    _neuralEngine.processTongueData(filtered);
   }
 }
