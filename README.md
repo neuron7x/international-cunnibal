@@ -801,6 +801,10 @@ Made with ❤️ using Flutter & TensorFlow Lite
 
 </div>
 
+## 🔒 Security & CI pipeline
+
+See [SECURITY_PIPELINE.md](SECURITY_PIPELINE.md) for the mandatory gates (CI, security scanning, doc/metric guardrails, and branch protection expectations) that every PR must satisfy.
+
 ## 🤝 Contributing
 
 <div align="center">
