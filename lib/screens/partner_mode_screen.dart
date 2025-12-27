@@ -5,20 +5,24 @@ import 'package:international_cunnibal/services/bio_tracking_service.dart';
 import 'package:international_cunnibal/services/symbol_dictation_service.dart';
 import 'package:international_cunnibal/utils/constants.dart';
 
-const _partnerIntroHeadline =
-    'Партнер задає ритм — ти повторюєш рухами язика у реальному часі.';
-const _partnerIntroBody =
-    'Увімкніть фронтальну камеру, нехай партнерка натискає короткі '
-    'та довгі такти, а ти намагаєшся попасти у ритм. Всі обчислення '
-    'виконуються локально на пристрої — відео не зберігається і не передається.';
-const _partnerPatternLabel = 'Паттерн партнера';
-const _partnerShortBeat = 'Короткий такт';
-const _partnerLongBeat = 'Довгий такт';
-const _partnerReset = 'Скинути паттерн';
-const _partnerPatternError =
-    'Додайте щонайменше два такти, щоб задати ритм партнером.';
-const _partnerStartCta = 'СТАРТ: ПОВТОРИ ПАРТНЕРА';
-const _partnerStopCta = 'ЗУПИНИТИ';
+class PartnerModeStrings {
+  static const introHeadline =
+      'Партнер задає ритм — ти повторюєш рухами язика у реальному часі.';
+  static const introBody =
+      'Увімкніть фронтальну камеру, нехай партнерка натискає короткі '
+      'та довгі такти, а ти намагаєшся попасти у ритм. Всі обчислення '
+      'виконуються локально на пристрої — відео не зберігається і не передається.';
+  static const patternLabel = 'Паттерн партнера';
+  static const shortBeat = 'Короткий такт';
+  static const longBeat = 'Довгий такт';
+  static const resetLabel = 'Скинути паттерн';
+  static const patternError =
+      'Додайте щонайменше два такти, щоб задати ритм партнером.';
+  static const startCta = 'СТАРТ: ПОВТОРИ ПАРТНЕРА';
+  static const stopCta = 'ЗУПИНИТИ';
+  static const partnerModeLabel = 'PARTNER';
+  static const partnerModeSymbol = 'PARTNER';
+}
 
 class PartnerModeScreen extends StatefulWidget {
   const PartnerModeScreen({super.key});
@@ -31,10 +35,7 @@ class _PartnerModeScreenState extends State<PartnerModeScreen> {
   final SymbolDictationService _dictation = SymbolDictationService();
   final BioTrackingService _bioTracking = BioTrackingService();
 
-  final List<double> _patternDurations = [
-    RhythmPatterns.shortMovement,
-    RhythmPatterns.longMovement,
-  ];
+  final List<double> _patternDurations = [];
 
   bool _isActive = false;
   DictationSession? _currentSession;
@@ -43,6 +44,7 @@ class _PartnerModeScreenState extends State<PartnerModeScreen> {
   @override
   void initState() {
     super.initState();
+    _resetPattern();
     _initializeServices();
   }
 
@@ -75,14 +77,18 @@ class _PartnerModeScreenState extends State<PartnerModeScreen> {
     if (_patternDurations.length < 2) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text(_partnerPatternError),
+          content: Text(PartnerModeStrings.patternError),
         ),
       );
       return;
     }
 
     await _bioTracking.startTracking();
-    _dictation.startSession('P', customPattern: List.from(_patternDurations));
+    _dictation.startSession(
+      PartnerModeStrings.partnerModeSymbol,
+      customPattern: List.from(_patternDurations),
+      sessionLabel: PartnerModeStrings.partnerModeLabel,
+    );
     setState(() {
       _isActive = true;
       _currentSession = null;
@@ -93,13 +99,15 @@ class _PartnerModeScreenState extends State<PartnerModeScreen> {
     setState(() => _patternDurations.add(duration));
   }
 
-  void _clearBeats() {
-    setState(() => _patternDurations
+  void _clearBeats() => setState(_resetPattern);
+
+  void _resetPattern() {
+    _patternDurations
       ..clear()
       ..addAll([
         RhythmPatterns.shortMovement,
         RhythmPatterns.longMovement,
-      ]));
+      ]);
   }
 
   @override
@@ -128,7 +136,7 @@ class _PartnerModeScreenState extends State<PartnerModeScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      _partnerIntroHeadline,
+                      PartnerModeStrings.introHeadline,
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -136,7 +144,7 @@ class _PartnerModeScreenState extends State<PartnerModeScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      _partnerIntroBody,
+                      PartnerModeStrings.introBody,
                       style: TextStyle(
                         fontSize: 14,
                         color: Colors.grey[600],
@@ -150,7 +158,7 @@ class _PartnerModeScreenState extends State<PartnerModeScreen> {
             Align(
               alignment: Alignment.centerLeft,
               child: Text(
-                _partnerPatternLabel,
+                PartnerModeStrings.patternLabel,
                 style: Theme.of(context).textTheme.titleMedium,
               ),
             ),
@@ -175,7 +183,7 @@ class _PartnerModeScreenState extends State<PartnerModeScreen> {
                   child: ElevatedButton.icon(
                     onPressed: _isActive ? null : () => _addBeat(RhythmPatterns.shortMovement),
                     icon: const Icon(Icons.blur_on),
-                    label: const Text(_partnerShortBeat),
+                    label: const Text(PartnerModeStrings.shortBeat),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -183,7 +191,7 @@ class _PartnerModeScreenState extends State<PartnerModeScreen> {
                   child: ElevatedButton.icon(
                     onPressed: _isActive ? null : () => _addBeat(RhythmPatterns.longMovement),
                     icon: const Icon(Icons.waves),
-                    label: const Text(_partnerLongBeat),
+                    label: const Text(PartnerModeStrings.longBeat),
                   ),
                 ),
               ],
@@ -194,7 +202,7 @@ class _PartnerModeScreenState extends State<PartnerModeScreen> {
               child: TextButton.icon(
                 onPressed: _isActive ? null : _clearBeats,
                 icon: const Icon(Icons.refresh),
-                label: const Text(_partnerReset),
+                label: const Text(PartnerModeStrings.resetLabel),
               ),
             ),
             const SizedBox(height: 16),
@@ -227,7 +235,7 @@ class _PartnerModeScreenState extends State<PartnerModeScreen> {
                   foregroundColor: Colors.white,
                 ),
                 child: Text(
-                  _isActive ? _partnerStopCta : _partnerStartCta,
+                  _isActive ? PartnerModeStrings.stopCta : PartnerModeStrings.startCta,
                   style: const TextStyle(fontSize: 16),
                 ),
               ),

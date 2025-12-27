@@ -30,9 +30,20 @@ class SymbolDictationService {
   String get targetSymbol => _targetSymbol;
 
   /// Start a new dictation session with target symbol
-  void startSession(String symbol, {List<double>? customPattern}) {
-    if (symbol.length != 1 || !RegExp(r'^[A-Z]$').hasMatch(symbol)) {
+  void startSession(
+    String symbol, {
+    List<double>? customPattern,
+    String? sessionLabel,
+  }) {
+    final isCustomPattern = customPattern != null;
+    if (!isCustomPattern && (symbol.length != 1 || !RegExp(r'^[A-Z]$').hasMatch(symbol))) {
       throw ArgumentError('Symbol must be a single letter A-Z');
+    }
+    if (isCustomPattern && symbol.isEmpty) {
+      throw ArgumentError('Symbol is required for custom patterns');
+    }
+    if (sessionLabel != null && sessionLabel.trim().isEmpty) {
+      throw ArgumentError('Session label cannot be empty');
     }
 
     if (customPattern != null) {
@@ -45,6 +56,9 @@ class SymbolDictationService {
     }
 
     _targetSymbol = symbol;
+    if (sessionLabel != null && sessionLabel.trim().isNotEmpty) {
+      _targetSymbol = sessionLabel.trim();
+    }
     _sessionStartTime = DateTime.now();
     _rhythmTimestamps.clear();
     _customPattern = customPattern;
