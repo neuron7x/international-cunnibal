@@ -1,5 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:international_cunnibal/models/tongue_data.dart';
+import 'package:international_cunnibal/services/neural_engine.dart';
 import 'package:international_cunnibal/utils/landmark_privacy.dart';
 
 void main() {
@@ -26,6 +30,48 @@ void main() {
           i++) {
         expect(filtered[i], landmarks[i]);
       }
+    });
+
+    test('NeuralEngine enforces landmark privacy filtering', () async {
+      final neuralEngine = NeuralEngine();
+      final completer = Completer<TongueData>();
+      final subscription = neuralEngine.tongueDataStream.listen((data) {
+        if (!completer.isCompleted) {
+          completer.complete(data);
+        }
+      });
+
+      neuralEngine.start();
+
+      final landmarks = List<Offset>.generate(
+        15,
+        (i) => Offset(i.toDouble(), i.toDouble()),
+      );
+      neuralEngine.processTongueData(
+        TongueData(
+          timestamp: DateTime.now(),
+          position: const Offset(0.5, 0.5),
+          velocity: 0.0,
+          acceleration: 0.0,
+          landmarks: landmarks,
+          isValidated: true,
+        ),
+      );
+
+      final processed =
+          await completer.future.timeout(const Duration(seconds: 2));
+
+      for (var i = 0; i < LandmarkPrivacyFilter.defaultFaceLandmarkCount; i++) {
+        expect(processed.landmarks[i], Offset.zero);
+      }
+      for (var i = LandmarkPrivacyFilter.defaultFaceLandmarkCount;
+          i < landmarks.length;
+          i++) {
+        expect(processed.landmarks[i], landmarks[i]);
+      }
+
+      await subscription.cancel();
+      neuralEngine.dispose();
     });
   });
 }

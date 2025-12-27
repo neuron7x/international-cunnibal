@@ -7,6 +7,7 @@ import 'package:international_cunnibal/models/tongue_data.dart';
 import 'package:international_cunnibal/models/metrics.dart';
 import 'package:international_cunnibal/services/game_logic_service.dart';
 import 'package:international_cunnibal/utils/constants.dart';
+import 'package:international_cunnibal/utils/landmark_privacy.dart';
 
 /// NeuralEngine service implementing Anokhin's Action Acceptor
 /// 
@@ -106,18 +107,24 @@ class NeuralEngine {
     final tongueController = _tongueDataController;
     if (tongueController == null) return;
 
+    final sanitizedLandmarks =
+        LandmarkPrivacyFilter.stripFaceLandmarks(data.landmarks);
+    final sanitizedData = identical(sanitizedLandmarks, data.landmarks)
+        ? data
+        : data.copyWith(landmarks: sanitizedLandmarks);
+
     // Add to buffer, maintaining buffer size
-    _dataBuffer.add(data);
+    _dataBuffer.add(sanitizedData);
     if (_dataBuffer.length > _bufferSize) {
       _dataBuffer.removeAt(0);
     }
-    _ingestEndurance(data);
+    _ingestEndurance(sanitizedData);
 
     // Apply Action Acceptor pattern:
     // 1. Accept afferent (sensory) input
     // 2. Compare with expected pattern
     // 3. Validate motor command execution
-    final validated = _validateAction(data);
+    final validated = _validateAction(sanitizedData);
     
     tongueController.add(validated);
   }
