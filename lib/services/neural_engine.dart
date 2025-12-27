@@ -56,6 +56,8 @@ class NeuralEngine {
   void start() {
     if (_isProcessing) return;
     _ensureControllers();
+    final metricsController = _metricsController;
+    if (metricsController == null) return;
     
     _isProcessing = true;
     _dataBuffer.clear();
@@ -66,7 +68,7 @@ class NeuralEngine {
       (_) {
         if (_dataBuffer.isNotEmpty) {
           final metrics = _calculateMetrics();
-          _metricsController!.add(metrics);
+          metricsController.add(metrics);
           _gameLogic.ingest(metrics);
         }
       },
@@ -85,6 +87,8 @@ class NeuralEngine {
   void processTongueData(TongueData data) {
     if (!_isProcessing) return;
     _ensureControllers();
+    final tongueController = _tongueDataController;
+    if (tongueController == null) return;
 
     // Add to buffer, maintaining buffer size
     _dataBuffer.add(data);
@@ -98,7 +102,7 @@ class NeuralEngine {
     // 3. Validate motor command execution
     final validated = _validateAction(data);
     
-    _tongueDataController!.add(validated);
+    tongueController.add(validated);
   }
 
   /// Validate action using Anokhin's Action Acceptor principle

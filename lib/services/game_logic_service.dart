@@ -56,6 +56,7 @@ class GameLogicService {
     var targetFrequency = _state.targetFrequency;
 
     if (streak >= _levelStreakThreshold) {
+      // Reset streak on level-up to keep demo/game loops short and readable
       level += 1;
       targetConsistency =
           (targetConsistency + _consistencyStep).clamp(_consistencyMin, _consistencyMax);

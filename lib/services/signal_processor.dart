@@ -7,6 +7,7 @@ import 'package:international_cunnibal/utils/constants.dart';
 
 const int _directionSampleWindowSize = 6;
 const double _steadyMovementThreshold = 0.02;
+// Maps normalized displacement magnitude into a 0-100 feedback scale
 const double _directionStabilityScale = 120;
 
 class SignalProcessor {

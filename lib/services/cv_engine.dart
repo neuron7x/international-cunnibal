@@ -13,6 +13,7 @@ const int _cameraLandmarkCount = 10;
 const int _cameraLandmarkCenterOffset = 5;
 const int _cameraLandmarkRowSize = 3;
 const double _cameraLandmarkSpread = 0.01;
+const double _cameraSecondaryFrequencyScale = 0.8;
 
 abstract class CvEngine {
   Stream<TongueData> get stream;
@@ -163,7 +164,9 @@ class CameraCvEngine implements CvEngine {
             sin(time * BioTrackingConstants.simulationFrequencyMultiplier);
     final y = 0.5 +
         BioTrackingConstants.simulationAmplitudeY *
-            cos(time * BioTrackingConstants.simulationFrequencyMultiplier * 0.8);
+            cos(time *
+                BioTrackingConstants.simulationFrequencyMultiplier *
+                _cameraSecondaryFrequencyScale);
 
     final position = Offset(x, y);
     final velocity =
