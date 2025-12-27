@@ -11,6 +11,9 @@ Owned by the Metrics & Domain Logic RE (see CODEOWNERS).
 
 ## Regression Baselines
 - `MotionMetrics` golden tests live in `test/motion_metrics_test.dart`.
+- `EnduranceMetrics` baselines live in `test/endurance_metrics_test.dart`.
+- Service integrations live in `lib/services/endurance_engine.dart` and
+  `lib/services/endurance_game_logic_service.dart`.
 - Benchmarks are logged in `ml-ops/benchmarks/` and referenced in PRs.
 
 ## Gate Hooks

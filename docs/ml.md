@@ -8,6 +8,11 @@ Owned by the CV / ML Pipeline RE (see CODEOWNERS).
 - No raw video persistence; only landmarks/skeleton data leave the CV layer.
 - Model assets are encrypted at rest and tracked via DVC.
 
+## Service Entry Points
+- CV orchestration and UI-facing adapters live in `lib/services/ui/`.
+- Core CV services include `lib/services/ui/cv_engine.dart` and
+  `lib/services/ui/bio_tracking_service.dart`.
+
 ## Model Asset Rules
 - Binary model artifacts **must not** be committed to Git.
 - Use DVC (`dvc add`) to track models and datasets.

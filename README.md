@@ -1,3 +1,5 @@
+# International Cunnibal
+
 <div align="center">
 
 # 🧠 International Cunnibal
@@ -208,7 +210,7 @@ sequenceDiagram
     participant A as 📱 App
     participant C as 📷 Camera
     participant N as 🧠 NeuralEngine
-    
+
     U->>A: Open App
     A->>U: Show Home Screen
     U->>A: Start Bio-Tracking
@@ -236,20 +238,20 @@ graph TB
         A --> C[DictationScreen]
         A --> D[MetricsScreen]
     end
-    
+
     subgraph "⚙️ Business Logic"
         E[NeuralEngine] --> F[Action Acceptor]
         G[BioTrackingService] --> E
         H[SymbolDictationService] --> E
         I[GitHubExportService]
     end
-    
+
     subgraph "💾 Data Layer"
         J[TongueData] --> E
         K[BiometricMetrics] --> I
         L[DictationSession] --> I
     end
-    
+
     B --> G
     C --> H
     D --> I
@@ -745,7 +747,7 @@ graph LR
     A[📷 Camera] -->|Local Only| B[🧠 AI Processing]
     B -->|On Device| C[📊 Metrics]
     C -->|User Export| D[💾 Local File]
-    
+
     style A fill:#90EE90
     style B fill:#90EE90
     style C fill:#90EE90

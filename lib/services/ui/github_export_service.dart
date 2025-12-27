@@ -1,10 +1,9 @@
 import 'dart:convert';
-import 'dart:io';
-import 'package:path_provider/path_provider.dart';
 import 'package:intl/intl.dart';
 import 'package:international_cunnibal/models/metrics.dart';
 import 'package:international_cunnibal/models/dictation_session.dart';
 import 'package:international_cunnibal/utils/constants.dart';
+import 'package:international_cunnibal/utils/export_file_writer.dart';
 
 /// GitHub Performance Log Export Service
 /// Automated export of performance logs for GitHub integration
@@ -12,7 +11,20 @@ import 'package:international_cunnibal/utils/constants.dart';
 class GitHubExportService {
   static final GitHubExportService _instance = GitHubExportService._internal();
   factory GitHubExportService() => _instance;
-  GitHubExportService._internal();
+  GitHubExportService._internal({
+    ExportFileWriter? fileWriter,
+    DateTime Function()? now,
+  })  : _fileWriter = fileWriter ?? const ExportFileWriter(),
+        _now = now ?? DateTime.now;
+
+  GitHubExportService.testing({
+    required ExportFileWriter fileWriter,
+    DateTime Function()? now,
+  })  : _fileWriter = fileWriter,
+        _now = now ?? DateTime.now;
+
+  final ExportFileWriter _fileWriter;
+  final DateTime Function() _now;
 
   final List<BiometricMetrics> _metricsLog = [];
   final List<DictationSession> _sessionsLog = [];
@@ -34,14 +46,13 @@ class GitHubExportService {
 
   /// Export performance log to file
   /// Creates a JSON file with all metrics and sessions
-  Future<String> exportPerformanceLog({Directory? directoryOverride}) async {
-    final directory = await _resolveExportDirectory(directoryOverride);
-    final timestamp = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
+  Future<String> exportPerformanceLog({String? directoryOverridePath}) async {
+    final now = _now();
+    final timestamp = DateFormat('yyyyMMdd_HHmmss').format(now);
     final filename = 'performance_log_$timestamp.json';
-    final file = File('${directory.path}/$filename');
 
     final data = {
-      'exportTimestamp': DateTime.now().toIso8601String(),
+      'exportTimestamp': now.toIso8601String(),
       'appVersion': ExportConstants.appVersion,
       'totalMetrics': _metricsLog.length,
       'totalSessions': _sessionsLog.length,
@@ -50,11 +61,11 @@ class GitHubExportService {
       'summary': _generateSummary(),
     };
 
-    await file.writeAsString(
-      const JsonEncoder.withIndent('  ').convert(data),
+    return _fileWriter.writeJson(
+      filename: filename,
+      jsonPayload: const JsonEncoder.withIndent('  ').convert(data),
+      directoryOverridePath: directoryOverridePath,
     );
-
-    return file.path;
   }
 
   /// Generate summary statistics
@@ -100,26 +111,10 @@ class GitHubExportService {
     _sessionsLog.clear();
   }
 
-  Future<Directory> _resolveExportDirectory(Directory? directoryOverride) async {
-    if (directoryOverride != null) {
-      if (!directoryOverride.existsSync()) {
-        await directoryOverride.create(recursive: true);
-      }
-      return directoryOverride;
-    }
-
-    try {
-      return await getApplicationDocumentsDirectory();
-    } catch (_) {
-      return Directory.systemTemp.createTemp(
-        'international_cunnibal_export_',
-      );
-    }
-  }
-
   /// Get export directory path
-  Future<String> getExportDirectory({Directory? directoryOverride}) async {
-    final directory = await _resolveExportDirectory(directoryOverride);
-    return directory.path;
+  Future<String> getExportDirectory({String? directoryOverridePath}) async {
+    return _fileWriter.resolveDirectoryPath(
+      directoryOverridePath: directoryOverridePath,
+    );
   }
 }
