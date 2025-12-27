@@ -21,6 +21,7 @@ class PartnerModeStrings {
   static const startCta = 'СТАРТ: ПОВТОРИ ПАРТНЕРА';
   static const stopCta = 'ЗУПИНИТИ';
   static const partnerModeLabel = 'PARTNER';
+  static const partnerModeSymbol = 'X';
 }
 
 class PartnerModeScreen extends StatefulWidget {
@@ -84,7 +85,7 @@ class _PartnerModeScreenState extends State<PartnerModeScreen> {
 
     await _bioTracking.startTracking();
     _dictation.startSession(
-      PartnerModeStrings.partnerModeLabel,
+      PartnerModeStrings.partnerModeSymbol,
       customPattern: List.from(_patternDurations),
       sessionLabel: PartnerModeStrings.partnerModeLabel,
     );
