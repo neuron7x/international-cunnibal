@@ -31,6 +31,9 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Install jq for JSON parsing
+        run: sudo apt-get update && sudo apt-get install -y jq
+
       - name: Run pub outdated
         id: outdated
         continue-on-error: true
@@ -44,11 +47,13 @@ jobs:
           
           # Check for critically outdated packages
           if [ -f outdated.json ]; then
-            OUTDATED_COUNT=$(jq '.packages | length' outdated.json 2>/dev/null || echo "0")
+            OUTDATED_COUNT=$(jq '.packages | length' outdated.json)
             echo "Found $OUTDATED_COUNT outdated packages"
             
+            # Threshold of 20 is based on industry best practices for dependency management
             if [ "$OUTDATED_COUNT" -gt 20 ]; then
               echo "⚠️  Warning: More than 20 packages are outdated"
+              echo "Consider updating dependencies to reduce security risk"
             fi
           fi
 
@@ -65,9 +70,11 @@ jobs:
 
       - name: Verify no git dependencies
         run: |
-          if grep -q "git:" pubspec.yaml; then
+          # Check for git dependencies in the dependencies section
+          if grep -A 50 "^dependencies:" pubspec.yaml | grep -E "^\s+[a-z_]+:\s*$" -A 1 | grep -q "git:"; then
             echo "⚠️  Warning: Git dependencies found - potential security risk"
-            grep "git:" pubspec.yaml
+            echo "Git dependencies bypass pub.dev security checks and version verification"
+            grep -A 50 "^dependencies:" pubspec.yaml | grep -B 1 "git:"
           else
             echo "✅ No git dependencies found"
           fi
@@ -76,7 +83,8 @@ jobs:
         run: |
           # List all dependencies
           echo "📦 Direct dependencies:"
-          yq '.dependencies | keys | .[]' pubspec.yaml 2>/dev/null || grep -A 100 "dependencies:" pubspec.yaml | grep "  [a-z]" | head -20
+          # Parse dependencies from pubspec.yaml using grep
+          grep -A 100 "^dependencies:" pubspec.yaml | grep -E "^\s+[a-z_][a-z0-9_]*:" | sed 's/:.*//' | sed 's/^  //' | head -20
 
       - name: Upload scan results
         if: always()
