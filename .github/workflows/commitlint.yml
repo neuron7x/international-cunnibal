@@ -19,3 +19,5 @@ jobs:
         uses: wagoid/commitlint-github-action@v6
         with:
           config-file: commitlint.config.cjs
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
