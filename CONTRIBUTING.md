@@ -1,6 +1,7 @@
 # Contributing to International Cunnibal
 
-This repository enforces the 2025 Technical Constitution. All contributions must comply with the gates below.
+This repository enforces the 2025 Technical Constitution. All contributions
+must comply with the gates below.
 
 ## Non-Negotiables
 - Edge-first, on-device AI only.
@@ -17,6 +18,7 @@ This repository enforces the 2025 Technical Constitution. All contributions must
 ## Conventional Commits
 - Commit messages and PR titles **must** follow Conventional Commits:
   - `feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`, `perf:`, `ci:`
+- Commit messages are linted in CI via `commitlint` to enforce the format.
 
 ## Required Gates (Do Not Bypass)
 - **Lint + tests + coverage** must pass.
@@ -53,10 +55,12 @@ flutter test --coverage
 ## Documentation Gates
 Any PR touching:
 - metrics (`lib/core/`, `lib/models/metrics.dart`)
-- ML/CV (`lib/services/cv_engine.dart`, `lib/services/bio_tracking_service.dart`, `ml-ops/`)
+- ML/CV (`lib/services/cv_engine.dart`,
+  `lib/services/bio_tracking_service.dart`, `ml-ops/`)
 - architecture (`lib/`, `ARCHITECTURE.md`)
 
 must update the relevant docs in `docs/` and/or `ARCHITECTURE.md`.
 
 ## Reference
-The full constitution is codified in [`ENGINEERING_HANDBOOK.md`](ENGINEERING_HANDBOOK.md).
+The full constitution is codified in
+[`ENGINEERING_HANDBOOK.md`](ENGINEERING_HANDBOOK.md).

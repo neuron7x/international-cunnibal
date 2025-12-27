@@ -11,7 +11,8 @@ Owned by the CV / ML Pipeline RE (see CODEOWNERS).
 ## Real-time Integration
 - `BioTrackingService` loads the tongue detector via `TongueModelService` and
   warms the interpreter for low-latency inference.
-- Model benchmarks live in `ml-ops/benchmarks/` and must accompany model changes.
+- Model benchmarks live in `ml-ops/benchmarks/` and must accompany model
+  changes.
 
 ## Model Asset Rules
 - Binary model artifacts **must not** be committed to Git.
