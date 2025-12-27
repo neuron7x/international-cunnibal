@@ -36,8 +36,8 @@ class SymbolDictationService {
     }
 
     if (customPattern != null) {
-      if (customPattern.isEmpty) {
-        throw ArgumentError('Custom pattern must include at least one beat');
+      if (customPattern.length < 2) {
+        throw ArgumentError('Custom pattern must include at least two beats');
       }
       if (customPattern.any((value) => value <= 0)) {
         throw ArgumentError('Custom pattern values must be positive durations');

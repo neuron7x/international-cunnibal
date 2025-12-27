@@ -32,6 +32,10 @@ void main() {
         throwsArgumentError,
       );
       expect(
+        () => dictationService.startSession('A', customPattern: [0.2]),
+        throwsArgumentError,
+      );
+      expect(
         () => dictationService.startSession('A', customPattern: [-0.1, 0.2]),
         throwsArgumentError,
       );
