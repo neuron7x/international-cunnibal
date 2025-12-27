@@ -10,7 +10,16 @@ RAW_VIDEO_PATTERNS = (
     "File(",
     "writeAsBytes",
     "writeAsString",
+)
+
+VIDEO_EXTENSIONS = (
     ".mp4",
+    ".mov",
+    ".avi",
+    ".mkv",
+    ".webm",
+    ".m4v",
+    ".hevc",
 )
 
 SCAN_DIRS = [pathlib.Path("lib/services"), pathlib.Path("lib/screens")]
@@ -29,6 +38,8 @@ def main() -> int:
             continue
         for file in directory.rglob("*.dart"):
             contents = file.read_text(encoding="utf-8")
+            if not any(extension in contents for extension in VIDEO_EXTENSIONS):
+                continue
             for pattern in RAW_VIDEO_PATTERNS:
                 if pattern in contents:
                     failures.append(
