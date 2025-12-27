@@ -2,6 +2,12 @@ name: Documentation and Intent Guard
 
 on:
   pull_request:
+  push:
+    branches:
+      - main
+  schedule:
+    # Run full lint nightly at 2 AM UTC to catch drift
+    - cron: '0 2 * * *'
 
 jobs:
   docs-lint:
@@ -14,15 +20,23 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Detect Markdown changes
+      - name: Detect Markdown changes (PR only)
+        if: github.event_name == 'pull_request'
         id: docs
         uses: tj-actions/changed-files@v47
         with:
           files: |
             **/*.md
 
-      - name: Run markdownlint
-        if: steps.docs.outputs.any_changed == 'true'
+      - name: Run markdownlint on changed files (PR only)
+        if: github.event_name == 'pull_request' && steps.docs.outputs.any_changed == 'true'
+        uses: DavidAnson/markdownlint-cli2-action@v22
+        with:
+          config: '.markdownlint.json'
+          globs: ${{ steps.docs.outputs.all_changed_files }}
+
+      - name: Run markdownlint on all files (main/scheduled)
+        if: github.event_name == 'push' || github.event_name == 'schedule'
         uses: DavidAnson/markdownlint-cli2-action@v22
         with:
           config: '.markdownlint.json'
