@@ -5,6 +5,21 @@ import 'package:international_cunnibal/services/bio_tracking_service.dart';
 import 'package:international_cunnibal/services/symbol_dictation_service.dart';
 import 'package:international_cunnibal/utils/constants.dart';
 
+const _partnerIntroHeadline =
+    'Партнер задає ритм — ти повторюєш рухами язика у реальному часі.';
+const _partnerIntroBody =
+    'Увімкніть фронтальну камеру, нехай партнерка натискає короткі '
+    'та довгі такти, а ти намагаєшся попасти у ритм. Всі обчислення '
+    'виконуються локально на пристрої — відео не зберігається і не передається.';
+const _partnerPatternLabel = 'Паттерн партнера';
+const _partnerShortBeat = 'Короткий такт';
+const _partnerLongBeat = 'Довгий такт';
+const _partnerReset = 'Скинути паттерн';
+const _partnerPatternError =
+    'Додайте щонайменше два такти, щоб задати ритм партнером.';
+const _partnerStartCta = 'СТАРТ: ПОВТОРИ ПАРТНЕРА';
+const _partnerStopCta = 'ЗУПИНИТИ';
+
 class PartnerModeScreen extends StatefulWidget {
   const PartnerModeScreen({super.key});
 
@@ -60,7 +75,7 @@ class _PartnerModeScreenState extends State<PartnerModeScreen> {
     if (_patternDurations.length < 2) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Додайте щонайменше два такти, щоб задати ритм партнером.'),
+          content: Text(_partnerPatternError),
         ),
       );
       return;
@@ -113,7 +128,7 @@ class _PartnerModeScreenState extends State<PartnerModeScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      'Партнер задає ритм — ти повторюєш рухами язика у реальному часі.',
+                      _partnerIntroHeadline,
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -121,9 +136,7 @@ class _PartnerModeScreenState extends State<PartnerModeScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Увімкніть фронтальну камеру, нехай партнерка натискає короткі '
-                      'та довгі такти, а ти намагаєшся попасти у ритм. Всі обчислення '
-                      'виконуються локально на пристрої — відео не зберігається і не передається.',
+                      _partnerIntroBody,
                       style: TextStyle(
                         fontSize: 14,
                         color: Colors.grey[600],
@@ -137,7 +150,7 @@ class _PartnerModeScreenState extends State<PartnerModeScreen> {
             Align(
               alignment: Alignment.centerLeft,
               child: Text(
-                'Патерн партнера',
+                _partnerPatternLabel,
                 style: Theme.of(context).textTheme.titleMedium,
               ),
             ),
@@ -162,7 +175,7 @@ class _PartnerModeScreenState extends State<PartnerModeScreen> {
                   child: ElevatedButton.icon(
                     onPressed: _isActive ? null : () => _addBeat(RhythmPatterns.shortMovement),
                     icon: const Icon(Icons.blur_on),
-                    label: const Text('Короткий такт'),
+                    label: const Text(_partnerShortBeat),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -170,7 +183,7 @@ class _PartnerModeScreenState extends State<PartnerModeScreen> {
                   child: ElevatedButton.icon(
                     onPressed: _isActive ? null : () => _addBeat(RhythmPatterns.longMovement),
                     icon: const Icon(Icons.waves),
-                    label: const Text('Довгий такт'),
+                    label: const Text(_partnerLongBeat),
                   ),
                 ),
               ],
@@ -181,7 +194,7 @@ class _PartnerModeScreenState extends State<PartnerModeScreen> {
               child: TextButton.icon(
                 onPressed: _isActive ? null : _clearBeats,
                 icon: const Icon(Icons.refresh),
-                label: const Text('Скинути патерн'),
+                label: const Text(_partnerReset),
               ),
             ),
             const SizedBox(height: 16),
@@ -214,7 +227,7 @@ class _PartnerModeScreenState extends State<PartnerModeScreen> {
                   foregroundColor: Colors.white,
                 ),
                 child: Text(
-                  _isActive ? 'ЗУПИНИТИ' : 'СТАРТ: ПОВТОРИ ПАРТНЕРА',
+                  _isActive ? _partnerStopCta : _partnerStartCta,
                   style: const TextStyle(fontSize: 16),
                 ),
               ),
