@@ -23,7 +23,7 @@ ARCH_PATHS = (
     "lib/models/",
 )
 
-DOC_METRICS = {"docs/metrics.md", "ENGINEERING_HANDBOOK.md"}
+DOC_METRICS = {"docs/metrics.md", "docs/METRICS.md", "ENGINEERING_HANDBOOK.md"}
 DOC_ML = {"docs/ml.md", "ENGINEERING_HANDBOOK.md"}
 DOC_ARCH = {"docs/architecture.md", "ARCHITECTURE.md", "ENGINEERING_HANDBOOK.md"}
 
@@ -53,7 +53,9 @@ def main() -> int:
     failures = []
 
     if any_matches(changed, METRIC_PATHS) and not any(path in DOC_METRICS for path in changed):
-        failures.append("Metrics changes require docs/metrics.md or ENGINEERING_HANDBOOK.md updates.")
+        failures.append(
+            "Metrics changes require docs/metrics.md, docs/METRICS.md, or ENGINEERING_HANDBOOK.md updates."
+        )
 
     if any_matches(changed, ML_PATHS) and not any(path in DOC_ML for path in changed):
         failures.append("ML/CV changes require docs/ml.md or ENGINEERING_HANDBOOK.md updates.")
