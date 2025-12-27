@@ -121,7 +121,7 @@ class MotionMetrics {
     }
 
     final axis = _principalAxis(samples);
-    final directionVector = _direction(displacements);
+    final directionVector = _directionFromAxis(axis, displacements);
     final speedStats = _speedStats(samples, displacements);
     final consistency = _consistency(speedStats);
     final freq = _frequency(samples, axis);
@@ -350,16 +350,25 @@ class MotionMetrics {
     return FrequencyResult(hertz: hz, confidence: confidence);
   }
 
-  static Vector2 _direction(List<Vector2> displacements) {
+  static Vector2 _directionFromAxis(
+    Vector2 axis,
+    List<Vector2> displacements,
+  ) {
+    if (axis.magnitude < _eps) {
+      return const Vector2(0, 0);
+    }
     if (displacements.isEmpty) {
-      return const Vector2(0, 0);
+      return axis.normalized();
     }
-    final net = displacements
-        .fold<Vector2>(const Vector2(0, 0), (s, d) => s + d);
+    final net = displacements.fold<Vector2>(
+      const Vector2(0, 0),
+      (s, d) => s + d,
+    );
     if (net.magnitude < _eps) {
-      return const Vector2(0, 0);
+      return axis.normalized();
     }
-    return net.normalized();
+    final aligned = net.dot(axis) < 0 ? axis.scale(-1) : axis;
+    return aligned.normalized();
   }
 
   static double _intensity(
