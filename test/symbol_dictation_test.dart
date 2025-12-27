@@ -18,6 +18,25 @@ void main() {
       expect(dictationService.targetSymbol, equals('A'));
     });
 
+    test('SymbolDictationService accepts custom partner rhythm', () {
+      expect(
+        () => dictationService.startSession('P', customPattern: [0.2, 0.6]),
+        returnsNormally,
+      );
+      dictationService.stopSession();
+    });
+
+    test('SymbolDictationService validates custom pattern input', () {
+      expect(
+        () => dictationService.startSession('A', customPattern: []),
+        throwsArgumentError,
+      );
+      expect(
+        () => dictationService.startSession('A', customPattern: [-0.1, 0.2]),
+        throwsArgumentError,
+      );
+    });
+
     test('SymbolDictationService rejects invalid symbols', () {
       expect(() => dictationService.startSession('1'), throwsArgumentError);
       expect(() => dictationService.startSession('AB'), throwsArgumentError);

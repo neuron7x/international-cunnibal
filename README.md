@@ -123,6 +123,18 @@ S: ...   (Short-Short-Short)
 </details>
 
 <details open>
+<summary><b>🤝 Partner Mode</b> - Set the Rhythm Together</summary>
+
+<br/>
+
+- 👫 Partner taps out a custom short/long pattern
+- 🎯 You mirror the rhythm with tongue movements in real time
+- 🔄 Live synchronization and stability scores
+- 🔒 100% on-device processing — no uploads, no streaming
+
+</details>
+
+<details open>
 <summary><b>🔐 Infrastructure</b> - Privacy-Focused Architecture</summary>
 
 <br/>
