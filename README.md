@@ -694,40 +694,18 @@ Benchmark note: MotionMetrics processes a 30 FPS window in well under 1 ms o
 
 ## 🔒 Privacy
 
-<div align="center">
-
 ### 🛡️ Privacy-First Architecture
 
-<img src="https://img.shields.io/badge/🔐_Privacy-100%25_On--Device-success?style=for-the-badge" alt="Privacy" />
-
-</div>
+![Privacy][b-privacy-device]
 
 All processing happens **on-device**. Your data never leaves your phone.
 
-<table>
-<tr>
-<td align="center" width="25%">
-<img src="https://img.icons8.com/fluency/96/lock.png" width="64" alt="Lock"/><br/>
-<b>🔒 Zero Cloud</b><br/>
-<sub>No external servers</sub>
-</td>
-<td align="center" width="25%">
-<img src="https://img.icons8.com/fluency/96/processor.png" width="64" alt="Processor"/><br/>
-<b>📱 Local Processing</b><br/>
-<sub>On-device AI only</sub>
-</td>
-<td align="center" width="25%">
-<img src="https://img.icons8.com/fluency/96/database.png" width="64" alt="Database"/><br/>
-<b>💾 Local Storage</b><br/>
-<sub>Data stays on device</sub>
-</td>
-<td align="center" width="25%">
-<img src="https://img.icons8.com/fluency/96/no-network.png" width="64" alt="No Network"/><br/>
-<b>🚫 No Internet</b><br/>
-<sub>Works offline</sub>
-</td>
-</tr>
-</table>
+| Feature | Description |
+| --- | --- |
+| 🔒 Zero Cloud | No external servers |
+| 📱 Local Processing | On-device AI only |
+| 💾 Local Storage | Data stays on device |
+| 🚫 No Internet | Works offline |
 
 #### ✅ Privacy Guarantees
 
@@ -756,15 +734,13 @@ graph LR
 
 ## 📄 License
 
-<div align="center">
-
 ### MIT License
 
-<img src="https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge" alt="License" />
+![License][badge-license]
 
 Copyright © 2025 **International Cunnibal Project**
 
-```
+```text
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -774,83 +750,56 @@ copies of the Software, subject to the following conditions...
 
 See [LICENSE](LICENSE) file for full details.
 
-</div>
-
 ---
 
-<div align="center">
-
-## 🌟 Star Us!
+## 🌟 Star Us
 
 If you find this project useful, please consider giving it a ⭐
 
 ### 📬 Contact & Support
 
-<a href="https://github.com/neuron7x/international-cunnibal/issues">
-<img src="https://img.shields.io/badge/Report-Issues-red?style=for-the-badge&logo=github" alt="Issues" />
-</a>
-<a href="https://github.com/neuron7x/international-cunnibal/discussions">
-<img src="https://img.shields.io/badge/Join-Discussions-blue?style=for-the-badge&logo=github" alt="Discussions" />
-</a>
+[![Report Issues][b-issues]][l-issues]
+[![Join Discussions][b-discuss]][l-discuss]
 
 ### 📚 Documentation
 
-[📖 Architecture](ARCHITECTURE.md) • [🔧 API Reference](API.md) • [🚀 Quick Start](QUICKSTART.md) • [💡 Implementation](IMPLEMENTATION.md)
+[📖 Architecture](ARCHITECTURE.md) • [🔧 API Reference](API.md) •
+[🚀 Quick Start](QUICKSTART.md) • [💡 Implementation](IMPLEMENTATION.md)
 
 ---
 
-<p align="center">
-<b>International Cunnibal</b><br/>
-<i>Train, Dominate, Savor. 🎯</i><br/><br/>
+**International Cunnibal**  
+*Train, Dominate, Savor. 🎯*
+
 Made with ❤️ using Flutter & TensorFlow Lite
-</p>
 
-<p align="center">
-<img src="https://img.shields.io/badge/Built_with-Flutter-02569B?logo=flutter" alt="Flutter" />
-<img src="https://img.shields.io/badge/Powered_by-TensorFlow_Lite-FF6F00?logo=tensorflow" alt="TFLite" />
-<img src="https://img.shields.io/badge/Privacy-First-success?logo=shield" alt="Privacy" />
-</p>
-
-</div>
+![Built with Flutter][b-flutter]
+![Powered by TFLite][b-tflite]
+![Privacy First][b-privacy]
 
 ## 🔒 Security & CI pipeline
 
-See [SECURITY_PIPELINE.md](SECURITY_PIPELINE.md) for the mandatory gates (CI, security scanning, doc/metric guardrails, and branch protection expectations) that every PR must satisfy.
+See [SECURITY_PIPELINE.md](SECURITY_PIPELINE.md) for the mandatory gates (CI,
+security scanning, doc/metric guardrails, and branch protection expectations)
+that every PR must satisfy.
 
 ## 🤝 Contributing
 
-<div align="center">
-
 ### 💫 Join Our Community
 
-<img src="https://img.shields.io/badge/Contributions-Welcome-brightgreen?style=for-the-badge" alt="Contributions" />
-<img src="https://img.shields.io/badge/PRs-Accepted-blue?style=for-the-badge" alt="PRs" />
-<img src="https://img.shields.io/badge/Issues-Open-orange?style=for-the-badge" alt="Issues" />
+![Contributions Welcome][b-contrib]
+![PRs Accepted][b-prs]
+![Issues Open][b-issues-open]
 
-</div>
+We follow clean code principles and Flutter best practices. All contributions
+should maintain:
 
-We follow clean code principles and Flutter best practices. All contributions should maintain:
-
-<table>
-<tr>
-<td align="center">
-✅<br/><b>Clean Code</b><br/>
-<sub>Clear separation of concerns</sub>
-</td>
-<td align="center">
-📝<br/><b>Documentation</b><br/>
-<sub>Comprehensive comments</sub>
-</td>
-<td align="center">
-🔒<br/><b>Type Safety</b><br/>
-<sub>Null-safe Dart code</sub>
-</td>
-<td align="center">
-🛡️<br/><b>Privacy First</b><br/>
-<sub>On-device processing</sub>
-</td>
-</tr>
-</table>
+| Standard | Description |
+| --- | --- |
+| ✅ Clean Code | Clear separation of concerns |
+| 📝 Documentation | Comprehensive comments |
+| 🔒 Type Safety | Null-safe Dart code |
+| 🛡️ Privacy First | On-device processing |
 
 #### 🚀 Quick Contribution Guide
 
@@ -877,9 +826,23 @@ git push origin feature/amazing-feature
 #### 📋 Contribution Guidelines
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines on:
+
 - 💻 Code style and standards
 - 🧪 Testing requirements
 - 📝 Documentation standards
 - 🔄 PR submission process
 
 ---
+
+[b-issues]: https://img.shields.io/badge/Report-Issues-red
+[l-issues]: https://github.com/neuron7x/international-cunnibal/issues
+[b-discuss]: https://img.shields.io/badge/Join-Discussions-blue
+[l-discuss]: https://github.com/neuron7x/international-cunnibal/discussions
+[b-flutter]: https://img.shields.io/badge/Built_with-Flutter-02569B
+[b-tflite]: https://img.shields.io/badge/Powered_by-TensorFlow_Lite-FF6F00
+[b-privacy]: https://img.shields.io/badge/Privacy-First-success
+[b-contrib]: https://img.shields.io/badge/Contributions-Welcome-brightgreen
+[b-prs]: https://img.shields.io/badge/PRs-Accepted-blue
+[b-issues-open]: https://img.shields.io/badge/Issues-Open-orange
+[b-privacy-device]: https://img.shields.io/badge/Privacy-OnDevice-success
+[badge-license]: https://img.shields.io/badge/License-MIT-green.svg
