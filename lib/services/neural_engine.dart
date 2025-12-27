@@ -36,6 +36,8 @@ class NeuralEngine {
   final GameLogicService _gameLogic = GameLogicService();
 
   void _resetControllers() {
+    _tongueDataController?.close();
+    _metricsController?.close();
     _tongueDataController = StreamController<TongueData>.broadcast();
     _metricsController = StreamController<BiometricMetrics>.broadcast();
   }

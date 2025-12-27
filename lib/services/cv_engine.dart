@@ -32,7 +32,7 @@ class DemoCvEngine implements CvEngine {
   int _frame = 0;
   Offset _lastPosition = const Offset(0.5, 0.5);
   double _lastVelocity = 0;
-  final Random _random = Random();
+  final Random _random = Random(42);
 
   @override
   bool get isActive => _timer != null;

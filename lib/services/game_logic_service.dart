@@ -2,6 +2,8 @@ import 'dart:async';
 import 'package:international_cunnibal/models/game_state.dart';
 import 'package:international_cunnibal/models/metrics.dart';
 
+/// Simple level/score loop for demo mode; streak resets on level-up to keep
+/// feedback cycles short and readable.
 class GameLogicService {
   static final GameLogicService _instance = GameLogicService._internal();
   factory GameLogicService() => _instance;

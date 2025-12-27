@@ -5,6 +5,13 @@ import 'package:international_cunnibal/models/movement_direction.dart';
 import 'package:international_cunnibal/models/tongue_data.dart';
 import 'package:international_cunnibal/utils/constants.dart';
 
+class DirectionResult {
+  final MovementDirection direction;
+  final double stability;
+
+  const DirectionResult(this.direction, this.stability);
+}
+
 const int _directionSampleWindowSize = 6;
 const double _steadyMovementThreshold = 0.02;
 // Maps normalized displacement magnitude into a 0-100 feedback scale
@@ -26,8 +33,8 @@ class SignalProcessor {
       consistencyScore: consistencyScore,
       frequency: frequency,
       pcaVariance: pcaVariance,
-      movementDirection: direction.$1,
-      directionStability: direction.$2,
+      movementDirection: direction.direction,
+      directionStability: direction.stability,
       timestamp: DateTime.now(),
     );
   }
@@ -82,9 +89,9 @@ class SignalProcessor {
     ];
   }
 
-  (MovementDirection, double) _calculateDirection(List<TongueData> buffer) {
+  DirectionResult _calculateDirection(List<TongueData> buffer) {
     final sampleCount = buffer.length;
-    if (sampleCount < 2) return (MovementDirection.steady, 0.0);
+    if (sampleCount < 2) return const DirectionResult(MovementDirection.steady, 0.0);
 
     final startIndex = sampleCount - _directionSampleWindowSize;
     final safeStartIndex = startIndex < 0 ? 0 : startIndex;
@@ -93,7 +100,7 @@ class SignalProcessor {
     final delta = end - start;
 
     if (delta.distance < _steadyMovementThreshold) {
-      return (MovementDirection.steady, 0.0);
+      return const DirectionResult(MovementDirection.steady, 0.0);
     }
 
     MovementDirection direction;
@@ -104,7 +111,7 @@ class SignalProcessor {
     }
 
     final stability = (delta.distance * _directionStabilityScale).clamp(0.0, 100.0);
-    return (direction, stability);
+    return DirectionResult(direction, stability);
   }
 
   double _calculateVariance(List<double> values) {
