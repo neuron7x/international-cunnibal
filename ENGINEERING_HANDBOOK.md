@@ -6,6 +6,7 @@
 
 ### Автоматичні гейти
 - **Conventional Commits**: PR title та коміти відповідають формату Conventional Commits.
+- PR titles must be Conventional Commits: type: subject.
 - **Trunk-based**: PR тільки в `main`.
 - **Lint + Tests + Coverage**: лінт, unit tests і coverage-пороги блокують злиття.
 - **Metrics**: зміни в метриках вимагають оновлених тестів і бенчмарків.
