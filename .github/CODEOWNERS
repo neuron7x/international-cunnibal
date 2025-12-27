@@ -1,0 +1,18 @@
+# Default owner
+* @neuron7x
+
+# Metrics and math
+/lib/core/motion_metrics.dart @neuron7x
+/lib/models/metrics.dart @neuron7x
+
+# Core engine and services
+/lib/core/ @neuron7x
+/lib/services/ @neuron7x
+
+# UI surfaces
+/lib/screens/ @neuron7x
+/lib/widgets/ @neuron7x
+
+# Documentation
+/*.md @neuron7x
+/docs/ @neuron7x

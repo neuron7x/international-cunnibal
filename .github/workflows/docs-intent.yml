@@ -1,0 +1,89 @@
+name: Documentation and Intent Guard
+
+on:
+  pull_request:
+
+jobs:
+  docs-lint:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect Markdown changes
+        id: docs
+        uses: tj-actions/changed-files@v45
+        with:
+          files: |
+            **/*.md
+
+      - name: Run markdownlint
+        if: steps.docs.outputs.any_changed == 'true'
+        uses: DavidAnson/markdownlint-cli2-action@v15
+        with:
+          globs: |
+            **/*.md
+
+  intent-guard:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Enforce docs for core or architecture changes
+        if: github.event_name == 'pull_request'
+        run: |
+          base_sha="${{ github.event.pull_request.base.sha }}"
+          git fetch origin "$base_sha"
+          changed="$(git diff --name-only "$base_sha"...HEAD)"
+
+          docs_pattern='(^README.md$|^README_ENHANCEMENTS.md$|^ARCHITECTURE.md$|^IMPLEMENTATION.md$|^QUICKSTART.md$|^API.md$|^FINAL_SUMMARY.md$|^CONTRIBUTING.md$|^docs/|^docs/)'
+          guard_targets='(^lib/core/|^lib/services/|^lib/models/|^lib/utils/|^lib/main.dart|^tool/|^analysis_options.yaml)'
+
+          touched_guard=$(echo "$changed" | grep -E "$guard_targets" || true)
+          touched_docs=$(echo "$changed" | grep -E "$docs_pattern" || true)
+
+          if [ -n "$touched_guard" ] && [ -z "$touched_docs" ]; then
+            echo "Core/architecture changes detected without docs. Please update architecture or user docs."
+            echo "Changed core files:"
+            echo "$touched_guard"
+            exit 1
+          fi
+
+  metrics-guard:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Require metric tests with metric changes
+        if: github.event_name == 'pull_request'
+        run: |
+          base_sha="${{ github.event.pull_request.base.sha }}"
+          git fetch origin "$base_sha"
+          changed="$(git diff --name-only "$base_sha"...HEAD)"
+
+          metric_targets='(^lib/core/motion_metrics.dart$|^lib/models/metrics.dart$|^lib/services/neural_engine.dart$|^lib/services/game_logic_service.dart$|^lib/screens/metrics_screen.dart$)'
+          metric_tests='(^test/motion_metrics_test.dart$|^test/models_test.dart$|^test/tracking_screen_logic_test.dart$|^test/game_logic_service_test.dart$)'
+
+          touched_metrics=$(echo "$changed" | grep -E "$metric_targets" || true)
+          touched_tests=$(echo "$changed" | grep -E "$metric_tests" || true)
+
+          if [ -n "$touched_metrics" ] && [ -z "$touched_tests" ]; then
+            echo "Metric or scoring code changed without updating metric-focused tests."
+            echo "Changed metric files:"
+            echo "$touched_metrics"
+            exit 1
+          fi
