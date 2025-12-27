@@ -228,5 +228,27 @@ void main() {
 
       expect(loose, greaterThan(strict));
     });
+
+    test('metrics are deterministic and bounded', () {
+      final samples = _sineWave(frequencyHz: 1.2, amplitude: 0.35, samples: 80, dt: 0.02);
+      final first = MotionMetrics.compute(
+        samples: samples,
+        expectedAmplitude: 0.35,
+      );
+      final second = MotionMetrics.compute(
+        samples: samples,
+        expectedAmplitude: 0.35,
+      );
+
+      expect(first.consistency, closeTo(second.consistency, 1e-9));
+      expect(first.frequency.hertz, closeTo(second.frequency.hertz, 1e-9));
+      expect(first.intensity, closeTo(second.intensity, 1e-9));
+      expect(first.patternMatch.score, closeTo(second.patternMatch.score, 1e-9));
+
+      expect(first.consistency, inInclusiveRange(0, 100));
+      expect(first.direction.stability, inInclusiveRange(0, 100));
+      expect(first.intensity, inInclusiveRange(0, 100));
+      expect(first.patternMatch.score, inInclusiveRange(0, 100));
+    });
   });
 }

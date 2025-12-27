@@ -1,18 +1,26 @@
 # Default owner
 * @neuron7x
 
-# Metrics and math
-/lib/core/motion_metrics.dart @neuron7x
-/lib/models/metrics.dart @neuron7x
+# CV / ML pipeline
+/lib/services/cv_engine.dart @neuron7x
+/lib/services/bio_tracking_service.dart @neuron7x
+/lib/services/neural_engine.dart @neuron7x
+/lib/models/tongue_data.dart @neuron7x
+/ml-ops/ @neuron7x
+/assets/models/ @neuron7x
 
-# Core engine and services
+# Metrics & domain logic
 /lib/core/ @neuron7x
-/lib/services/ @neuron7x
+/lib/models/metrics.dart @neuron7x
+/test/motion_metrics_test.dart @neuron7x
+/test/endurance_metrics_test.dart @neuron7x
 
-# UI surfaces
+# UI / presentation
+/lib/main.dart @neuron7x
 /lib/screens/ @neuron7x
 /lib/widgets/ @neuron7x
 
-# Documentation
+# Docs & governance
 /*.md @neuron7x
 /docs/ @neuron7x
+/.github/ @neuron7x
