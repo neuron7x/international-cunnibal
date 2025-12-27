@@ -45,6 +45,40 @@ void main() {
       neuralEngine.stop();
     });
 
+    test('metrics stream emits PCA and endurance data', () async {
+      neuralEngine.configureEndurance(enabled: true);
+      neuralEngine.start();
+
+      final landmarks = List.generate(309, (i) {
+        final offset = i / 1000;
+        return Offset(0.4 + offset, 0.5 + offset);
+      });
+
+      for (int i = 0; i < 12; i++) {
+        final testData = TongueData(
+          timestamp: DateTime.now().add(Duration(milliseconds: i * 16)),
+          position: Offset(0.4 + i * 0.01, 0.5 + i * 0.005),
+          velocity: 1.0 + i * 0.1,
+          acceleration: 0.0,
+          landmarks: landmarks,
+          isValidated: true,
+        );
+        neuralEngine.processTongueData(testData);
+        await Future.delayed(const Duration(milliseconds: 5));
+      }
+
+      final metrics = await neuralEngine.metricsStream.first
+          .timeout(const Duration(seconds: 2));
+
+      expect(metrics.pcaVariance.length, equals(3));
+      final total =
+          metrics.pcaVariance.reduce((a, b) => a + b).round();
+      expect(total, equals(100));
+      expect(metrics.endurance.threshold, isNot(equals(0)));
+
+      neuralEngine.stop();
+    });
+
     test('dispose closes resources', () {
       neuralEngine.start();
       neuralEngine.dispose();

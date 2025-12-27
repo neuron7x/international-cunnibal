@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:camera/camera.dart';
 import 'package:international_cunnibal/models/tongue_data.dart';
 import 'package:international_cunnibal/services/neural_engine.dart';
+import 'package:international_cunnibal/services/tongue_model_service.dart';
 import 'package:international_cunnibal/services/ui/cv_engine.dart';
 import 'package:international_cunnibal/utils/landmark_privacy.dart';
 
@@ -17,13 +18,16 @@ class BioTrackingService {
   final NeuralEngine _neuralEngine = NeuralEngine();
   final CvEngine _demoEngine = DemoCvEngine();
   final CvEngine _cameraEngine = CameraCvEngine();
+  final TongueModelService _tongueModelService = TongueModelService();
   
   bool _isTracking = false;
   CvEngineMode _mode = CvEngineMode.demo;
   StreamSubscription? _engineSubscription;
+  bool _modelReady = false;
 
   bool get isTracking => _isTracking;
   bool get isDemoMode => _mode == CvEngineMode.demo;
+  bool get isModelReady => _modelReady;
   CameraController? get cameraController =>
       _mode == CvEngineMode.camera ? _cameraEngine.cameraController : null;
 
@@ -61,21 +65,27 @@ class BioTrackingService {
 
   /// Load TFLite model for tongue detection
   /// Reference: On-device AI for privacy (2025-11-30)
-  Future<void> loadModel() async {
-    // In production, load TFLite model:
-    // await Tflite.loadModel(
-    //   model: 'assets/models/tongue_detector.tflite',
-    //   labels: 'assets/models/labels.txt',
-    // );
+  Future<bool> loadModel({bool strict = false}) async {
+    final loaded = await _tongueModelService.loadModel();
+    _modelReady = loaded;
+    if (!loaded && strict) {
+      throw Exception('Tongue detection model not available.');
+    }
+    if (loaded) {
+      await _tongueModelService.warmup();
+    }
+    return loaded;
   }
 
   Future<void> prepare() async {
     await _engine.prepare();
+    await loadModel();
   }
 
   void dispose() {
     stopTracking();
     _cameraEngine.cameraController?.dispose();
+    _tongueModelService.dispose();
   }
 
   void _onSample(TongueData data) {

@@ -77,14 +77,41 @@ class MotionMetricsResult {
   });
 }
 
+class MotionMetricsCache {
+  final List<MotionSample> samples;
+  final List<Vector2> displacements;
+  final double sampleRate;
+  final Vector2 meanPosition;
+  final Vector2 principalAxis;
+  final _SpeedStats speedStats;
+  final double spatialScale;
+  final List<double> centeredSignal;
+  final double signalEnergy;
+
+  MotionMetricsCache({
+    required this.samples,
+    required this.displacements,
+    required this.sampleRate,
+    required this.meanPosition,
+    required this.principalAxis,
+    required this.speedStats,
+    required this.spatialScale,
+    required this.centeredSignal,
+    required this.signalEnergy,
+  });
+}
+
 class MotionMetrics {
   static const double _eps = 1e-9;
+  static final Expando<MotionMetricsCache> _cache =
+      Expando<MotionMetricsCache>('motion_metrics_cache');
 
   static MotionMetricsResult compute({
     required List<MotionSample> samples,
     double expectedAmplitude = 1.0,
     List<MotionSample>? pattern,
     double patternTolerance = 0.1,
+    MotionMetricsCache? cache,
   }) {
     if (samples.length < 2) {
       return MotionMetricsResult(
@@ -96,12 +123,14 @@ class MotionMetrics {
       );
     }
 
-    final displacements = _displacements(samples);
+    final derivedCache = cache ?? _cache[samples] ?? _buildCache(samples);
+    _cache[samples] = derivedCache;
+    final displacements = derivedCache.displacements;
     final totalMag = displacements.fold<double>(
       0,
       (sum, d) => sum + d.magnitude,
     );
-    final sampleRate = _sampleRate(samples);
+    final sampleRate = derivedCache.sampleRate;
 
     if (totalMag < _eps) {
       return MotionMetricsResult(
@@ -120,15 +149,15 @@ class MotionMetrics {
       );
     }
 
-    final axis = _principalAxis(samples);
+    final axis = derivedCache.principalAxis;
     final directionVector = _directionFromAxis(axis, displacements);
-    final speedStats = _speedStats(samples, displacements);
+    final speedStats = derivedCache.speedStats;
     final consistency = _consistency(speedStats);
-    final freq = _frequency(samples, axis);
+    final freq = _frequency(derivedCache);
     final intensity = _intensity(
-      samples,
       speedStats.meanSpeed,
       sampleRate,
+      derivedCache.spatialScale,
     );
     final directionStability = _directionStability(speedStats, directionVector);
     final patternResult = pattern == null
@@ -152,6 +181,42 @@ class MotionMetrics {
     );
   }
 
+  static MotionMetricsCache _buildCache(List<MotionSample> samples) {
+    final displacements = _displacements(samples);
+    final sampleRate = _sampleRate(samples);
+    final meanPosition = _meanPosition(samples);
+    final principalAxis = _principalAxis(samples, meanPosition);
+    final speedStats = _speedStats(samples, displacements);
+    final spatialScale = _spatialScale(samples, meanPosition);
+
+    final centeredSignal = <double>[];
+    var signalEnergy = 0.0;
+    if (samples.length >= 4 && principalAxis.magnitude >= _eps) {
+      final signal = samples
+          .map((s) => (s.position - meanPosition).dot(principalAxis))
+          .toList();
+      final signalMean =
+          signal.reduce((a, b) => a + b) / max(1, signal.length);
+      for (final value in signal) {
+        final centered = value - signalMean;
+        centeredSignal.add(centered);
+        signalEnergy += centered * centered;
+      }
+    }
+
+    return MotionMetricsCache(
+      samples: samples,
+      displacements: displacements,
+      sampleRate: sampleRate,
+      meanPosition: meanPosition,
+      principalAxis: principalAxis,
+      speedStats: speedStats,
+      spatialScale: spatialScale,
+      centeredSignal: centeredSignal,
+      signalEnergy: signalEnergy,
+    );
+  }
+
   static List<Vector2> _displacements(List<MotionSample> samples) {
     final out = <Vector2>[];
     for (var i = 1; i < samples.length; i++) {
@@ -167,9 +232,11 @@ class MotionMetrics {
     return 1 / max(_eps, meanDt);
   }
 
-  static Vector2 _principalAxis(List<MotionSample> samples) {
+  static Vector2 _principalAxis(
+    List<MotionSample> samples,
+    Vector2 mean,
+  ) {
     if (samples.isEmpty) return const Vector2(0, 0);
-    final mean = _meanPosition(samples);
     double cxx = 0, cxy = 0, cyy = 0;
     for (final s in samples) {
       final dx = s.position.x - mean.x;
@@ -219,33 +286,36 @@ class MotionMetrics {
         jerkStdNormalized: 0,
       );
     }
-    final speeds = <double>[];
+    double sum = 0;
+    double sumSq = 0;
+    double jerkSum = 0;
+    double jerkSumSq = 0;
+    var jerkCount = 0;
+    double? prevSpeed;
     for (var i = 0; i < displacements.length; i++) {
       final dt = max(_eps, samples[i + 1].t - samples[i].t);
-      speeds.add(displacements[i].magnitude / dt);
+      final speed = displacements[i].magnitude / dt;
+      sum += speed;
+      sumSq += speed * speed;
+      if (prevSpeed != null) {
+        final jerk = speed - prevSpeed;
+        jerkSum += jerk;
+        jerkSumSq += jerk * jerk;
+        jerkCount += 1;
+      }
+      prevSpeed = speed;
     }
-    final mean =
-        speeds.reduce((a, b) => a + b) / max(1, speeds.length);
-    final variance = speeds
-            .map((v) => (v - mean) * (v - mean))
-            .reduce((a, b) => a + b) /
-        max(1, speeds.length);
-    final std = sqrt(variance);
+    final count = max(1, displacements.length);
+    final mean = sum / count;
+    final variance = (sumSq / count) - mean * mean;
+    final std = sqrt(max(0.0, variance));
     final cv = std / (mean + _eps);
 
     double jerkStd = 0;
-    if (speeds.length > 1) {
-      final jerks = <double>[];
-      for (var i = 1; i < speeds.length; i++) {
-        jerks.add(speeds[i] - speeds[i - 1]);
-      }
-      final jerkMean =
-          jerks.reduce((a, b) => a + b) / max(1, jerks.length);
-      final jerkVar = jerks
-              .map((v) => (v - jerkMean) * (v - jerkMean))
-              .reduce((a, b) => a + b) /
-          max(1, jerks.length);
-      jerkStd = sqrt(jerkVar);
+    if (jerkCount > 0) {
+      final jerkMean = jerkSum / max(1, jerkCount);
+      final jerkVar = (jerkSumSq / max(1, jerkCount)) - jerkMean * jerkMean;
+      jerkStd = sqrt(max(0.0, jerkVar));
     }
     final jerkStdNormalized = jerkStd / (mean + _eps);
     return _SpeedStats(
@@ -268,19 +338,16 @@ class MotionMetrics {
     return (100 - penalty).clamp(0, 100);
   }
 
-  static FrequencyResult _frequency(List<MotionSample> samples, Vector2 axis) {
-    if (samples.length < 4 || axis.magnitude < _eps) {
+  static FrequencyResult _frequency(MotionMetricsCache cache) {
+    if (cache.samples.length < 4 ||
+        cache.principalAxis.magnitude < _eps ||
+        cache.centeredSignal.isEmpty) {
       return const FrequencyResult(hertz: 0, confidence: 0);
     }
 
-    final sampleRate = _sampleRate(samples);
-    final mean = _meanPosition(samples);
-    final signal =
-        samples.map((s) => (s.position - mean).dot(axis)).toList();
-    final signalMean =
-        signal.reduce((a, b) => a + b) / max(1, signal.length);
-    final centered = signal.map((v) => v - signalMean).toList();
-    final r0 = centered.map((v) => v * v).reduce((a, b) => a + b);
+    final sampleRate = cache.sampleRate;
+    final centered = cache.centeredSignal;
+    final r0 = cache.signalEnergy;
     if (r0.abs() < _eps) {
       return const FrequencyResult(hertz: 0, confidence: 0);
     }
@@ -372,20 +439,17 @@ class MotionMetrics {
   }
 
   static double _intensity(
-    List<MotionSample> samples,
     double meanSpeed,
     double sampleRate,
+    double spatialScale,
   ) {
-    if (samples.isEmpty) return 0;
-    final spatialScale = _spatialScale(samples);
     const scale = 0.05;
     final denom = spatialScale * sampleRate * scale + _eps;
     final score = 100 * (meanSpeed / denom);
     return score.clamp(0, 100);
   }
 
-  static double _spatialScale(List<MotionSample> samples) {
-    final mean = _meanPosition(samples);
+  static double _spatialScale(List<MotionSample> samples, Vector2 mean) {
     double varX = 0;
     double varY = 0;
     for (final s in samples) {
@@ -410,10 +474,12 @@ class MotionMetrics {
     }
 
     double mse = 0;
+    var obsIndex = 1;
     for (final t in target) {
-      final interp = _interpolate(observed, t.t);
-      final dx = interp.x - t.position.x;
-      final dy = interp.y - t.position.y;
+      final interp = _interpolateSequential(observed, t.t, obsIndex);
+      obsIndex = interp.nextIndex;
+      final dx = interp.position.x - t.position.x;
+      final dy = interp.position.y - t.position.y;
       mse += (dx * dx + dy * dy);
     }
     mse /= target.length;
@@ -424,11 +490,22 @@ class MotionMetrics {
     return PatternMatchResult(score: score, mse: mse);
   }
 
-  static Vector2 _interpolate(List<MotionSample> samples, double t) {
-    if (t <= samples.first.t) return samples.first.position;
-    if (t >= samples.last.t) return samples.last.position;
+  static _Interpolated _interpolateSequential(
+    List<MotionSample> samples,
+    double t,
+    int startIndex,
+  ) {
+    if (t <= samples.first.t) {
+      return _Interpolated(position: samples.first.position, nextIndex: 1);
+    }
+    if (t >= samples.last.t) {
+      return _Interpolated(
+        position: samples.last.position,
+        nextIndex: samples.length - 1,
+      );
+    }
 
-    var idx = 1;
+    var idx = startIndex.clamp(1, samples.length - 1);
     while (idx < samples.length && samples[idx].t < t) {
       idx++;
     }
@@ -436,9 +513,12 @@ class MotionMetrics {
     final b = samples[idx];
     final span = max(_eps, b.t - a.t);
     final alpha = (t - a.t) / span;
-    return Vector2(
-      a.position.x + (b.position.x - a.position.x) * alpha,
-      a.position.y + (b.position.y - a.position.y) * alpha,
+    return _Interpolated(
+      position: Vector2(
+        a.position.x + (b.position.x - a.position.x) * alpha,
+        a.position.y + (b.position.y - a.position.y) * alpha,
+      ),
+      nextIndex: idx,
     );
   }
 }
@@ -454,5 +534,15 @@ class _SpeedStats {
     required this.stdSpeed,
     required this.cv,
     required this.jerkStdNormalized,
+  });
+}
+
+class _Interpolated {
+  final Vector2 position;
+  final int nextIndex;
+
+  const _Interpolated({
+    required this.position,
+    required this.nextIndex,
   });
 }

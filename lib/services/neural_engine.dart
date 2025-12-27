@@ -39,6 +39,10 @@ class NeuralEngine {
   final GameLogicService _gameLogic = GameLogicService();
   final EnduranceEngine _enduranceEngine = EnduranceEngine();
   final EnduranceGameLogicService _enduranceGameLogic = EnduranceGameLogicService();
+  double _pcaSumX = 0;
+  double _pcaSumY = 0;
+  double _pcaSumX2 = 0;
+  double _pcaSumY2 = 0;
 
   void _resetControllers() {
     _tongueDataController?.close();
@@ -68,6 +72,7 @@ class NeuralEngine {
     
     _isProcessing = true;
     _dataBuffer.clear();
+    _resetPcaStats();
     _enduranceEngine.reset();
     
     // Calculate metrics every second
@@ -89,6 +94,7 @@ class NeuralEngine {
     _metricsTimer?.cancel();
     _metricsTimer = null;
     _enduranceEngine.reset();
+    _resetPcaStats();
   }
 
   void configureEndurance({required bool enabled}) {
@@ -109,8 +115,10 @@ class NeuralEngine {
     // Add to buffer, maintaining buffer size
     _dataBuffer.add(data);
     if (_dataBuffer.length > _bufferSize) {
-      _dataBuffer.removeAt(0);
+      final removed = _dataBuffer.removeAt(0);
+      _updatePcaStats(removed: removed);
     }
+    _updatePcaStats(added: data);
     _ingestEndurance(data);
 
     // Apply Action Acceptor pattern:
@@ -197,16 +205,14 @@ class NeuralEngine {
   /// Simplified PCA for 3 principal components
   List<double> _calculatePCA() {
     if (_dataBuffer.length < 3) return [0.0, 0.0, 0.0];
-    
-    final positions = _dataBuffer
-        .map((d) => d.position)
-        .toList();
-    
-    final xValues = positions.map((p) => p.dx).toList();
-    final yValues = positions.map((p) => p.dy).toList();
-    
-    final xVariance = _calculateVariance(xValues);
-    final yVariance = _calculateVariance(yValues);
+
+    final count = _dataBuffer.length;
+    final meanX = _pcaSumX / count;
+    final meanY = _pcaSumY / count;
+    final xVariance =
+        ((_pcaSumX2 / count) - meanX * meanX).clamp(0.0, double.infinity);
+    final yVariance =
+        ((_pcaSumY2 / count) - meanY * meanY).clamp(0.0, double.infinity);
     final totalVariance = xVariance + yVariance;
     
     if (totalVariance == 0) return [0.0, 0.0, 0.0];
@@ -218,13 +224,26 @@ class NeuralEngine {
     ];
   }
 
-  double _calculateVariance(List<double> values) {
-    if (values.isEmpty) return 0.0;
-    
-    final mean = values.reduce((a, b) => a + b) / values.length;
-    return values
-        .map((v) => (v - mean) * (v - mean))
-        .reduce((a, b) => a + b) / values.length;
+  void _resetPcaStats() {
+    _pcaSumX = 0;
+    _pcaSumY = 0;
+    _pcaSumX2 = 0;
+    _pcaSumY2 = 0;
+  }
+
+  void _updatePcaStats({TongueData? added, TongueData? removed}) {
+    if (added != null) {
+      _pcaSumX += added.position.dx;
+      _pcaSumY += added.position.dy;
+      _pcaSumX2 += added.position.dx * added.position.dx;
+      _pcaSumY2 += added.position.dy * added.position.dy;
+    }
+    if (removed != null) {
+      _pcaSumX -= removed.position.dx;
+      _pcaSumY -= removed.position.dy;
+      _pcaSumX2 -= removed.position.dx * removed.position.dx;
+      _pcaSumY2 -= removed.position.dy * removed.position.dy;
+    }
   }
 
   void _ingestEndurance(TongueData data) {
@@ -245,5 +264,6 @@ class NeuralEngine {
     _metricsController?.close();
     _tongueDataController = null;
     _metricsController = null;
+    _resetPcaStats();
   }
 }

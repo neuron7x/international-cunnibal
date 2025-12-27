@@ -8,6 +8,11 @@ Owned by the CV / ML Pipeline RE (see CODEOWNERS).
 - No raw video persistence; only landmarks/skeleton data leave the CV layer.
 - Model assets are encrypted at rest and tracked via DVC.
 
+## Real-time Integration
+- `BioTrackingService` loads the tongue detector via `TongueModelService` and
+  warms the interpreter for low-latency inference.
+- Model benchmarks live in `ml-ops/benchmarks/` and must accompany model changes.
+
 ## Model Asset Rules
 - Binary model artifacts **must not** be committed to Git.
 - Use DVC (`dvc add`) to track models and datasets.

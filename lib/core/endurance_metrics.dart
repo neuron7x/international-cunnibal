@@ -55,15 +55,19 @@ class EnduranceMetrics {
     }
 
     final boundedThreshold = apertureThreshold.clamp(apertureMin, apertureMax);
-    final apertures = samples
-        .map((sample) =>
-            _apertureForSample(sample, apertureMin: apertureMin, apertureMax: apertureMax))
-        .toList();
-    final meanAperture = _mean(apertures);
-    final stability = _stability(apertures, meanAperture);
-    final enduranceTime =
-        _enduranceTime(apertures, samples, threshold: boundedThreshold);
-    final fatigue = _fatigue(apertures);
+    final metricsCache = _EnduranceMetricsCache.fromSamples(
+      samples,
+      apertureMin: apertureMin,
+      apertureMax: apertureMax,
+    );
+    final meanAperture = metricsCache.meanAperture;
+    final stability = metricsCache.stability;
+    final enduranceTime = _enduranceTime(
+      metricsCache.apertures,
+      samples,
+      threshold: boundedThreshold,
+    );
+    final fatigue = metricsCache.fatigue;
 
     final totalDuration =
         totalWindowSeconds ?? max(_eps, samples.last.t - samples.first.t);
@@ -94,44 +98,6 @@ class EnduranceMetrics {
     final width = (s.leftCorner - s.rightCorner).magnitude;
     if (width < _eps) return 0;
     return (vertical / width).clamp(apertureMin, apertureMax);
-  }
-
-  static double _mean(List<double> values) {
-    if (values.isEmpty) return 0;
-    var sum = 0.0;
-    for (final v in values) {
-      sum += v;
-    }
-    return sum / max(1, values.length);
-  }
-
-  static double _stability(List<double> apertures, double mean) {
-    if (mean < _eps || apertures.length < 2) return 0;
-    var sum = 0.0;
-    for (final v in apertures) {
-      final diff = v - mean;
-      sum += diff * diff;
-    }
-    final variance = sum / apertures.length;
-    final std = sqrt(variance);
-    final ratio = std / (mean.abs() + _eps);
-    return (100 * (1 - ratio)).clamp(0.0, 100.0);
-  }
-
-  static double _fatigue(List<double> apertures) {
-    if (apertures.length < 4) return 0;
-    final mid = (apertures.length / 2).floor();
-    final firstHalf = apertures.sublist(0, mid);
-    final secondHalf = apertures.sublist(mid);
-    final firstMean = _mean(firstHalf);
-    final secondMean = _mean(secondHalf);
-    final firstStability = _stability(firstHalf, firstMean);
-    final secondStability = _stability(secondHalf, secondMean);
-    if (firstStability < _eps) return 0;
-    final dropRatio =
-        ((firstStability - secondStability) / max(_eps, firstStability))
-            .clamp(0.0, 1.0);
-    return (dropRatio * 100).clamp(0.0, 100.0);
   }
 
   static double _enduranceTime(
@@ -170,5 +136,107 @@ class EnduranceMetrics {
     final base = 0.4 * stability + 0.35 * timeScore + 0.25 * apertureScore;
     final penalty = 0.3 * fatigue;
     return (base - penalty).clamp(0.0, 100.0);
+  }
+}
+
+class _EnduranceMetricsCache {
+  final List<double> apertures;
+  final double meanAperture;
+  final double stability;
+  final double fatigue;
+
+  _EnduranceMetricsCache({
+    required this.apertures,
+    required this.meanAperture,
+    required this.stability,
+    required this.fatigue,
+  });
+
+  factory _EnduranceMetricsCache.fromSamples(
+    List<ApertureSample> samples, {
+    required double apertureMin,
+    required double apertureMax,
+  }) {
+    final count = samples.length;
+    final apertures = List<double>.filled(count, 0);
+    double sum = 0;
+    double sumSq = 0;
+    double firstSum = 0;
+    double firstSumSq = 0;
+    int firstCount = 0;
+    double secondSum = 0;
+    double secondSumSq = 0;
+    int secondCount = 0;
+
+    final mid = (count / 2).floor();
+
+    for (var i = 0; i < count; i++) {
+      final aperture = EnduranceMetrics._apertureForSample(
+        samples[i],
+        apertureMin: apertureMin,
+        apertureMax: apertureMax,
+      );
+      apertures[i] = aperture;
+      sum += aperture;
+      sumSq += aperture * aperture;
+      if (i < mid) {
+        firstSum += aperture;
+        firstSumSq += aperture * aperture;
+        firstCount += 1;
+      } else {
+        secondSum += aperture;
+        secondSumSq += aperture * aperture;
+        secondCount += 1;
+      }
+    }
+
+    final meanAperture = count == 0 ? 0.0 : sum / max(1, count);
+    final stability = _stabilityFromStats(
+      meanAperture,
+      sumSq,
+      count,
+    );
+
+    final firstMean =
+        firstCount == 0 ? 0.0 : firstSum / max(1, firstCount);
+    final secondMean =
+        secondCount == 0 ? 0.0 : secondSum / max(1, secondCount);
+
+    final firstStability =
+        _stabilityFromStats(firstMean, firstSumSq, firstCount);
+    final secondStability =
+        _stabilityFromStats(secondMean, secondSumSq, secondCount);
+
+    final fatigue = _fatigueFromStability(firstStability, secondStability);
+
+    return _EnduranceMetricsCache(
+      apertures: apertures,
+      meanAperture: meanAperture,
+      stability: stability,
+      fatigue: fatigue,
+    );
+  }
+
+  static double _stabilityFromStats(
+    double mean,
+    double sumSq,
+    int count,
+  ) {
+    if (mean < EnduranceMetrics._eps || count < 2) return 0;
+    final variance = (sumSq / max(1, count)) - mean * mean;
+    final std = sqrt(max(0.0, variance));
+    final ratio = std / (mean.abs() + EnduranceMetrics._eps);
+    return (100 * (1 - ratio)).clamp(0.0, 100.0);
+  }
+
+  static double _fatigueFromStability(
+    double firstStability,
+    double secondStability,
+  ) {
+    if (firstStability < EnduranceMetrics._eps) return 0;
+    final dropRatio =
+        ((firstStability - secondStability) / max(EnduranceMetrics._eps, firstStability))
+            .clamp(0.0, 1.0);
+    return (dropRatio * 100).clamp(0.0, 100.0);
   }
 }

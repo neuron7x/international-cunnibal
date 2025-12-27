@@ -1,6 +1,3 @@
-import 'dart:convert';
-import 'dart:io';
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:international_cunnibal/models/dictation_session.dart';
 import 'package:international_cunnibal/models/endurance_snapshot.dart';
@@ -12,11 +9,9 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('GitHubExportService', () {
-    test('exports performance log to provided directory', () async {
+    test('exports performance log payload', () async {
       final service = GitHubExportService();
       service.clearLogs();
-      final tempDir =
-          await Directory.systemTemp.createTemp('github_export_service_test');
 
       service.logMetrics(
         BiometricMetrics(
@@ -42,19 +37,15 @@ void main() {
         ),
       );
 
-      final exportPath =
-          await service.exportPerformanceLog(directoryOverride: tempDir);
-      final file = File(exportPath);
-
-      expect(file.existsSync(), isTrue);
-
-      final content = jsonDecode(await file.readAsString()) as Map;
+      final payload = service.exportPerformanceLog(
+        timestamp: DateTime(2025, 12, 26, 12, 0, 0),
+      );
+      final content = payload.data;
       expect(content['totalMetrics'], equals(1));
       expect(content['totalSessions'], equals(1));
       expect(content['summary']['avgSynchronization'], equals(90));
 
       service.clearLogs();
-      await tempDir.delete(recursive: true);
     });
   });
 }

@@ -4,7 +4,7 @@ import 'package:international_cunnibal/models/metrics.dart';
 import 'package:international_cunnibal/models/movement_direction.dart';
 import 'package:international_cunnibal/services/endurance_game_logic_service.dart';
 import 'package:international_cunnibal/services/game_logic_service.dart';
-import 'package:international_cunnibal/services/ui/github_export_service.dart';
+import 'package:international_cunnibal/services/github_export_service.dart';
 import 'package:international_cunnibal/services/neural_engine.dart';
 
 class MetricsScreen extends StatefulWidget {
@@ -45,11 +45,13 @@ class _MetricsScreenState extends State<MetricsScreen> {
     setState(() => _isExporting = true);
 
     try {
-      final filePath = await _exportService.exportPerformanceLog();
+      final payload = _exportService.exportPerformanceLog();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Exported to: $filePath'),
+            content: Text(
+              'Export ready (${payload.data['totalMetrics']} metrics)',
+            ),
             duration: const Duration(seconds: 3),
           ),
         );
