@@ -119,6 +119,30 @@ test('NeuralEngine calculates consistency score correctly', () {
 4. **Code Review**: Address all review comments
 5. **Clean Commits**: Squash commits if requested
 
+## Engineering Constitution (2025)
+
+This repository is governed by the **Technical Constitution and Architectural Foundation** documented in
+[`ENGINEERING_HANDBOOK.md`](ENGINEERING_HANDBOOK.md). All contributors are expected to follow its principles.
+
+### Critical Protocol: \"No Ghosts\"
+- **Rule:** No logic exists without a test. No model exists without a benchmark.
+- **Enforcement:** Any PR touching ML logic must include a screenshot or log output from `LatencyBenchmark`
+  executed on a physical device.
+
+### Model Integration Standard
+When adding a new `.tflite` or `.mlmodel`:
+1. Add the source file under `ml-ops/models/`.
+2. Run `dvc add ml-ops/models/new_model.tflite`.
+3. Commit the generated `.dvc` file.
+4. Update `model_card.md` with model provenance, accuracy metrics, and intent.
+5. Update `Constants.kt` / `Constants.swift` with the new model path.
+
+### 16ms Barrier Protocol
+- **Android:** Use `suspend` functions for ML interactions and `withContext(Dispatchers.Default)` for tensor
+  pre-processing.
+- **iOS:** Run Vision/ML work on a background `DispatchQueue` or `Task`, update UI only on `MainActor`.
+- **Violation:** Any profiler log indicating a dropped frame triggers mandatory refactoring.
+
 ### PR Title Format
 ```
 [Type] Brief description
