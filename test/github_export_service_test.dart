@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:international_cunnibal/models/dictation_session.dart';
+import 'package:international_cunnibal/models/endurance_snapshot.dart';
 import 'package:international_cunnibal/models/metrics.dart';
 import 'package:international_cunnibal/models/movement_direction.dart';
 import 'package:international_cunnibal/services/github_export_service.dart';
@@ -27,6 +28,7 @@ void main() {
           directionStability: 50,
           intensity: 60,
           patternScore: 75,
+          endurance: EnduranceSnapshot.empty(),
           timestamp: DateTime(2025, 12, 26),
         ),
       );

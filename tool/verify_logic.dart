@@ -1,4 +1,5 @@
 import 'package:international_cunnibal/core/motion_metrics.dart';
+import 'package:international_cunnibal/models/endurance_snapshot.dart';
 import 'package:international_cunnibal/models/metrics.dart';
 import 'package:international_cunnibal/models/movement_direction.dart';
 import 'package:international_cunnibal/services/game_logic_service.dart';
@@ -26,6 +27,7 @@ Future<void> main() async {
     directionStability: motion.direction.stability,
     intensity: motion.intensity,
     patternScore: motion.patternMatch.score,
+    endurance: EnduranceSnapshot.empty(),
     timestamp: DateTime.now(),
   );
 

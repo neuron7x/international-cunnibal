@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:international_cunnibal/services/neural_engine.dart';
-import 'package:international_cunnibal/services/github_export_service.dart';
+import 'package:international_cunnibal/models/couple_dashboard.dart';
 import 'package:international_cunnibal/models/metrics.dart';
 import 'package:international_cunnibal/models/movement_direction.dart';
+import 'package:international_cunnibal/services/endurance_game_logic_service.dart';
+import 'package:international_cunnibal/services/game_logic_service.dart';
+import 'package:international_cunnibal/services/github_export_service.dart';
+import 'package:international_cunnibal/services/neural_engine.dart';
 
 class MetricsScreen extends StatefulWidget {
   const MetricsScreen({super.key});
@@ -14,9 +17,13 @@ class MetricsScreen extends StatefulWidget {
 class _MetricsScreenState extends State<MetricsScreen> {
   final NeuralEngine _neuralEngine = NeuralEngine();
   final GitHubExportService _exportService = GitHubExportService();
+  final GameLogicService _gameLogic = GameLogicService();
+  final EnduranceGameLogicService _enduranceGameLogic = EnduranceGameLogicService();
   
   BiometricMetrics? _currentMetrics;
   bool _isExporting = false;
+  bool _showComparisons = false;
+  bool _enduranceOptIn = false;
 
   @override
   void initState() {
@@ -95,6 +102,16 @@ class _MetricsScreenState extends State<MetricsScreen> {
               ),
             ),
             const SizedBox(height: 24),
+            SwitchListTile(
+              title: const Text('Enable jaw endurance tracking'),
+              subtitle: const Text('On-device aperture control (consent-based)'),
+              value: _enduranceOptIn,
+              onChanged: (value) {
+                setState(() => _enduranceOptIn = value);
+                _neuralEngine.configureEndurance(enabled: value);
+              },
+            ),
+            const SizedBox(height: 16),
 
             // Metrics Cards
             if (_currentMetrics != null) ...[
@@ -154,6 +171,82 @@ class _MetricsScreenState extends State<MetricsScreen> {
                 ),
               ),
               const SizedBox(height: 16),
+              if (_enduranceOptIn) ...[
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(Icons.fitness_center, color: Colors.orange[700]),
+                            const SizedBox(width: 12),
+                            const Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Endurance Control',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  Text(
+                                    'Jaw aperture stability (on-device)',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Text(
+                              '${_currentMetrics!.endurance.enduranceScore.toStringAsFixed(1)}%',
+                              style: TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.orange[700],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: [
+                            _ChipStat(
+                              label: 'Aperture',
+                              value:
+                                  '${(_currentMetrics!.endurance.aperture * 100).toStringAsFixed(1)}%',
+                            ),
+                            _ChipStat(
+                              label: 'Stability',
+                              value:
+                                  '${_currentMetrics!.endurance.apertureStability.toStringAsFixed(1)}%',
+                            ),
+                            _ChipStat(
+                              label: 'Hold Time',
+                              value:
+                                  '${_currentMetrics!.endurance.enduranceTime.toStringAsFixed(2)}s',
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ] else ...[
+                const Text(
+                  'Enable jaw endurance tracking to view aperture stability metrics.',
+                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                ),
+                const SizedBox(height: 16),
+              ],
               
               // PCA Variance
               Card(
@@ -211,6 +304,28 @@ class _MetricsScreenState extends State<MetricsScreen> {
                   ),
                 ),
               ),
+              if (_enduranceOptIn) ...[
+                const SizedBox(height: 16),
+                SwitchListTile(
+                  title: const Text('Couple Dashboard (opt-in)'),
+                  subtitle: const Text('Side-by-side without ranking'),
+                  value: _showComparisons,
+                  onChanged: (value) {
+                    setState(() => _showComparisons = value);
+                    _neuralEngine.configureEndurance(enabled: value || _enduranceOptIn);
+                  },
+                ),
+                if (_showComparisons)
+                  _CoupleDashboardCard(
+                    dashboard: CoupleDashboard.fromInputs(
+                      motion: _currentMetrics!,
+                      motionState: _gameLogic.state,
+                      endurance: _currentMetrics!.endurance,
+                      enduranceState: _enduranceGameLogic.state,
+                      comparisonsEnabled: _showComparisons,
+                    ),
+                  ),
+              ],
             ] else ...[
               const Center(
                 child: Padding(
@@ -297,6 +412,130 @@ class _MetricsScreenState extends State<MetricsScreen> {
     if (score >= 70) return Colors.green;
     if (score >= 40) return Colors.orange;
     return Colors.red;
+  }
+}
+
+class _ChipStat extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const _ChipStat({
+    required this.label,
+    required this.value,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Chip(
+      label: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(fontSize: 12, color: Colors.black54),
+          ),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+      backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
+    );
+  }
+}
+
+class _CoupleDashboardCard extends StatelessWidget {
+  final CoupleDashboard dashboard;
+
+  const _CoupleDashboardCard({required this.dashboard});
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Couple Skill Dashboard',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Informational only — no automatic ranking.',
+              style: TextStyle(fontSize: 12, color: Colors.grey),
+            ),
+            const SizedBox(height: 12),
+            _ComparisonRow(row: dashboard.consistencyVsEndurance, unit: '%'),
+            const SizedBox(height: 8),
+            _ComparisonRow(row: dashboard.directionVsStability, unit: '%'),
+            const SizedBox(height: 8),
+            _ComparisonRow(row: dashboard.levelVsLevel, unit: ''),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ComparisonRow extends StatelessWidget {
+  final CoupleComparisonRow row;
+  final String unit;
+
+  const _ComparisonRow({required this.row, required this.unit});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                row.leftLabel,
+                style: const TextStyle(fontSize: 12, color: Colors.grey),
+              ),
+              Text(
+                '${row.leftValue.toStringAsFixed(1)}$unit',
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const Icon(Icons.compare_arrows, color: Colors.grey),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                row.rightLabel,
+                style: const TextStyle(fontSize: 12, color: Colors.grey),
+              ),
+              Text(
+                '${row.rightValue.toStringAsFixed(1)}$unit',
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 }
 

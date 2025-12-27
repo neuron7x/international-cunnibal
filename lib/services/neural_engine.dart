@@ -1,5 +1,8 @@
 import 'dart:async';
 import 'package:international_cunnibal/core/motion_metrics.dart';
+import 'package:international_cunnibal/services/endurance_engine.dart';
+import 'package:international_cunnibal/services/endurance_game_logic_service.dart';
+import 'package:international_cunnibal/models/endurance_snapshot.dart';
 import 'package:international_cunnibal/models/tongue_data.dart';
 import 'package:international_cunnibal/models/metrics.dart';
 import 'package:international_cunnibal/services/game_logic_service.dart';
@@ -19,6 +22,7 @@ class NeuralEngine {
 
   StreamController<TongueData>? _tongueDataController;
   StreamController<BiometricMetrics>? _metricsController;
+  bool _enduranceEnabled = false;
 
   Stream<TongueData> get tongueDataStream {
     _ensureControllers();
@@ -33,6 +37,8 @@ class NeuralEngine {
   final List<TongueData> _dataBuffer = [];
   final int _bufferSize = NeuralEngineConstants.bufferSize;
   final GameLogicService _gameLogic = GameLogicService();
+  final EnduranceEngine _enduranceEngine = EnduranceEngine();
+  final EnduranceGameLogicService _enduranceGameLogic = EnduranceGameLogicService();
 
   void _resetControllers() {
     _tongueDataController?.close();
@@ -62,6 +68,7 @@ class NeuralEngine {
     
     _isProcessing = true;
     _dataBuffer.clear();
+    _enduranceEngine.reset();
     
     // Calculate metrics every second
     _metricsTimer = Timer.periodic(
@@ -81,6 +88,14 @@ class NeuralEngine {
     _isProcessing = false;
     _metricsTimer?.cancel();
     _metricsTimer = null;
+    _enduranceEngine.reset();
+  }
+
+  void configureEndurance({required bool enabled}) {
+    _enduranceEnabled = enabled;
+    if (!enabled) {
+      _enduranceEngine.reset();
+    }
   }
 
   /// Process incoming tongue biomechanics data
@@ -96,6 +111,7 @@ class NeuralEngine {
     if (_dataBuffer.length > _bufferSize) {
       _dataBuffer.removeAt(0);
     }
+    _ingestEndurance(data);
 
     // Apply Action Acceptor pattern:
     // 1. Accept afferent (sensory) input
@@ -144,6 +160,14 @@ class NeuralEngine {
       samples: samples,
       expectedAmplitude: NeuralEngineConstants.expectedAmplitude,
     );
+    final endurance = _enduranceEnabled
+        ? _enduranceEngine.snapshot()
+        : EnduranceSnapshot.empty(
+            threshold: EnduranceConstants.defaultApertureThreshold,
+          );
+    if (_enduranceEnabled) {
+      _enduranceGameLogic.ingest(endurance);
+    }
 
     final pca = _calculatePCA();
 
@@ -156,6 +180,7 @@ class NeuralEngine {
       directionStability: motion.direction.stability,
       intensity: motion.intensity,
       patternScore: motion.patternMatch.score,
+      endurance: endurance,
       timestamp: DateTime.now(),
     );
   }
@@ -200,6 +225,18 @@ class NeuralEngine {
     return values
         .map((v) => (v - mean) * (v - mean))
         .reduce((a, b) => a + b) / values.length;
+  }
+
+  void _ingestEndurance(TongueData data) {
+    if (!_enduranceEnabled) return;
+    final landmarks = data.landmarks
+        .map((o) => Vector2(o.dx, o.dy))
+        .toList();
+    final tSeconds = data.timestamp.millisecondsSinceEpoch / 1000.0;
+    _enduranceEngine.ingestLandmarks(
+      tSeconds: tSeconds,
+      landmarks: landmarks,
+    );
   }
 
   void dispose() {

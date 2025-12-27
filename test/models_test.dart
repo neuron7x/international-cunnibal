@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:international_cunnibal/models/tongue_data.dart';
 import 'package:international_cunnibal/models/metrics.dart';
 import 'package:international_cunnibal/models/dictation_session.dart';
+import 'package:international_cunnibal/models/endurance_snapshot.dart';
 import 'package:international_cunnibal/models/movement_direction.dart';
 import 'package:flutter/material.dart';
 
@@ -68,6 +69,7 @@ void main() {
         directionStability: 40,
         intensity: 55,
         patternScore: 70,
+        endurance: EnduranceSnapshot.empty(),
         timestamp: DateTime.now(),
       );
 
@@ -86,6 +88,13 @@ void main() {
         directionStability: 25,
         intensity: 30,
         patternScore: 10,
+        endurance: const EnduranceSnapshot(
+          aperture: 0.2,
+          apertureStability: 70,
+          enduranceTime: 1.5,
+          enduranceScore: 80,
+          threshold: 0.18,
+        ),
         timestamp: DateTime(2025, 12, 26),
       );
 
@@ -95,6 +104,7 @@ void main() {
       expect(json['frequency'], equals(2.5));
       expect(json['frequencyConfidence'], equals(0.6));
       expect(json['pcaVariance'], equals([60.0, 30.0, 10.0]));
+      expect(json['endurance']['enduranceScore'], equals(80));
     });
   });
 

@@ -1,3 +1,4 @@
+import 'package:international_cunnibal/models/endurance_snapshot.dart';
 import 'package:international_cunnibal/models/movement_direction.dart';
 
 /// Biometric metrics calculated from tongue biomechanics
@@ -28,6 +29,9 @@ class BiometricMetrics {
   /// Optional pattern match score (0-100)
   final double patternScore;
 
+  /// Jaw endurance snapshot (aperture control)
+  final EnduranceSnapshot endurance;
+
   final DateTime timestamp;
 
   const BiometricMetrics({
@@ -39,6 +43,7 @@ class BiometricMetrics {
     required this.directionStability,
     required this.intensity,
     required this.patternScore,
+    required this.endurance,
     required this.timestamp,
   });
 
@@ -52,6 +57,7 @@ class BiometricMetrics {
       directionStability: 0,
       intensity: 0,
       patternScore: 0,
+      endurance: EnduranceSnapshot.empty(),
       timestamp: DateTime.now(),
     );
   }
@@ -67,6 +73,7 @@ class BiometricMetrics {
       'directionStability': directionStability,
       'intensity': intensity,
       'patternScore': patternScore,
+      'endurance': endurance.toJson(),
     };
   }
 
@@ -78,6 +85,8 @@ class BiometricMetrics {
         'direction: ${movementDirection.label} (${directionStability.toStringAsFixed(1)}), '
         'intensity: ${intensity.toStringAsFixed(1)}, '
         'pattern: ${patternScore.toStringAsFixed(1)}, '
+        'endurance: ${endurance.enduranceScore.toStringAsFixed(1)} '
+        '(aperture ${endurance.aperture.toStringAsFixed(3)}), '
         'PCA: [${pcaVariance.map((v) => v.toStringAsFixed(1)).join(", ")}]'
         ')';
   }
