@@ -15,12 +15,12 @@ import 'package:international_cunnibal/utils/constants.dart';
 class NeuralEngine {
   static final NeuralEngine _instance = NeuralEngine._internal();
   factory NeuralEngine() => _instance;
-  NeuralEngine._internal();
+  NeuralEngine._internal() {
+    _resetControllers();
+  }
 
-  final StreamController<TongueData> _tongueDataController =
-      StreamController<TongueData>.broadcast();
-  final StreamController<BiometricMetrics> _metricsController =
-      StreamController<BiometricMetrics>.broadcast();
+  late StreamController<TongueData> _tongueDataController;
+  late StreamController<BiometricMetrics> _metricsController;
 
   Stream<TongueData> get tongueDataStream => _tongueDataController.stream;
   Stream<BiometricMetrics> get metricsStream => _metricsController.stream;
@@ -29,6 +29,11 @@ class NeuralEngine {
   final int _bufferSize = NeuralEngineConstants.bufferSize;
   final SignalProcessor _signalProcessor = SignalProcessor();
   final GameLogicService _gameLogic = GameLogicService();
+
+  void _resetControllers() {
+    _tongueDataController = StreamController<TongueData>.broadcast();
+    _metricsController = StreamController<BiometricMetrics>.broadcast();
+  }
   
   bool _isProcessing = false;
   Timer? _metricsTimer;
@@ -112,5 +117,8 @@ class NeuralEngine {
 
   void dispose() {
     stop();
+    _tongueDataController.close();
+    _metricsController.close();
+    _resetControllers();
   }
 }

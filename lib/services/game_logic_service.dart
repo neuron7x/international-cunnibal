@@ -10,6 +10,9 @@ class GameLogicService {
   final StreamController<GameState> _stateController =
       StreamController<GameState>.broadcast();
 
+  static const int _directionStabilityThreshold = 10;
+  static const int _levelStreakThreshold = 3;
+
   GameState _state = const GameState(
     level: 1,
     score: 0,
@@ -24,7 +27,7 @@ class GameLogicService {
   void ingest(BiometricMetrics metrics) {
     final hitConsistency = metrics.consistencyScore >= _state.targetConsistency;
     final hitFrequency = metrics.frequency >= _state.targetFrequency;
-    final hitDirection = metrics.directionStability >= 10;
+    final hitDirection = metrics.directionStability >= _directionStabilityThreshold;
 
     var score = _state.score;
     var streak = _state.streak;
@@ -43,7 +46,7 @@ class GameLogicService {
     var targetConsistency = _state.targetConsistency;
     var targetFrequency = _state.targetFrequency;
 
-    if (streak >= 3) {
+    if (streak >= _levelStreakThreshold) {
       level += 1;
       targetConsistency = (targetConsistency + 5).clamp(60, 95);
       targetFrequency = (targetFrequency + 0.1).clamp(1.0, 3.0);

@@ -5,6 +5,10 @@ import 'package:international_cunnibal/models/movement_direction.dart';
 import 'package:international_cunnibal/models/tongue_data.dart';
 import 'package:international_cunnibal/utils/constants.dart';
 
+const int _directionSampleWindowSize = 6;
+const double _steadyMovementThreshold = 0.02;
+const double _directionStabilityScale = 120;
+
 class SignalProcessor {
   BiometricMetrics calculate(List<TongueData> buffer) {
     if (buffer.isEmpty) {
@@ -81,11 +85,11 @@ class SignalProcessor {
     final sampleCount = buffer.length;
     if (sampleCount < 2) return (MovementDirection.steady, 0.0);
 
-    final start = buffer[max(0, sampleCount - 6)].position;
+    final start = buffer[max(0, sampleCount - _directionSampleWindowSize)].position;
     final end = buffer.last.position;
     final delta = end - start;
 
-    if (delta.distance < 0.02) {
+    if (delta.distance < _steadyMovementThreshold) {
       return (MovementDirection.steady, 0.0);
     }
 
@@ -96,7 +100,7 @@ class SignalProcessor {
       direction = delta.dy > 0 ? MovementDirection.down : MovementDirection.up;
     }
 
-    final stability = (delta.distance * 120).clamp(0.0, 100.0);
+    final stability = (delta.distance * _directionStabilityScale).clamp(0.0, 100.0);
     return (direction, stability);
   }
 

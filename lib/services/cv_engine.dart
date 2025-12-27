@@ -7,6 +7,8 @@ import 'package:international_cunnibal/utils/constants.dart';
 
 enum CvEngineMode { demo, camera }
 
+const double _demoJitterAmplitude = 0.01;
+
 abstract class CvEngine {
   Stream<TongueData> get stream;
   CameraController? get cameraController => null;
@@ -53,7 +55,7 @@ class DemoCvEngine implements CvEngine {
     final yWave =
         cos(time * BioTrackingConstants.simulationFrequencyMultiplier) *
             BioTrackingConstants.simulationAmplitudeY;
-    final jitter = (_random.nextDouble() - 0.5) * 0.01;
+    final jitter = (_random.nextDouble() - 0.5) * _demoJitterAmplitude;
 
     final position = Offset(
       (0.5 + xWave + jitter).clamp(0.1, 0.9),
@@ -72,8 +74,8 @@ class DemoCvEngine implements CvEngine {
     final landmarks = List<Offset>.generate(
       8,
       (i) => Offset(
-        position.dx + cos(timeShift + i) * 0.01,
-        position.dy + sin(timeShift + i) * 0.01,
+        position.dx + cos(timeShift + i) * _demoJitterAmplitude,
+        position.dy + sin(timeShift + i) * _demoJitterAmplitude,
       ),
     );
 
