@@ -22,7 +22,7 @@
 
 *Revolutionary sensory-motor synchronization training powered by Anokhin's Action Acceptor theory*
 
-[🎯 Features](#-features) • [📱 Demo](#-demo) • [🛠️ Quick Start](#-installation) • [📊 Architecture](#-architecture) • [🤝 Contributing](#-contributing)
+[🎯 Features](#-features) • [📱 Demo](#-demo) • [🛠️ Quick Start](#-installation) • [📊 Architecture](#-architecture) • [🧭 Delivery Plan](docs/delivery_plan.md) • [🤝 Contributing](#-contributing)
 
 ---
 
