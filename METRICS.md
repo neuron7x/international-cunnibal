@@ -23,7 +23,7 @@ All outputs are deterministic, clamped, and finite:
 
 Direction is based on *net displacement* (not mean-centered):
 
-```
+```text
 Δp(t) = p(t) - p(t-1)
 v = Σ Δp(t)
 if |v| < eps → direction = (0,0)
@@ -34,7 +34,7 @@ else direction = v / |v|
 
 Speeds are computed from displacement magnitudes:
 
-```
+```text
 speed(t) = |Δp(t)| / dt
 meanSpeed = mean(speed)
 stdSpeed = std(speed)
@@ -47,7 +47,7 @@ jerkStdNormalized = jerkStd / (meanSpeed + eps)
 
 ## Consistency
 
-```
+```text
 consistency = clamp(100 - (cv * 100) - (jerkStdNormalized * 20), 0..100)
 ```
 
@@ -55,7 +55,7 @@ consistency = clamp(100 - (cv * 100) - (jerkStdNormalized * 20), 0..100)
 
 Direction stability reflects smoothness (low speed variability and jerk):
 
-```
+```text
 directionStability = clamp(100 - (cv * 50) - (jerkStdNormalized * 20), 0..100)
 ```
 
@@ -70,13 +70,13 @@ from PCA over **mean-centered positions** (to avoid frequency doubling):
 2. Project positions: `s(t) = dot(p(t) - mean(p), u)`.
 3. Autocorrelation on centered signal:
 
-```
+```text
 r(k) = Σ s0(t) * s0(t+k),   s0 = s - mean(s)
 ```
 
 4. Search for a peak within the lag window:
 
-```
+```text
 minLag = floor(sampleRate / maxHz)
 maxLag = ceil(sampleRate / minHz)
 ```
@@ -84,7 +84,7 @@ maxLag = ceil(sampleRate / minHz)
 5. Choose the first significant local maximum (or global max fallback), then
    refine with parabolic interpolation.
 
-```
+```text
 frequencyHz = sampleRate / refinedLag
 confidence = clamp(rPeak, 0..1)
 ```
@@ -95,7 +95,7 @@ If the signal variance is near zero, frequency and confidence return `0`.
 
 Intensity captures movement energy relative to spatial scale:
 
-```
+```text
 spatialScale = sqrt(var(x) + var(y))
 intensity = clamp(100 * meanSpeed / (spatialScale * sampleRate * scale + eps), 0..100)
 ```
@@ -108,7 +108,7 @@ below `40` in tests.
 Pattern match uses normalized MSE against a target trajectory (interpolated to
 match timestamps):
 
-```
+```text
 mse = mean((observed(t) - target(t))^2) / expectedAmplitude^2
 score = 100 / (1 + mse / tolerance^2)
 ```

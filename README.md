@@ -2,7 +2,7 @@
 
 <div align="center">
 
-# 🧠 International Cunnibal
+## 🧠 International Cunnibal
 
 ## *Train, Dominate, Savor.*
 
@@ -310,6 +310,7 @@ graph TB
 
 ```dart
 // Camera integration and biomechanics detection
+
 - 📷 30 FPS camera processing
 - 🎯 Landmark detection (10 points)
 - 📈 Velocity & acceleration tracking
@@ -324,6 +325,7 @@ graph TB
 
 ```dart
 // Rhythm pattern matching and synchronization
+
 - 🎵 26 unique A-Z patterns (Morse-inspired)
 - ⏱️ Timing validation (0.2s/0.6s)
 - 📊 Synchronization scoring (0-100%)
@@ -338,6 +340,7 @@ graph TB
 
 ```dart
 // Performance log generation and export
+
 - 📝 JSON format with timestamps
 - 🤖 Auto-export after 100 metrics
 - 📊 Summary statistics included
@@ -414,33 +417,46 @@ graph TB
 #### 📋 Prerequisites
 
 ```bash
+
 # Verify Flutter installation
+
 flutter --version  # Flutter 3.0+
 
 # Verify Dart installation
+
 dart --version     # Dart 3.0+
 ```
 
 #### 📥 Clone & Setup
 
 ```bash
+
 # 1️⃣ Clone the repository
+
 git clone https://github.com/neuron7x/international-cunnibal.git
 
 # 2️⃣ Navigate to project directory
+
 cd international-cunnibal
 
 # 3️⃣ Install dependencies
+
 flutter pub get
 
 # 4️⃣ Run the app
+
 flutter run
 
 # Demo/simulation mode runs by default (no ML models needed)
+
 # Quick logic loops:
+
 # dart run tool/run_demo.dart
+
 # dart run tool/verify_logic.dart
+
 # dart run tool/benchmark_core.dart
+
 ```
 
 #### 🎯 Platform-Specific Setup
@@ -449,13 +465,17 @@ flutter run
 <summary><b>🤖 Android</b></summary>
 
 ```bash
+
 # Check connected devices
+
 flutter devices
 
 # Run on Android device/emulator
+
 flutter run -d android
 
 # Build APK
+
 flutter build apk --release
 ```
 
@@ -471,13 +491,17 @@ flutter build apk --release
 <summary><b>🍎 iOS</b></summary>
 
 ```bash
+
 # Install iOS dependencies
+
 cd ios && pod install && cd ..
 
 # Run on iOS device/simulator
+
 flutter run -d ios
 
 # Build for iOS
+
 flutter build ios --release
 ```
 
@@ -625,8 +649,10 @@ Exported logs include comprehensive data in **JSON format**:
 - **Consistency**: windowed motion-energy variance normalized by expected amplitude; bounded [0,100].
 - **Frequency**: Hann-windowed autocorrelation, reports dominant Hz plus confidence (0-1);
   low-variance signals -> confidence 0.
+
 - **Direction**: principal component of displacement covariance with deterministic orientation;
   stability = λmax/trace on [0,100].
+
 - **Intensity**: normalized mean kinetic proxy `E/(E+1)` on [0,100].
 - **Pattern Match**: time-indexed vector-field MSE scaled by tolerance; score on [0,100].
 
@@ -648,7 +674,7 @@ dart run tool/benchmark_core.dart  # benchmarks MotionMetrics core
 
 Benchmark note: MotionMetrics processes a 30 FPS window in well under 1 ms on a mid-range device (see tool output).
 
-#### 🎯 What's Included
+### 🎯 What's Included
 
 | Section | Content |
 |---------|---------|
@@ -873,23 +899,31 @@ We follow clean code principles and Flutter best practices. All contributions sh
 #### 🚀 Quick Contribution Guide
 
 ```bash
+
 # 1️⃣ Fork the repository
+
 # 2️⃣ Clone your fork
+
 git clone https://github.com/YOUR_USERNAME/international-cunnibal.git
 
 # 3️⃣ Create a feature branch
+
 git checkout -b feature/amazing-feature
 
 # 4️⃣ Make your changes
+
 # ... code, test, document ...
 
 # 5️⃣ Commit your changes
+
 git commit -m "✨ Add amazing feature"
 
 # 6️⃣ Push to your fork
+
 git push origin feature/amazing-feature
 
 # 7️⃣ Open a Pull Request
+
 ```
 
 #### 📋 Contribution Guidelines

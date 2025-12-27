@@ -4,8 +4,10 @@
 
 - **Flutter CI**: `flutter format --set-exit-if-changed lib test`, `flutter analyze`,
   `flutter test --coverage` (coverage artifact uploaded).
+
 - **CodeQL (GitHub Advanced Security)**: security-extended queries
   (build-less JS scan until Dart is supported).
+
 - **Dependency Review**: blocks high-severity dependency risks during PR review.
 - **Secret Scan**: `gitleaks` ensures no secrets or tokens are committed.
 - **Docs & Intent Guard**:
@@ -56,9 +58,11 @@ python tool/ci/check_latency_budget.py
 
 ## What is protected
 
-* **Metrics & math**: changes in motion or metric logic must update tests;
+- **Metrics & math**: changes in motion or metric logic must update tests;
   CI enforces deterministic ranges via coverage and metric guards.
-* **Architecture & core logic**: PRs that modify core, services, models, or utils
+
+- **Architecture & core logic**: PRs that modify core, services, models, or utils
   must update architecture or user-facing documentation where relevant.
-* **Secrets & artifacts**: `.gitignore` blocks common secrets, credentials, and large ML artifacts;
+
+- **Secrets & artifacts**: `.gitignore` blocks common secrets, credentials, and large ML artifacts;
   secret scanning enforces this at PR time.

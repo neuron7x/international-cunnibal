@@ -3,66 +3,86 @@
 ## Installation
 
 ### 1. Install Flutter
+
 Download and install Flutter SDK from [flutter.dev](https://flutter.dev)
 
 ### 2. Clone Repository
+
 ```bash
 git clone https://github.com/neuron7x/international-cunnibal.git
 cd international-cunnibal
 ```
 
 ### 3. Get Dependencies
+
 ```bash
 flutter pub get
 ```
 
 ### 4. Run on Device/Simulator
+
 ```bash
+
 # List available devices
+
 flutter devices
 
 # Run on specific device
+
 flutter run -d <device_id>
 
 # Run on Android
+
 flutter run -d android
 
 # Run on iOS
+
 flutter run -d ios
 ```
 
 ## Key Commands
 
 ### Development
+
 ```bash
+
 # Run with hot reload
+
 flutter run
 
 # Run tests
+
 flutter test
 
 # Analyze code
+
 flutter analyze
 
 # Format code
+
 dart format .
 ```
 
 ### Building
+
 ```bash
+
 # Build APK (Android)
+
 flutter build apk
 
 # Build App Bundle (Android)
+
 flutter build appbundle
 
 # Build iOS
+
 flutter build ios
 ```
 
 ## Project Structure Quick Reference
 
-```
+```text
 lib/
 ├── main.dart                          # App entry point
 │
@@ -90,18 +110,21 @@ lib/
 ## Common Tasks
 
 ### Add a New Screen
+
 1. Create file in `lib/screens/`
 2. Implement StatefulWidget or StatelessWidget
 3. Add navigation from home_screen.dart
 4. Test UI
 
 ### Add a New Service
+
 1. Create file in `lib/services/`
 2. Implement singleton pattern
 3. Add business logic
 4. Add tests in `test/`
 
 ### Add a New Model
+
 1. Create file in `lib/models/`
 2. Define class with final fields
 3. Add `toJson()` method
@@ -109,7 +132,9 @@ lib/
 5. Add tests
 
 ### Modify Metrics Calculation
+
 Edit `lib/services/neural_engine.dart`:
+
 - `_calculateConsistencyScore()` - Consistency metric
 - `_calculateFrequency()` - Frequency metric
 - `_calculatePCA()` - PCA variance
@@ -117,22 +142,30 @@ Edit `lib/services/neural_engine.dart`:
 ## Debugging
 
 ### Enable Debug Mode
+
 ```bash
 flutter run --debug
 ```
 
 ### View Logs
+
 ```bash
+
 # All logs
+
 flutter logs
 
 # Filter logs
+
 flutter logs | grep "NeuralEngine"
 ```
 
 ### Inspector
+
 ```bash
+
 # Open DevTools
+
 flutter pub global activate devtools
 flutter pub global run devtools
 ```
@@ -140,16 +173,19 @@ flutter pub global run devtools
 ## Testing
 
 ### Run All Tests
+
 ```bash
 flutter test
 ```
 
 ### Run Specific Test File
+
 ```bash
 flutter test test/neural_engine_test.dart
 ```
 
 ### Run with Coverage
+
 ```bash
 flutter test --coverage
 genhtml coverage/lcov.info -o coverage/html
@@ -158,18 +194,23 @@ genhtml coverage/lcov.info -o coverage/html
 ## Common Issues
 
 ### Camera Permission Denied
+
 - Android: Check `android/app/src/main/AndroidManifest.xml`
 - iOS: Check `ios/Runner/Info.plist`
 
 ### Build Fails
+
 ```bash
+
 # Clean build
+
 flutter clean
 flutter pub get
 flutter run
 ```
 
 ### Hot Reload Not Working
+
 - Press 'r' in terminal to reload
 - Press 'R' for hot restart
 - Check for syntax errors
