@@ -194,8 +194,8 @@ class _TrackingScreenState extends State<TrackingScreen> {
                               : 'CAMERA FEED',
                         ),
                         backgroundColor: _bioTracking.isDemoMode
-                            ? Colors.green.withOpacity(0.2)
-                            : Colors.blueGrey.withOpacity(0.2),
+                            ? Colors.green.withAlpha(51)
+                            : Colors.blueGrey.withAlpha(51),
                       ),
                       const SizedBox(width: 8),
                       IconButton(

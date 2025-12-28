@@ -39,8 +39,8 @@ class _TrackingPainter extends CustomPainter {
     // Draw main position with larger circle
     final mainPaint = Paint()
       ..color = tongueData.isValidated
-          ? Colors.green.withOpacity(0.5)
-          : Colors.orange.withOpacity(0.5)
+          ? Colors.green.withAlpha(128)
+          : Colors.orange.withAlpha(128)
       ..style = PaintingStyle.fill;
 
     final mainPosition = Offset(
