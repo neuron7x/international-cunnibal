@@ -44,7 +44,8 @@ jobs:
           comment-summary-in-pr: true  # Automatic comments
           retry-on-snapshot-warnings: true
           retry-on-snapshot-warnings-timeout: 600
-          base-ref: ${{ github.event.inputs.base_ref || '' }}
-          head-ref: ${{ github.event.inputs.head_ref || '' }}
+          # Only set base-ref and head-ref for manual workflow_dispatch triggers
+          base-ref: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.base_ref || '' }}
+          head-ref: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.head_ref || '' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
