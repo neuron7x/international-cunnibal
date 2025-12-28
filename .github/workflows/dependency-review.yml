@@ -11,11 +11,11 @@ on:
     inputs: 
       base_ref:
         description: 'Base reference (branch/commit)'
-        required: true
+        required: false
         default: 'main'
       head_ref:
         description: 'Head reference (branch/commit)'
-        required: true
+        required: false
         default: 'HEAD'
 
 permissions:
