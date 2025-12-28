@@ -25,40 +25,28 @@ class MotionSample {
   final double t; // seconds
   final Vector2 position;
 
-  const MotionSample({
-    required this.t,
-    required this.position,
-  });
+  const MotionSample({required this.t, required this.position});
 }
 
 class FrequencyResult {
   final double hertz;
   final double confidence;
 
-  const FrequencyResult({
-    required this.hertz,
-    required this.confidence,
-  });
+  const FrequencyResult({required this.hertz, required this.confidence});
 }
 
 class DirectionResult {
   final Vector2 direction; // unit vector
   final double stability; // 0-100
 
-  const DirectionResult({
-    required this.direction,
-    required this.stability,
-  });
+  const DirectionResult({required this.direction, required this.stability});
 }
 
 class PatternMatchResult {
   final double score; // 0-100
   final double mse;
 
-  const PatternMatchResult({
-    required this.score,
-    required this.mse,
-  });
+  const PatternMatchResult({required this.score, required this.mse});
 }
 
 class MotionMetricsResult {
@@ -91,7 +79,10 @@ class MotionMetrics {
       return MotionMetricsResult(
         consistency: 0,
         frequency: const FrequencyResult(hertz: 0, confidence: 0),
-        direction: const DirectionResult(direction: Vector2(0, 0), stability: 0),
+        direction: const DirectionResult(
+          direction: Vector2(0, 0),
+          stability: 0,
+        ),
         intensity: 0,
         patternMatch: const PatternMatchResult(score: 0, mse: 0),
       );
@@ -105,12 +96,16 @@ class MotionMetrics {
     final sampleRate = _sampleRate(safeSamples);
 
     if (totalMag < _eps) {
-      final sanitizedPattern =
-          pattern == null ? null : _sanitizeSamples(pattern);
+      final sanitizedPattern = pattern == null
+          ? null
+          : _sanitizeSamples(pattern);
       return MotionMetricsResult(
         consistency: 100,
         frequency: const FrequencyResult(hertz: 0, confidence: 0),
-        direction: const DirectionResult(direction: Vector2(0, 0), stability: 0),
+        direction: const DirectionResult(
+          direction: Vector2(0, 0),
+          stability: 0,
+        ),
         intensity: 0,
         patternMatch: sanitizedPattern == null
             ? const PatternMatchResult(score: 0, mse: 0)
@@ -128,11 +123,7 @@ class MotionMetrics {
     final speedStats = _speedStats(safeSamples, displacements);
     final consistency = _consistency(speedStats);
     final freq = _frequency(safeSamples, axis);
-    final intensity = _intensity(
-      safeSamples,
-      speedStats.meanSpeed,
-      sampleRate,
-    );
+    final intensity = _intensity(safeSamples, speedStats.meanSpeed, sampleRate);
     final directionStability = _directionStability(speedStats, directionVector);
     final sanitizedPattern = pattern == null ? null : _sanitizeSamples(pattern);
     final patternResult = pattern == null
@@ -401,16 +392,10 @@ class MotionMetrics {
     if (hz <= 0 || hz > sampleRate / 2) {
       return FrequencyResult(hertz: 0, confidence: confidence);
     }
-    return FrequencyResult(
-      hertz: _finiteOrZero(hz),
-      confidence: confidence,
-    );
+    return FrequencyResult(hertz: _finiteOrZero(hz), confidence: confidence);
   }
 
-  static Vector2 _directionFromAxis(
-    Vector2 axis,
-    List<Vector2> displacements,
-  ) {
+  static Vector2 _directionFromAxis(Vector2 axis, List<Vector2> displacements) {
     if (axis.magnitude < _eps) {
       return const Vector2(0, 0);
     }

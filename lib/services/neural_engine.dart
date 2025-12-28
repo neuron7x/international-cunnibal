@@ -9,11 +9,11 @@ import 'package:international_cunnibal/services/game_logic_service.dart';
 import 'package:international_cunnibal/utils/constants.dart';
 
 /// NeuralEngine service implementing Anokhin's Action Acceptor
-/// 
+///
 /// Based on Anokhin's theory of functional systems and action acceptor,
 /// this engine processes tongue biomechanics and validates motor patterns
 /// against expected outcomes for sensory-motor synchronization.
-/// 
+///
 /// Reference: Anokhin's Action Acceptor theory (2025-11-30)
 class NeuralEngine {
   static final NeuralEngine _instance = NeuralEngine._internal();
@@ -38,7 +38,8 @@ class NeuralEngine {
   final int _bufferSize = NeuralEngineConstants.bufferSize;
   final GameLogicService _gameLogic = GameLogicService();
   final EnduranceEngine _enduranceEngine = EnduranceEngine();
-  final EnduranceGameLogicService _enduranceGameLogic = EnduranceGameLogicService();
+  final EnduranceGameLogicService _enduranceGameLogic =
+      EnduranceGameLogicService();
 
   void _resetControllers() {
     _tongueDataController?.close();
@@ -55,7 +56,7 @@ class NeuralEngine {
       _resetControllers();
     }
   }
-  
+
   bool _isProcessing = false;
   Timer? _metricsTimer;
 
@@ -65,11 +66,11 @@ class NeuralEngine {
     _ensureControllers();
     final metricsController = _metricsController;
     if (metricsController == null) return;
-    
+
     _isProcessing = true;
     _dataBuffer.clear();
     _enduranceEngine.reset();
-    
+
     // Calculate metrics every second
     if (enableTimer) {
       _metricsTimer = Timer.periodic(
@@ -120,7 +121,7 @@ class NeuralEngine {
     // 2. Compare with expected pattern
     // 3. Validate motor command execution
     final validated = _validateAction(data);
-    
+
     tongueController.add(validated);
   }
 
@@ -128,13 +129,14 @@ class NeuralEngine {
   TongueData _validateAction(TongueData data) {
     // Action Acceptor compares actual afferent signals with expected ones
     // Here we validate the biomechanics consistency
-    
+
     if (_dataBuffer.length < 2) return data;
-    
+
     final previous = _dataBuffer[_dataBuffer.length - 2];
     final velocityChange = (data.velocity - previous.velocity).abs();
-    final isConsistent = velocityChange < NeuralEngineConstants.velocityChangeThreshold;
-    
+    final isConsistent =
+        velocityChange < NeuralEngineConstants.velocityChangeThreshold;
+
     return TongueData(
       timestamp: data.timestamp,
       position: data.position,
@@ -152,10 +154,12 @@ class NeuralEngine {
     }
 
     final samples = _dataBuffer
-        .map((d) => MotionSample(
-              t: d.timestamp.millisecondsSinceEpoch / 1000.0,
-              position: Vector2(d.position.dx, d.position.dy),
-            ))
+        .map(
+          (d) => MotionSample(
+            t: d.timestamp.millisecondsSinceEpoch / 1000.0,
+            position: Vector2(d.position.dx, d.position.dy),
+          ),
+        )
         .toList();
 
     final motion = MotionMetrics.compute(
@@ -202,7 +206,7 @@ class NeuralEngine {
   /// Simplified PCA for 3 principal components
   List<double> _calculatePCA() {
     if (_dataBuffer.length < 3) return const [0.0, 0.0, 0.0];
-    
+
     final xValues = <double>[];
     final yValues = <double>[];
     for (final data in _dataBuffer) {
@@ -243,14 +247,9 @@ class NeuralEngine {
 
   void _ingestEndurance(TongueData data) {
     if (!_enduranceEnabled) return;
-    final landmarks = data.landmarks
-        .map((o) => Vector2(o.dx, o.dy))
-        .toList();
+    final landmarks = data.landmarks.map((o) => Vector2(o.dx, o.dy)).toList();
     final tSeconds = data.timestamp.millisecondsSinceEpoch / 1000.0;
-    _enduranceEngine.ingestLandmarks(
-      tSeconds: tSeconds,
-      landmarks: landmarks,
-    );
+    _enduranceEngine.ingestLandmarks(tSeconds: tSeconds, landmarks: landmarks);
   }
 
   void dispose() {

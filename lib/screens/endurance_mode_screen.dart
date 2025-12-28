@@ -20,8 +20,9 @@ class _EnduranceModeScreenState extends State<EnduranceModeScreen> {
   final EnduranceGameLogicService _logic = EnduranceGameLogicService();
   final EnduranceSessionService _session = EnduranceSessionService();
 
-  EnduranceSnapshot _snapshot =
-      EnduranceSnapshot.empty(threshold: EnduranceConstants.defaultApertureThreshold);
+  EnduranceSnapshot _snapshot = EnduranceSnapshot.empty(
+    threshold: EnduranceConstants.defaultApertureThreshold,
+  );
   EnduranceSessionState _sessionState = EnduranceSessionState.initial(
     targetHoldSeconds: EnduranceConstants.targetHoldSeconds,
   );
@@ -116,7 +117,9 @@ class _EnduranceModeScreenState extends State<EnduranceModeScreen> {
               onPressed: _optedIn ? _toggleSession : null,
               icon: Icon(_demoTimer == null ? Icons.play_arrow : Icons.stop),
               label: Text(
-                _demoTimer == null ? 'Start session (on-device)' : 'Stop session',
+                _demoTimer == null
+                    ? 'Start session (on-device)'
+                    : 'Stop session',
               ),
             ),
             const SizedBox(height: 16),
@@ -148,7 +151,10 @@ class _EnduranceModeScreenState extends State<EnduranceModeScreen> {
                     const SizedBox(height: 12),
                     Text(
                       _sessionState.prompt,
-                      style: const TextStyle(fontSize: 12, color: Colors.black54),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Colors.black54,
+                      ),
                     ),
                     const SizedBox(height: 12),
                     Row(
@@ -168,11 +174,15 @@ class _EnduranceModeScreenState extends State<EnduranceModeScreen> {
                     ClipRRect(
                       borderRadius: BorderRadius.circular(4),
                       child: LinearProgressIndicator(
-                        value: (_snapshot.apertureStability / 100).clamp(0.0, 1.0),
+                        value: (_snapshot.apertureStability / 100).clamp(
+                          0.0,
+                          1.0,
+                        ),
                         minHeight: 10,
                         backgroundColor: Colors.grey[300],
                         valueColor: AlwaysStoppedAnimation<Color>(
-                          _snapshot.apertureStability >= EnduranceConstants.stabilityFloor
+                          _snapshot.apertureStability >=
+                                  EnduranceConstants.stabilityFloor
                               ? Colors.green
                               : Colors.orange,
                         ),
@@ -197,17 +207,26 @@ class _EnduranceModeScreenState extends State<EnduranceModeScreen> {
                       spacing: 8,
                       runSpacing: 8,
                       children: [
-                        _tag('Aperture', '${(_snapshot.aperture * 100).toStringAsFixed(1)}%'),
-                        _tag('Stability',
-                            '${_snapshot.apertureStability.toStringAsFixed(1)}%'),
-                        _tag('Fatigue',
-                            '${_snapshot.fatigueIndicator.toStringAsFixed(1)}%'),
-                        _tag('Hold Time',
-                            '${_snapshot.enduranceTime.toStringAsFixed(2)}s ≥ ${_snapshot.threshold.toStringAsFixed(2)}'),
+                        _tag(
+                          'Aperture',
+                          '${(_snapshot.aperture * 100).toStringAsFixed(1)}%',
+                        ),
+                        _tag(
+                          'Stability',
+                          '${_snapshot.apertureStability.toStringAsFixed(1)}%',
+                        ),
+                        _tag(
+                          'Fatigue',
+                          '${_snapshot.fatigueIndicator.toStringAsFixed(1)}%',
+                        ),
+                        _tag(
+                          'Hold Time',
+                          '${_snapshot.enduranceTime.toStringAsFixed(2)}s ≥ ${_snapshot.threshold.toStringAsFixed(2)}',
+                        ),
                         _tag(
                           'Hold Progress',
                           '${_sessionState.safeHoldSeconds.toStringAsFixed(1)}'
-                          '/${_sessionState.targetHoldSeconds.toStringAsFixed(1)}s',
+                              '/${_sessionState.targetHoldSeconds.toStringAsFixed(1)}s',
                         ),
                         _tag('Level', 'L$level'),
                       ],
@@ -228,7 +247,10 @@ class _EnduranceModeScreenState extends State<EnduranceModeScreen> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: const TextStyle(fontSize: 12, color: Colors.black54)),
+          Text(
+            label,
+            style: const TextStyle(fontSize: 12, color: Colors.black54),
+          ),
           Text(
             value,
             style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),

@@ -15,8 +15,14 @@ void main() {
 
       expect(samples, isNotEmpty);
       expect(samples.every((s) => s.isValidated), isTrue);
-      expect(samples.every((s) => s.position.dx >= 0 && s.position.dx <= 1), isTrue);
-      expect(samples.every((s) => s.position.dy >= 0 && s.position.dy <= 1), isTrue);
+      expect(
+        samples.every((s) => s.position.dx >= 0 && s.position.dx <= 1),
+        isTrue,
+      );
+      expect(
+        samples.every((s) => s.position.dy >= 0 && s.position.dy <= 1),
+        isTrue,
+      );
       expect(samples.every((s) => s.landmarks.length >= 309), isTrue);
       expect(samples.every((s) => s.landmarks[13].dy >= 0), isTrue);
     });

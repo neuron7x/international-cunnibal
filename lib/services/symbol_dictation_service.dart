@@ -8,21 +8,21 @@ import 'package:international_cunnibal/utils/constants.dart';
 /// Partner-led A-Z rhythmic synchronization in real-time
 /// Reference: Symbol Dictation feature (2025-11-30)
 class SymbolDictationService {
-  static final SymbolDictationService _instance = 
+  static final SymbolDictationService _instance =
       SymbolDictationService._internal();
   factory SymbolDictationService() => _instance;
   SymbolDictationService._internal();
 
   final NeuralEngine _neuralEngine = NeuralEngine();
-  
+
   DictationSession? _currentSession;
   final List<double> _rhythmTimestamps = [];
   String _targetSymbol = 'A';
   DateTime? _sessionStartTime;
   List<double>? _customPattern;
-  
+
   StreamSubscription<TongueData>? _tongueDataSubscription;
-  final StreamController<DictationSession> _sessionController = 
+  final StreamController<DictationSession> _sessionController =
       StreamController<DictationSession>.broadcast();
 
   Stream<DictationSession> get sessionStream => _sessionController.stream;
@@ -58,7 +58,9 @@ class SymbolDictationService {
       }
     }
 
-    _targetSymbol = trimmedLabel?.isNotEmpty == true ? trimmedLabel! : trimmedSymbol;
+    _targetSymbol = trimmedLabel?.isNotEmpty == true
+        ? trimmedLabel!
+        : trimmedSymbol;
     _sessionStartTime = startTime ?? DateTime.now();
     _rhythmTimestamps.clear();
     _customPattern = customPattern;
@@ -74,14 +76,13 @@ class SymbolDictationService {
     if (_sessionStartTime == null) return;
 
     // Detect significant movement (velocity threshold)
-    if (data.velocity > RhythmPatterns.significantMovementThreshold && 
+    if (data.velocity > RhythmPatterns.significantMovementThreshold &&
         data.isValidated) {
-      final timestamp = data.timestamp
-          .difference(_sessionStartTime!)
-          .inMilliseconds / 1000.0;
-      
+      final timestamp =
+          data.timestamp.difference(_sessionStartTime!).inMilliseconds / 1000.0;
+
       _rhythmTimestamps.add(timestamp);
-      
+
       // Update session
       _updateSession();
     }
@@ -92,7 +93,7 @@ class SymbolDictationService {
     if (_sessionStartTime == null) return;
 
     final synchronizationScore = _calculateSynchronization();
-    
+
     _currentSession = DictationSession(
       targetSymbol: _targetSymbol,
       startTime: _sessionStartTime!,
@@ -111,7 +112,7 @@ class SymbolDictationService {
     // Expected rhythm patterns for letters (simplified)
     // In production, this would use more sophisticated pattern matching
     final expectedIntervals = _getExpectedRhythm(_targetSymbol);
-    
+
     if (_rhythmTimestamps.length < expectedIntervals.length + 1) {
       return (_rhythmTimestamps.length / (expectedIntervals.length + 1)) * 100;
     }
@@ -124,8 +125,11 @@ class SymbolDictationService {
 
     // Compare with expected pattern
     double totalError = 0.0;
-    final compareLength = actualIntervals.length.clamp(0, expectedIntervals.length);
-    
+    final compareLength = actualIntervals.length.clamp(
+      0,
+      expectedIntervals.length,
+    );
+
     for (int i = 0; i < compareLength; i++) {
       final error = (actualIntervals[i] - expectedIntervals[i]).abs();
       totalError += error;

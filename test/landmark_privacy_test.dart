@@ -21,9 +21,11 @@ void main() {
       for (var i = 0; i < LandmarkPrivacyFilter.defaultFaceLandmarkCount; i++) {
         expect(filtered[i], Offset.zero);
       }
-      for (var i = LandmarkPrivacyFilter.defaultFaceLandmarkCount;
-          i < landmarks.length;
-          i++) {
+      for (
+        var i = LandmarkPrivacyFilter.defaultFaceLandmarkCount;
+        i < landmarks.length;
+        i++
+      ) {
         expect(filtered[i], landmarks[i]);
       }
     });

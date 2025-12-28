@@ -48,7 +48,9 @@ class DemoCvEngine implements CvEngine {
   Future<void> start() async {
     if (isActive) return;
     _timer = Timer.periodic(
-      const Duration(milliseconds: BioTrackingConstants.frameProcessingIntervalMs),
+      const Duration(
+        milliseconds: BioTrackingConstants.frameProcessingIntervalMs,
+      ),
       (_) {
         _frame++;
         _controller.add(_nextSample());
@@ -61,7 +63,7 @@ class DemoCvEngine implements CvEngine {
     final xWave = sin(time * 1.2) * BioTrackingConstants.simulationAmplitudeX;
     final yWave =
         cos(time * BioTrackingConstants.simulationFrequencyMultiplier) *
-            BioTrackingConstants.simulationAmplitudeY;
+        BioTrackingConstants.simulationAmplitudeY;
     final jitter = (_random.nextDouble() - 0.5) * _demoJitterAmplitude;
     final aperture = _demoAperture(time, _random);
 
@@ -71,7 +73,8 @@ class DemoCvEngine implements CvEngine {
     );
 
     final velocity =
-        (position - _lastPosition).distance * BioTrackingConstants.framesPerSecond;
+        (position - _lastPosition).distance *
+        BioTrackingConstants.framesPerSecond;
     final acceleration =
         (velocity - _lastVelocity) * BioTrackingConstants.framesPerSecond;
 
@@ -150,7 +153,9 @@ class CameraCvEngine implements CvEngine {
     await prepare();
 
     _timer = Timer.periodic(
-      const Duration(milliseconds: BioTrackingConstants.frameProcessingIntervalMs),
+      const Duration(
+        milliseconds: BioTrackingConstants.frameProcessingIntervalMs,
+      ),
       (_) {
         _frame++;
         _stream.add(_simulateFromCamera());
@@ -160,19 +165,24 @@ class CameraCvEngine implements CvEngine {
 
   TongueData _simulateFromCamera() {
     final time = _frame / BioTrackingConstants.framesPerSecond;
-    final x = 0.5 +
+    final x =
+        0.5 +
         BioTrackingConstants.simulationAmplitudeX *
             sin(time * BioTrackingConstants.simulationFrequencyMultiplier);
-    final y = 0.5 +
+    final y =
+        0.5 +
         BioTrackingConstants.simulationAmplitudeY *
-            cos(time *
-                BioTrackingConstants.simulationFrequencyMultiplier *
-                _cameraSecondaryFrequencyScale);
+            cos(
+              time *
+                  BioTrackingConstants.simulationFrequencyMultiplier *
+                  _cameraSecondaryFrequencyScale,
+            );
     final aperture = _demoAperture(time, _random);
 
     final position = Offset(x, y);
     final velocity =
-        (position - _lastPosition).distance * BioTrackingConstants.framesPerSecond;
+        (position - _lastPosition).distance *
+        BioTrackingConstants.framesPerSecond;
     final acceleration =
         (velocity - _lastVelocity) * BioTrackingConstants.framesPerSecond;
 
@@ -213,7 +223,8 @@ double _demoAperture(double tSeconds, Random random) {
     return (_apertureBaseline + noise).clamp(0.08, 0.5);
   }
   final fatigueProgress = ((cycle - 12.0) / 6.0).clamp(0.0, 1.0);
-  final noise = (random.nextDouble() - 0.5) * (_apertureFatigueNoise * fatigueProgress);
+  final noise =
+      (random.nextDouble() - 0.5) * (_apertureFatigueNoise * fatigueProgress);
   return (_apertureBaseline - _apertureFatigueDrop * fatigueProgress + noise)
       .clamp(0.06, 0.45);
 }

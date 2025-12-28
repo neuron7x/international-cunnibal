@@ -4,11 +4,14 @@ library constants;
 /// Bio-tracking simulation constants
 class BioTrackingConstants {
   // Simulation constants for tongue movement patterns
-  static const double simulationAmplitudeX = 0.3; // Horizontal oscillation amplitude
-  static const double simulationAmplitudeY = 0.2; // Vertical oscillation amplitude
-  static const double simulationFrequencyMultiplier = 1.5; // Y-axis frequency multiplier
+  static const double simulationAmplitudeX =
+      0.3; // Horizontal oscillation amplitude
+  static const double simulationAmplitudeY =
+      0.2; // Vertical oscillation amplitude
+  static const double simulationFrequencyMultiplier =
+      1.5; // Y-axis frequency multiplier
   static const double simulationPeriod = 2.0; // Oscillation period in seconds
-  
+
   // Frame processing
   static const int framesPerSecond = 30;
   static const int frameProcessingIntervalMs = 33; // ~30 FPS
@@ -20,10 +23,10 @@ class RhythmPatterns {
   // Timing constants
   static const double shortMovement = 0.2; // Short movement duration in seconds
   static const double longMovement = 0.6; // Long movement duration in seconds
-  
+
   // Movement detection
   static const double significantMovementThreshold = 5.0; // Velocity threshold
-  
+
   /// Morse code-inspired rhythm patterns for A-Z
   /// Each letter has a unique rhythm signature for dictation
   static const Map<String, List<double>> patterns = {
@@ -54,7 +57,7 @@ class RhythmPatterns {
     'Y': [longMovement, shortMovement, longMovement, longMovement], // -.--
     'Z': [longMovement, longMovement, shortMovement, shortMovement], // --..
   };
-  
+
   /// Get rhythm pattern for a given symbol
   static List<double> getPattern(String symbol) {
     return patterns[symbol] ?? [shortMovement, shortMovement];
@@ -65,17 +68,18 @@ class RhythmPatterns {
 class NeuralEngineConstants {
   // Buffer management
   static const int bufferSize = 100; // Number of samples to keep
-  
+
   // Metrics calculation
   static const int metricsUpdateIntervalSeconds = 1;
   // Normalized amplitude reference for MotionMetrics (typical 0-1 screen coords)
   static const double expectedAmplitude = 0.4;
-  
+
   // Consistency score calculation
   static const double stdDevScalingFactor = 50.0;
-  
+
   // Action Acceptor validation
-  static const double velocityChangeThreshold = 0.5; // For consistency validation
+  static const double velocityChangeThreshold =
+      0.5; // For consistency validation
 }
 
 /// Endurance/jaw tracking constants

@@ -36,7 +36,10 @@ List<MotionSample> _linearMotion({
 void main() {
   group('MotionMetrics', () {
     test('empty samples return zeros', () {
-      final metrics = MotionMetrics.compute(samples: const [], expectedAmplitude: 0.5);
+      final metrics = MotionMetrics.compute(
+        samples: const [],
+        expectedAmplitude: 0.5,
+      );
       expect(metrics.consistency, equals(0));
       expect(metrics.frequency.hertz, equals(0));
       expect(metrics.frequency.confidence, equals(0));
@@ -55,10 +58,7 @@ void main() {
     });
 
     test('zero motion yields zero freq, confidence, intensity', () {
-      final samples = List.generate(
-        20,
-        (i) => _sample(i * 0.02, 0.4, 0.4),
-      );
+      final samples = List.generate(20, (i) => _sample(i * 0.02, 0.4, 0.4));
       final metrics = MotionMetrics.compute(
         samples: samples,
         expectedAmplitude: 0.5,
@@ -107,13 +107,15 @@ void main() {
       final rng = Random(1);
       final clean = _linearMotion(vx: 0.05, vy: 0);
       final noisy = clean
-          .map((s) => MotionSample(
-                t: s.t,
-                position: Vector2(
-                  s.position.x + (rng.nextDouble() - 0.5) * 0.02,
-                  s.position.y,
-                ),
-              ))
+          .map(
+            (s) => MotionSample(
+              t: s.t,
+              position: Vector2(
+                s.position.x + (rng.nextDouble() - 0.5) * 0.02,
+                s.position.y,
+              ),
+            ),
+          )
           .toList();
 
       final cleanScore = MotionMetrics.compute(
@@ -247,10 +249,7 @@ void main() {
     });
 
     test('intensity reflects energy and bounds zero motion', () {
-      final stationary = List.generate(
-        50,
-        (i) => _sample(i * 0.02, 0.3, 0.3),
-      );
+      final stationary = List.generate(50, (i) => _sample(i * 0.02, 0.3, 0.3));
       final moving = _linearMotion(vx: 0.1, vy: 0.05);
 
       final zeroIntensity = MotionMetrics.compute(
@@ -318,10 +317,25 @@ void main() {
     });
 
     test('pattern match rewards aligned trajectories', () {
-      final target = _sineWave(frequencyHz: 1.5, amplitude: 0.3, samples: 60, dt: 0.02);
-      final observedSame = _sineWave(frequencyHz: 1.5, amplitude: 0.3, samples: 60, dt: 0.02);
-      final observedPhaseShift =
-        _sineWave(frequencyHz: 1.5, amplitude: 0.3, samples: 60, dt: 0.02, phase: pi / 2);
+      final target = _sineWave(
+        frequencyHz: 1.5,
+        amplitude: 0.3,
+        samples: 60,
+        dt: 0.02,
+      );
+      final observedSame = _sineWave(
+        frequencyHz: 1.5,
+        amplitude: 0.3,
+        samples: 60,
+        dt: 0.02,
+      );
+      final observedPhaseShift = _sineWave(
+        frequencyHz: 1.5,
+        amplitude: 0.3,
+        samples: 60,
+        dt: 0.02,
+        phase: pi / 2,
+      );
 
       final matched = MotionMetrics.compute(
         samples: observedSame,
@@ -342,7 +356,12 @@ void main() {
     });
 
     test('pattern tolerance influences score', () {
-      final target = _sineWave(frequencyHz: 1.0, amplitude: 0.25, samples: 50, dt: 0.02);
+      final target = _sineWave(
+        frequencyHz: 1.0,
+        amplitude: 0.25,
+        samples: 50,
+        dt: 0.02,
+      );
       final slightlyOff = _sineWave(
         frequencyHz: 1.0,
         amplitude: 0.3,
@@ -400,7 +419,10 @@ void main() {
       expect(first.consistency, closeTo(second.consistency, 1e-9));
       expect(first.frequency.hertz, closeTo(second.frequency.hertz, 1e-9));
       expect(first.intensity, closeTo(second.intensity, 1e-9));
-      expect(first.patternMatch.score, closeTo(second.patternMatch.score, 1e-9));
+      expect(
+        first.patternMatch.score,
+        closeTo(second.patternMatch.score, 1e-9),
+      );
     });
 
     test('zero or negative dt stays finite', () {
@@ -419,10 +441,26 @@ void main() {
     });
 
     test('scaled series remain in valid ranges', () {
-      final base = _sineWave(frequencyHz: 1.0, amplitude: 0.1, samples: 80, dt: 0.02);
-      final scaled = _sineWave(frequencyHz: 1.0, amplitude: 0.3, samples: 80, dt: 0.02);
-      final baseMetrics = MotionMetrics.compute(samples: base, expectedAmplitude: 0.1);
-      final scaledMetrics = MotionMetrics.compute(samples: scaled, expectedAmplitude: 0.3);
+      final base = _sineWave(
+        frequencyHz: 1.0,
+        amplitude: 0.1,
+        samples: 80,
+        dt: 0.02,
+      );
+      final scaled = _sineWave(
+        frequencyHz: 1.0,
+        amplitude: 0.3,
+        samples: 80,
+        dt: 0.02,
+      );
+      final baseMetrics = MotionMetrics.compute(
+        samples: base,
+        expectedAmplitude: 0.1,
+      );
+      final scaledMetrics = MotionMetrics.compute(
+        samples: scaled,
+        expectedAmplitude: 0.3,
+      );
       expect(baseMetrics.consistency, inInclusiveRange(0, 100));
       expect(baseMetrics.intensity, inInclusiveRange(0, 100));
       expect(scaledMetrics.consistency, inInclusiveRange(0, 100));
@@ -452,7 +490,12 @@ void main() {
     });
 
     test('metrics are deterministic and bounded', () {
-      final samples = _sineWave(frequencyHz: 1.2, amplitude: 0.35, samples: 80, dt: 0.02);
+      final samples = _sineWave(
+        frequencyHz: 1.2,
+        amplitude: 0.35,
+        samples: 80,
+        dt: 0.02,
+      );
       final first = MotionMetrics.compute(
         samples: samples,
         expectedAmplitude: 0.35,
@@ -465,7 +508,10 @@ void main() {
       expect(first.consistency, closeTo(second.consistency, 1e-9));
       expect(first.frequency.hertz, closeTo(second.frequency.hertz, 1e-9));
       expect(first.intensity, closeTo(second.intensity, 1e-9));
-      expect(first.patternMatch.score, closeTo(second.patternMatch.score, 1e-9));
+      expect(
+        first.patternMatch.score,
+        closeTo(second.patternMatch.score, 1e-9),
+      );
 
       expect(first.consistency, inInclusiveRange(0, 100));
       expect(first.direction.stability, inInclusiveRange(0, 100));

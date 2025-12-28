@@ -111,8 +111,10 @@ void main() {
 
       expect(service.state.level, equals(2));
       expect(service.state.streak, equals(0));
-      expect(service.state.targetAperture,
-          greaterThanOrEqualTo(EnduranceConstants.defaultApertureThreshold));
+      expect(
+        service.state.targetAperture,
+        greaterThanOrEqualTo(EnduranceConstants.defaultApertureThreshold),
+      );
     });
 
     test('threshold boundaries count as hits', () {

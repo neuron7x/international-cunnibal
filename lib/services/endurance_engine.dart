@@ -11,11 +11,9 @@ class EnduranceEngine {
 
   final List<ApertureSample> _buffer = [];
 
-  EnduranceEngine({
-    this.bufferSize = 180,
-    double? apertureThreshold,
-  }) : apertureThreshold =
-            apertureThreshold ?? EnduranceConstants.defaultApertureThreshold;
+  EnduranceEngine({this.bufferSize = 180, double? apertureThreshold})
+    : apertureThreshold =
+          apertureThreshold ?? EnduranceConstants.defaultApertureThreshold;
 
   EnduranceSnapshot ingestLandmarks({
     required double tSeconds,
@@ -41,10 +39,7 @@ class EnduranceEngine {
       apertureMin: EnduranceConstants.apertureMin,
       apertureMax: EnduranceConstants.apertureMax,
     );
-    return EnduranceSnapshot.fromResult(
-      result,
-      threshold: apertureThreshold,
-    );
+    return EnduranceSnapshot.fromResult(result, threshold: apertureThreshold);
   }
 
   EnduranceSnapshot demoTick(double tSeconds) {

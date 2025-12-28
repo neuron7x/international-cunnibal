@@ -69,7 +69,9 @@ class EnduranceSessionService {
 
     final sessionSeconds = tSeconds - (_sessionStart ?? tSeconds);
     final phaseSeconds = tSeconds - (_phaseStart ?? tSeconds);
-    final dt = _lastUpdate == null ? 0.0 : (tSeconds - _lastUpdate!).clamp(0.0, 1);
+    final dt = _lastUpdate == null
+        ? 0.0
+        : (tSeconds - _lastUpdate!).clamp(0.0, 1);
     _lastUpdate = tSeconds;
 
     var cooldownRemaining = _cooldownUntil == null
@@ -84,8 +86,9 @@ class EnduranceSessionService {
 
     final apertureInBounds =
         snapshot.aperture >= EnduranceConstants.apertureSafetyMin &&
-            snapshot.aperture <= EnduranceConstants.apertureSafetyMax;
-    final stabilityOk = snapshot.apertureStability >= EnduranceConstants.stabilityFloor;
+        snapshot.aperture <= EnduranceConstants.apertureSafetyMax;
+    final stabilityOk =
+        snapshot.apertureStability >= EnduranceConstants.stabilityFloor;
 
     if (phase == EnduranceSessionPhase.ready &&
         phaseSeconds >= EnduranceConstants.readySeconds) {
@@ -98,7 +101,8 @@ class EnduranceSessionService {
       if (sessionSeconds >= EnduranceConstants.maxSessionSeconds) {
         phase = EnduranceSessionPhase.summary;
         prompt = 'Session complete. Maximum duration reached.';
-      } else if (snapshot.fatigueIndicator >= EnduranceConstants.fatigueStopThreshold) {
+      } else if (snapshot.fatigueIndicator >=
+          EnduranceConstants.fatigueStopThreshold) {
         phase = EnduranceSessionPhase.summary;
         prompt = 'Session complete. Fatigue threshold reached.';
       } else if (!apertureInBounds || !stabilityOk) {
@@ -150,7 +154,10 @@ class EnduranceSessionService {
       phase: phase,
       sessionSeconds: sessionSeconds.clamp(0.0, 9999),
       phaseSeconds: (tSeconds - (_phaseStart ?? tSeconds)).clamp(0.0, 9999),
-      safeHoldSeconds: safeHold.clamp(0.0, EnduranceConstants.maxSessionSeconds),
+      safeHoldSeconds: safeHold.clamp(
+        0.0,
+        EnduranceConstants.maxSessionSeconds,
+      ),
       targetHoldSeconds: EnduranceConstants.targetHoldSeconds,
       cooldownRemainingSeconds: cooldownRemaining,
       autoPaused: autoPaused,

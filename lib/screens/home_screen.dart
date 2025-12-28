@@ -23,18 +23,11 @@ class HomeScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               // App Title and Description
-              const Icon(
-                Icons.psychology,
-                size: 80,
-                color: Colors.deepPurple,
-              ),
+              const Icon(Icons.psychology, size: 80, color: Colors.deepPurple),
               const SizedBox(height: 24),
               const Text(
                 'Rhythm-based Tongue Trainer',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 8),
@@ -86,7 +79,9 @@ class HomeScreen extends StatelessWidget {
                 icon: Icons.self_improvement,
                 onTap: () => Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => const EnduranceModeScreen()),
+                  MaterialPageRoute(
+                    builder: (_) => const EnduranceModeScreen(),
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
@@ -151,10 +146,7 @@ class _FeatureCard extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       description,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[600],
-                      ),
+                      style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                     ),
                   ],
                 ),

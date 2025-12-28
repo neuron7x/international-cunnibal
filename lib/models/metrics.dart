@@ -10,6 +10,7 @@ class BiometricMetrics {
 
   /// Movement frequency in Hz
   final double frequency;
+
   /// Frequency confidence (0-1)
   final double frequencyConfidence;
 

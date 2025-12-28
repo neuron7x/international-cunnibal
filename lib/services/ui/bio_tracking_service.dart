@@ -7,7 +7,7 @@ import 'package:international_cunnibal/utils/landmark_privacy.dart';
 
 /// Bio-Tracking service for real-time tongue biomechanics
 /// Uses MediaPipe/TFLite for on-device AI processing
-/// 
+///
 /// Reference: Real-time tongue biomechanics tracking (2025-11-30)
 class BioTrackingService {
   static final BioTrackingService _instance = BioTrackingService._internal();
@@ -17,7 +17,7 @@ class BioTrackingService {
   final NeuralEngine _neuralEngine = NeuralEngine();
   final CvEngine _demoEngine = DemoCvEngine();
   final CvEngine _cameraEngine = CameraCvEngine();
-  
+
   bool _isTracking = false;
   CvEngineMode _mode = CvEngineMode.demo;
   StreamSubscription? _engineSubscription;
@@ -27,7 +27,8 @@ class BioTrackingService {
   CameraController? get cameraController =>
       _mode == CvEngineMode.camera ? _cameraEngine.cameraController : null;
 
-  CvEngine get _engine => _mode == CvEngineMode.demo ? _demoEngine : _cameraEngine;
+  CvEngine get _engine =>
+      _mode == CvEngineMode.demo ? _demoEngine : _cameraEngine;
 
   Future<void> setMode(CvEngineMode mode) async {
     if (_mode == mode) return;
