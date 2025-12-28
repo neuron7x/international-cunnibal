@@ -24,3 +24,8 @@ Owned by the CV / ML Pipeline RE (see CODEOWNERS).
 - `tool/ci/check_model_artifacts.py` blocks raw binaries.
 - `tool/ci/check_privacy_guards.py` blocks raw video persistence patterns.
 - `tool/ci/check_latency_budget.py` enforces 16ms barrier.
+
+## CI note (2025-12-28)
+- Recorded that current PR only adjusts CI governance (doc/coverage/benchmark gating) without altering model interfaces, inference pipelines, or pre/post-processing.
+- Noted rationale: reduce false positives in doc gate while leaving ML logic untouched.
+- Invariant impact: unchanged (model loading and pipeline behavior remain the same).

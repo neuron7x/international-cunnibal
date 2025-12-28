@@ -24,3 +24,8 @@ Owned by the Metrics & Domain Logic RE (see CODEOWNERS).
 - CI: `tool/ci/check_metric_changes.py` (tests required when metrics change).
 - CI: `tool/ci/check_latency_budget.py` (16ms budget).
 - Benchmark output is canonicalized as `MEAN_US=<int>` by `tool/benchmark_core.dart`.
+
+## CI note (2025-12-28)
+- Documented that recent PR changes only refined CI gates (doc/coverage/benchmark enforcement) without modifying metric formulas, clamps, or thresholds.
+- Clarified why no normalization or scoring ranges were touched; focus was analyzer/test and governance noise reduction.
+- Invariant impact: unchanged (0–100 scores and 0–1 ratios remain identical).

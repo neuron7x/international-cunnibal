@@ -14,3 +14,8 @@
 
 ## Gate Hooks
 - `tool/ci/check_architecture_boundaries.py` enforces forbidden imports.
+
+## CI note (2025-12-28)
+- Captured that recent PR changes were CI/governance-only (doc gate noise reduction) and did not move responsibilities between core/services/ui.
+- Explained why dependency directions and boundaries remain unchanged; no new service/core interfaces were introduced.
+- Invariant impact: unchanged (layering and dependency rules stay the same).
