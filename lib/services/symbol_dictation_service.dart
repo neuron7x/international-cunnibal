@@ -58,9 +58,8 @@ class SymbolDictationService {
       }
     }
 
-    _targetSymbol = trimmedLabel?.isNotEmpty == true
-        ? trimmedLabel!
-        : trimmedSymbol;
+    _targetSymbol =
+        trimmedLabel?.isNotEmpty == true ? trimmedLabel! : trimmedSymbol;
     _sessionStartTime = startTime ?? DateTime.now();
     _rhythmTimestamps.clear();
     _customPattern = customPattern;
@@ -101,7 +100,9 @@ class SymbolDictationService {
       synchronizationScore: synchronizationScore,
     );
 
-    _sessionController.add(_currentSession!);
+    if (!_sessionController.isClosed) {
+      _sessionController.add(_currentSession!);
+    }
   }
 
   /// Calculate synchronization score based on rhythm patterns

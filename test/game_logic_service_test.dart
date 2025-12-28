@@ -12,7 +12,7 @@ void main() {
       game.reset();
     });
 
-    BiometricMetrics _goodMetrics() {
+    BiometricMetrics goodMetrics() {
       return BiometricMetrics(
         consistencyScore: 90,
         frequency: 2.0,
@@ -36,7 +36,7 @@ void main() {
 
     test('increments score on good metrics', () {
       final initialScore = game.state.score;
-      game.ingest(_goodMetrics());
+      game.ingest(goodMetrics());
 
       expect(game.state.score, greaterThan(initialScore));
     });
@@ -44,7 +44,7 @@ void main() {
     test('levels up after streak', () {
       final initialLevel = game.state.level;
       for (int i = 0; i < 3; i++) {
-        game.ingest(_goodMetrics());
+        game.ingest(goodMetrics());
       }
 
       expect(game.state.level, greaterThan(initialLevel));
@@ -53,7 +53,7 @@ void main() {
 
     test('direction stability gating', () {
       final baseline = game.state.score;
-      final base = _goodMetrics();
+      final base = goodMetrics();
       final lowDirection = BiometricMetrics(
         consistencyScore: base.consistencyScore,
         frequency: base.frequency,

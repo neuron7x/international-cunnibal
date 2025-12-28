@@ -145,9 +145,9 @@ class EnduranceMetrics {
     if (firstStability < _eps) return 0;
     final dropRatio =
         ((firstStability - secondStability) / max(_eps, firstStability)).clamp(
-          0.0,
-          1.0,
-        );
+      0.0,
+      1.0,
+    );
     return _clampScore(dropRatio * 100);
   }
 

@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:international_cunnibal/core/endurance_metrics.dart';
 import 'package:international_cunnibal/core/motion_metrics.dart';
 import 'package:international_cunnibal/models/endurance_snapshot.dart';
+import 'package:international_cunnibal/models/endurance_session_state.dart';
 import 'package:international_cunnibal/services/endurance_engine.dart';
 import 'package:international_cunnibal/services/endurance_game_logic_service.dart';
 import 'package:international_cunnibal/services/endurance_session_service.dart';

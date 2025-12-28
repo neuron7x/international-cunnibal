@@ -124,7 +124,7 @@ class _DictationScreenState extends State<DictationScreen> {
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primaryContainer,
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Column(
@@ -215,16 +215,15 @@ class _SymbolGrid extends StatelessWidget {
       children: symbols.map((symbol) {
         final isSelected = symbol == selectedSymbol;
         return InkWell(
-          onTap: onSymbolSelected != null
-              ? () => onSymbolSelected!(symbol)
-              : null,
+          onTap:
+              onSymbolSelected != null ? () => onSymbolSelected!(symbol) : null,
           child: Container(
             width: 40,
             height: 40,
             decoration: BoxDecoration(
               color: isSelected
                   ? Theme.of(context).colorScheme.primary
-                  : Theme.of(context).colorScheme.surfaceVariant,
+                  : Theme.of(context).colorScheme.surfaceContainerHighest,
               borderRadius: BorderRadius.circular(8),
               border: Border.all(
                 color: isSelected

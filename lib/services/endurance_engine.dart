@@ -12,8 +12,8 @@ class EnduranceEngine {
   final List<ApertureSample> _buffer = [];
 
   EnduranceEngine({this.bufferSize = 180, double? apertureThreshold})
-    : apertureThreshold =
-          apertureThreshold ?? EnduranceConstants.defaultApertureThreshold;
+      : apertureThreshold =
+            apertureThreshold ?? EnduranceConstants.defaultApertureThreshold;
 
   EnduranceSnapshot ingestLandmarks({
     required double tSeconds,
@@ -83,7 +83,7 @@ class EnduranceEngine {
 
     if (landmarks.isEmpty) return null;
     final anchor = landmarks.first;
-    final offset = 0.02;
+    const offset = 0.02;
     return ApertureSample(
       t: tSeconds,
       upperLip: _bounded(anchor.x, anchor.y - offset),

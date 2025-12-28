@@ -27,8 +27,7 @@ class DictationSession {
     if (intervals.isEmpty) return 0.0;
 
     final mean = intervals.reduce((a, b) => a + b) / intervals.length;
-    final variance =
-        intervals
+    final variance = intervals
             .map((interval) => (interval - mean) * (interval - mean))
             .reduce((a, b) => a + b) /
         intervals.length;

@@ -36,6 +36,9 @@ class DemoCvEngine implements CvEngine {
   final Random _random = Random(42);
 
   @override
+  CameraController? get cameraController => null;
+
+  @override
   bool get isActive => _timer != null;
 
   @override
@@ -63,7 +66,7 @@ class DemoCvEngine implements CvEngine {
     final xWave = sin(time * 1.2) * BioTrackingConstants.simulationAmplitudeX;
     final yWave =
         cos(time * BioTrackingConstants.simulationFrequencyMultiplier) *
-        BioTrackingConstants.simulationAmplitudeY;
+            BioTrackingConstants.simulationAmplitudeY;
     final jitter = (_random.nextDouble() - 0.5) * _demoJitterAmplitude;
     final aperture = _demoAperture(time, _random);
 
@@ -72,8 +75,7 @@ class DemoCvEngine implements CvEngine {
       (0.5 + yWave - jitter).clamp(0.1, 0.9),
     );
 
-    final velocity =
-        (position - _lastPosition).distance *
+    final velocity = (position - _lastPosition).distance *
         BioTrackingConstants.framesPerSecond;
     final acceleration =
         (velocity - _lastVelocity) * BioTrackingConstants.framesPerSecond;
@@ -165,12 +167,10 @@ class CameraCvEngine implements CvEngine {
 
   TongueData _simulateFromCamera() {
     final time = _frame / BioTrackingConstants.framesPerSecond;
-    final x =
-        0.5 +
+    final x = 0.5 +
         BioTrackingConstants.simulationAmplitudeX *
             sin(time * BioTrackingConstants.simulationFrequencyMultiplier);
-    final y =
-        0.5 +
+    final y = 0.5 +
         BioTrackingConstants.simulationAmplitudeY *
             cos(
               time *
@@ -180,8 +180,7 @@ class CameraCvEngine implements CvEngine {
     final aperture = _demoAperture(time, _random);
 
     final position = Offset(x, y);
-    final velocity =
-        (position - _lastPosition).distance *
+    final velocity = (position - _lastPosition).distance *
         BioTrackingConstants.framesPerSecond;
     final acceleration =
         (velocity - _lastVelocity) * BioTrackingConstants.framesPerSecond;

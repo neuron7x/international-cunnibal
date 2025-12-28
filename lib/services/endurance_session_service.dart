@@ -22,7 +22,7 @@ class EnduranceSessionService {
       _state = _state.copyWith(
         canStart: false,
         prompt: 'Cooldown active. Please rest before the next session.',
-        cooldownRemainingSeconds: remaining,
+        cooldownRemainingSeconds: remaining.toDouble(),
       );
       return;
     }
@@ -31,7 +31,7 @@ class EnduranceSessionService {
     _lastUpdate = tSeconds;
     _lastStability = null;
     _cooldownApplied = false;
-    _state = EnduranceSessionState(
+    _state = const EnduranceSessionState(
       phase: EnduranceSessionPhase.ready,
       sessionSeconds: 0,
       phaseSeconds: 0,
@@ -50,7 +50,7 @@ class EnduranceSessionService {
     _applyCooldown(tSeconds);
     final remaining = _cooldownUntil == null
         ? 0.0
-        : (_cooldownUntil! - tSeconds).clamp(0.0, 9999);
+        : (_cooldownUntil! - tSeconds).clamp(0.0, 9999).toDouble();
     _state = _state.copyWith(
       phase: EnduranceSessionPhase.summary,
       cooldownRemainingSeconds: remaining,
@@ -69,9 +69,8 @@ class EnduranceSessionService {
 
     final sessionSeconds = tSeconds - (_sessionStart ?? tSeconds);
     final phaseSeconds = tSeconds - (_phaseStart ?? tSeconds);
-    final dt = _lastUpdate == null
-        ? 0.0
-        : (tSeconds - _lastUpdate!).clamp(0.0, 1);
+    final dt =
+        _lastUpdate == null ? 0.0 : (tSeconds - _lastUpdate!).clamp(0.0, 1);
     _lastUpdate = tSeconds;
 
     var cooldownRemaining = _cooldownUntil == null
@@ -86,7 +85,7 @@ class EnduranceSessionService {
 
     final apertureInBounds =
         snapshot.aperture >= EnduranceConstants.apertureSafetyMin &&
-        snapshot.aperture <= EnduranceConstants.apertureSafetyMax;
+            snapshot.aperture <= EnduranceConstants.apertureSafetyMax;
     final stabilityOk =
         snapshot.apertureStability >= EnduranceConstants.stabilityFloor;
 

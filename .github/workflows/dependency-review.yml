@@ -1,8 +1,7 @@
 name: Dependency Review
 
 on:
-  push:
-    branches: [main]
+  pull_request:
 
 permissions:
   contents: read
@@ -17,4 +16,5 @@ jobs:
       - name: Dependency review
         uses: actions/dependency-review-action@v4
         with:
-          fail-on-severity: high
+          fail-on-severity: low
+          fail-on-unpinned: true

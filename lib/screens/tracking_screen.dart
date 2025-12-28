@@ -113,10 +113,10 @@ class _TrackingScreenState extends State<TrackingScreen> {
                           TrackingOverlay(tongueData: _latestData!),
                       ],
                     )
-                  : Stack(
+                  : const Stack(
                       fit: StackFit.expand,
                       children: [
-                        const DecoratedBox(
+                        DecoratedBox(
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
                               colors: [Colors.deepPurple, Colors.blueGrey],
@@ -128,7 +128,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
                         Center(
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
-                            children: const [
+                            children: [
                               Icon(
                                 Icons.videogame_asset,
                                 color: Colors.white70,
@@ -226,8 +226,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
                   if (_latestData != null) ...[
                     _DataRow(
                       label: 'Position',
-                      value:
-                          '(${_latestData!.position.dx.toStringAsFixed(2)}, '
+                      value: '(${_latestData!.position.dx.toStringAsFixed(2)}, '
                           '${_latestData!.position.dy.toStringAsFixed(2)})',
                     ),
                     _DataRow(
@@ -268,9 +267,8 @@ class _TrackingScreenState extends State<TrackingScreen> {
                     child: ElevatedButton(
                       onPressed: controlEnabled ? _toggleTracking : null,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: _isTracking
-                            ? Colors.red
-                            : Colors.green,
+                        backgroundColor:
+                            _isTracking ? Colors.red : Colors.green,
                         foregroundColor: Colors.white,
                       ),
                       child: Text(

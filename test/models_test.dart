@@ -4,7 +4,6 @@ import 'package:international_cunnibal/models/metrics.dart';
 import 'package:international_cunnibal/models/dictation_session.dart';
 import 'package:international_cunnibal/models/endurance_snapshot.dart';
 import 'package:international_cunnibal/models/movement_direction.dart';
-import 'package:flutter/material.dart';
 
 void main() {
   group('TongueData Model Tests', () {

@@ -76,15 +76,15 @@ class MotionMetrics {
   }) {
     final safeSamples = _sanitizeSamples(samples);
     if (safeSamples.length < 2) {
-      return MotionMetricsResult(
+      return const MotionMetricsResult(
         consistency: 0,
-        frequency: const FrequencyResult(hertz: 0, confidence: 0),
-        direction: const DirectionResult(
+        frequency: FrequencyResult(hertz: 0, confidence: 0),
+        direction: DirectionResult(
           direction: Vector2(0, 0),
           stability: 0,
         ),
         intensity: 0,
-        patternMatch: const PatternMatchResult(score: 0, mse: 0),
+        patternMatch: PatternMatchResult(score: 0, mse: 0),
       );
     }
 
@@ -96,9 +96,8 @@ class MotionMetrics {
     final sampleRate = _sampleRate(safeSamples);
 
     if (totalMag < _eps) {
-      final sanitizedPattern = pattern == null
-          ? null
-          : _sanitizeSamples(pattern);
+      final sanitizedPattern =
+          pattern == null ? null : _sanitizeSamples(pattern);
       return MotionMetricsResult(
         consistency: 100,
         frequency: const FrequencyResult(hertz: 0, confidence: 0),

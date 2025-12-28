@@ -5,6 +5,7 @@ import 'package:international_cunnibal/services/endurance_game_logic_service.dar
 import 'package:international_cunnibal/models/endurance_snapshot.dart';
 import 'package:international_cunnibal/models/tongue_data.dart';
 import 'package:international_cunnibal/models/metrics.dart';
+import 'package:international_cunnibal/models/movement_direction.dart';
 import 'package:international_cunnibal/services/game_logic_service.dart';
 import 'package:international_cunnibal/utils/constants.dart';
 
@@ -74,7 +75,9 @@ class NeuralEngine {
     // Calculate metrics every second
     if (enableTimer) {
       _metricsTimer = Timer.periodic(
-        Duration(seconds: NeuralEngineConstants.metricsUpdateIntervalSeconds),
+        const Duration(
+          seconds: NeuralEngineConstants.metricsUpdateIntervalSeconds,
+        ),
         (_) {
           if (_dataBuffer.isNotEmpty) {
             final metrics = _calculateMetrics();
