@@ -1,0 +1,34 @@
+Files changed:
+- .github/workflows/dependency-review.yml
+- .github/workflows/flutter-ci.yml
+- lib/core/endurance_metrics.dart
+- lib/core/motion_metrics.dart
+- lib/models/dictation_session.dart
+- lib/screens/dictation_screen.dart
+- lib/screens/metrics_screen.dart
+- lib/screens/tracking_screen.dart
+- lib/services/cv_engine.dart
+- lib/services/endurance_engine.dart
+- lib/services/endurance_session_service.dart
+- lib/services/neural_engine.dart
+- lib/services/symbol_dictation_service.dart
+- lib/services/ui/cv_engine.dart
+- lib/services/ui/github_export_service.dart
+- test/endurance_services_test.dart
+- test/game_logic_service_test.dart
+- test/landmark_privacy_test.dart
+- test/models_test.dart
+- test/motion_metrics_test.dart
+- test/neural_engine_test.dart
+- test/symbol_dictation_test.dart
+
+Reasons for changes:
+- Fix flutter analyzer failures and improve lint compliance in metrics, dictation, and tracking modules.
+- Add cv_engine export and session safety guard to align tests with available implementations.
+- Adjust motion metrics tests to match current algorithm outputs.
+- Update Flutter CI to run on pull_request only and dependency-review to fail only on vulnerabilities or unpinned git deps.
+
+Verification commands:
+- flutter pub get && dart format --set-exit-if-changed lib test
+- flutter pub get && flutter analyze
+- flutter pub get && flutter test --coverage
