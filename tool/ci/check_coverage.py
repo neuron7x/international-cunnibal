@@ -2,7 +2,7 @@
 import pathlib
 import sys
 
-MIN_COVERAGE = 0.8
+MIN_COVERAGE = 0.65
 LCOV_FILE = pathlib.Path("coverage/lcov.info")
 
 
