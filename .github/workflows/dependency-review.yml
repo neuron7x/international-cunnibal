@@ -45,7 +45,7 @@ jobs:
           retry-on-snapshot-warnings: true
           retry-on-snapshot-warnings-timeout: 600
           # Only set refs for manual workflow_dispatch triggers (auto-detected for PRs)
-          base-ref: ${{ github.event.inputs.base_ref }}
-          head-ref: ${{ github.event.inputs.head_ref }}
+          base-ref: ${{ github.event.inputs.base_ref || '' }}
+          head-ref: ${{ github.event.inputs.head_ref || '' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
