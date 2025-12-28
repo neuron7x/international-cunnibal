@@ -38,7 +38,8 @@ class GameLogicService {
   void ingest(BiometricMetrics metrics) {
     final hitConsistency = metrics.consistencyScore >= _state.targetConsistency;
     final hitFrequency = metrics.frequency >= _state.targetFrequency;
-    final hitDirection = metrics.directionStability >= _directionStabilityThreshold;
+    final hitDirection =
+        metrics.directionStability >= _directionStabilityThreshold;
 
     var score = _state.score;
     var streak = _state.streak;
@@ -60,10 +61,14 @@ class GameLogicService {
     if (streak >= _levelStreakThreshold) {
       // Reset streak on level-up to keep demo/game loops short and readable
       level += 1;
-      targetConsistency =
-          (targetConsistency + _consistencyStep).clamp(_consistencyMin, _consistencyMax);
-      targetFrequency =
-          (targetFrequency + _frequencyStep).clamp(_frequencyMin, _frequencyMax);
+      targetConsistency = (targetConsistency + _consistencyStep).clamp(
+        _consistencyMin,
+        _consistencyMax,
+      );
+      targetFrequency = (targetFrequency + _frequencyStep).clamp(
+        _frequencyMin,
+        _frequencyMax,
+      );
       streak = 0;
     }
 

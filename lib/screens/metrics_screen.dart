@@ -18,8 +18,9 @@ class _MetricsScreenState extends State<MetricsScreen> {
   final NeuralEngine _neuralEngine = NeuralEngine();
   final GitHubExportService _exportService = GitHubExportService();
   final GameLogicService _gameLogic = GameLogicService();
-  final EnduranceGameLogicService _enduranceGameLogic = EnduranceGameLogicService();
-  
+  final EnduranceGameLogicService _enduranceGameLogic =
+      EnduranceGameLogicService();
+
   BiometricMetrics? _currentMetrics;
   bool _isExporting = false;
   bool _showComparisons = false;
@@ -56,9 +57,9 @@ class _MetricsScreenState extends State<MetricsScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Export error: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Export error: $e')));
       }
     } finally {
       setState(() => _isExporting = false);
@@ -87,10 +88,7 @@ class _MetricsScreenState extends State<MetricsScreen> {
             // Header
             const Text(
               'Real-Time Biometric Metrics',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             Text(
@@ -104,7 +102,9 @@ class _MetricsScreenState extends State<MetricsScreen> {
             const SizedBox(height: 24),
             SwitchListTile(
               title: const Text('Enable jaw endurance tracking'),
-              subtitle: const Text('On-device aperture control (consent-based)'),
+              subtitle: const Text(
+                'On-device aperture control (consent-based)',
+              ),
               value: _enduranceOptIn,
               onChanged: (value) {
                 setState(() => _enduranceOptIn = value);
@@ -153,7 +153,10 @@ class _MetricsScreenState extends State<MetricsScreen> {
                             ),
                             Text(
                               'Dominant: ${_currentMetrics!.movementDirection.label}',
-                              style: const TextStyle(fontSize: 12, color: Colors.grey),
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey,
+                              ),
                             ),
                           ],
                         ),
@@ -180,7 +183,10 @@ class _MetricsScreenState extends State<MetricsScreen> {
                       children: [
                         Row(
                           children: [
-                            Icon(Icons.fitness_center, color: Colors.orange[700]),
+                            Icon(
+                              Icons.fitness_center,
+                              color: Colors.orange[700],
+                            ),
                             const SizedBox(width: 12),
                             const Expanded(
                               child: Column(
@@ -252,7 +258,7 @@ class _MetricsScreenState extends State<MetricsScreen> {
                 ),
                 const SizedBox(height: 16),
               ],
-              
+
               // PCA Variance
               Card(
                 child: Padding(
@@ -317,7 +323,9 @@ class _MetricsScreenState extends State<MetricsScreen> {
                   value: _showComparisons,
                   onChanged: (value) {
                     setState(() => _showComparisons = value);
-                    _neuralEngine.configureEndurance(enabled: value || _enduranceOptIn);
+                    _neuralEngine.configureEndurance(
+                      enabled: value || _enduranceOptIn,
+                    );
                   },
                 ),
                 if (_showComparisons)
@@ -337,7 +345,11 @@ class _MetricsScreenState extends State<MetricsScreen> {
                   padding: EdgeInsets.all(48.0),
                   child: Column(
                     children: [
-                      Icon(Icons.analytics_outlined, size: 64, color: Colors.grey),
+                      Icon(
+                        Icons.analytics_outlined,
+                        size: 64,
+                        color: Colors.grey,
+                      ),
                       SizedBox(height: 16),
                       Text(
                         'No metrics available',
@@ -368,7 +380,9 @@ class _MetricsScreenState extends State<MetricsScreen> {
                       children: [
                         Icon(
                           Icons.cloud_upload,
-                          color: Theme.of(context).colorScheme.onSecondaryContainer,
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSecondaryContainer,
                         ),
                         const SizedBox(width: 12),
                         const Expanded(
@@ -397,10 +411,16 @@ class _MetricsScreenState extends State<MetricsScreen> {
                             ? const SizedBox(
                                 width: 16,
                                 height: 16,
-                                child: CircularProgressIndicator(strokeWidth: 2),
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
                               )
                             : const Icon(Icons.download),
-                        label: Text(_isExporting ? 'Exporting...' : 'Export Performance Log'),
+                        label: Text(
+                          _isExporting
+                              ? 'Exporting...'
+                              : 'Export Performance Log',
+                        ),
                       ),
                     ),
                   ],
@@ -424,10 +444,7 @@ class _ChipStat extends StatelessWidget {
   final String label;
   final String value;
 
-  const _ChipStat({
-    required this.label,
-    required this.value,
-  });
+  const _ChipStat({required this.label, required this.value});
 
   @override
   Widget build(BuildContext context) {
@@ -442,10 +459,7 @@ class _ChipStat extends StatelessWidget {
           ),
           Text(
             value,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-            ),
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
           ),
         ],
       ),
@@ -469,10 +483,7 @@ class _CoupleDashboardCard extends StatelessWidget {
           children: [
             const Text(
               'Comparison Dashboard',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             const Text(
@@ -583,10 +594,7 @@ class _MetricCard extends StatelessWidget {
                   ),
                   Text(
                     subtitle,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey,
-                    ),
+                    style: const TextStyle(fontSize: 12, color: Colors.grey),
                   ),
                 ],
               ),
@@ -625,10 +633,7 @@ class _PCABar extends StatelessWidget {
           width: 40,
           child: Text(
             label,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-            ),
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
           ),
         ),
         Expanded(
@@ -647,10 +652,7 @@ class _PCABar extends StatelessWidget {
           width: 50,
           child: Text(
             '${value.toStringAsFixed(1)}%',
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-            ),
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
             textAlign: TextAlign.right,
           ),
         ),

@@ -58,24 +58,29 @@ class EnduranceMetrics {
     final maxAperture = max(apertureMin, apertureMax);
     final boundedThreshold = apertureThreshold.clamp(minAperture, maxAperture);
     final apertures = samples
-        .map((sample) => _apertureForSample(
-              sample,
-              apertureMin: minAperture,
-              apertureMax: maxAperture,
-            ))
+        .map(
+          (sample) => _apertureForSample(
+            sample,
+            apertureMin: minAperture,
+            apertureMax: maxAperture,
+          ),
+        )
         .toList();
     final meanAperture = _mean(apertures);
     final stability = _stability(apertures, meanAperture);
-    final enduranceTime =
-        _enduranceTime(apertures, samples, threshold: boundedThreshold);
+    final enduranceTime = _enduranceTime(
+      apertures,
+      samples,
+      threshold: boundedThreshold,
+    );
     final fatigue = _fatigue(apertures);
 
     final rawDuration = samples.last.t - samples.first.t;
     final safeDuration = rawDuration.isFinite ? rawDuration : 0.0;
-    final totalDuration =
-        totalWindowSeconds ?? max(_eps, safeDuration);
-    final normalizedTime =
-        _clampRatio(enduranceTime / max(_eps, totalDuration));
+    final totalDuration = totalWindowSeconds ?? max(_eps, safeDuration);
+    final normalizedTime = _clampRatio(
+      enduranceTime / max(_eps, totalDuration),
+    );
     final apertureScore = _clampScore(meanAperture * 100);
     final enduranceScore = _score(
       apertureScore: apertureScore,
@@ -139,8 +144,10 @@ class EnduranceMetrics {
     final secondStability = _stability(secondHalf, secondMean);
     if (firstStability < _eps) return 0;
     final dropRatio =
-        ((firstStability - secondStability) / max(_eps, firstStability))
-            .clamp(0.0, 1.0);
+        ((firstStability - secondStability) / max(_eps, firstStability)).clamp(
+          0.0,
+          1.0,
+        );
     return _clampScore(dropRatio * 100);
   }
 

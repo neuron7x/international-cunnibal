@@ -51,26 +51,30 @@ void main() {
 
     test('PCA handles minimal inputs and constants', () {
       neuralEngine.start(enableTimer: false);
-      neuralEngine.processTongueData(TongueData(
-        timestamp: DateTime.fromMillisecondsSinceEpoch(0),
-        position: const Offset(0.5, 0.5),
-        velocity: 0,
-        acceleration: 0,
-        landmarks: const [Offset(0.5, 0.5)],
-        isValidated: true,
-      ));
-      final minimal = neuralEngine.calculateMetricsNow();
-      expect(minimal.pcaVariance, equals(const [0.0, 0.0, 0.0]));
-
-      for (int i = 1; i < 5; i++) {
-        neuralEngine.processTongueData(TongueData(
-          timestamp: DateTime.fromMillisecondsSinceEpoch(i * 10),
+      neuralEngine.processTongueData(
+        TongueData(
+          timestamp: DateTime.fromMillisecondsSinceEpoch(0),
           position: const Offset(0.5, 0.5),
           velocity: 0,
           acceleration: 0,
           landmarks: const [Offset(0.5, 0.5)],
           isValidated: true,
-        ));
+        ),
+      );
+      final minimal = neuralEngine.calculateMetricsNow();
+      expect(minimal.pcaVariance, equals(const [0.0, 0.0, 0.0]));
+
+      for (int i = 1; i < 5; i++) {
+        neuralEngine.processTongueData(
+          TongueData(
+            timestamp: DateTime.fromMillisecondsSinceEpoch(i * 10),
+            position: const Offset(0.5, 0.5),
+            velocity: 0,
+            acceleration: 0,
+            landmarks: const [Offset(0.5, 0.5)],
+            isValidated: true,
+          ),
+        );
       }
       final constant = neuralEngine.calculateMetricsNow();
       expect(constant.pcaVariance, equals(const [0.0, 0.0, 0.0]));
@@ -80,14 +84,16 @@ void main() {
       neuralEngine.start(enableTimer: false);
       for (int i = 0; i < 10; i++) {
         final position = Offset(0.4 + i * 0.01, 0.6 + i * 0.02);
-        neuralEngine.processTongueData(TongueData(
-          timestamp: DateTime.fromMillisecondsSinceEpoch(i * 20),
-          position: position,
-          velocity: 1,
-          acceleration: 0,
-          landmarks: [position],
-          isValidated: true,
-        ));
+        neuralEngine.processTongueData(
+          TongueData(
+            timestamp: DateTime.fromMillisecondsSinceEpoch(i * 20),
+            position: position,
+            velocity: 1,
+            acceleration: 0,
+            landmarks: [position],
+            isValidated: true,
+          ),
+        );
       }
       final base = neuralEngine.calculateMetricsNow();
       neuralEngine.stop();
@@ -95,14 +101,16 @@ void main() {
       neuralEngine.start(enableTimer: false);
       for (int i = 0; i < 10; i++) {
         final position = Offset(0.4 + i * 0.02, 0.6 + i * 0.04);
-        neuralEngine.processTongueData(TongueData(
-          timestamp: DateTime.fromMillisecondsSinceEpoch(i * 20),
-          position: position,
-          velocity: 1,
-          acceleration: 0,
-          landmarks: [position],
-          isValidated: true,
-        ));
+        neuralEngine.processTongueData(
+          TongueData(
+            timestamp: DateTime.fromMillisecondsSinceEpoch(i * 20),
+            position: position,
+            velocity: 1,
+            acceleration: 0,
+            landmarks: [position],
+            isValidated: true,
+          ),
+        );
       }
       final scaled = neuralEngine.calculateMetricsNow();
 

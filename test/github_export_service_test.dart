@@ -45,8 +45,9 @@ void main() {
         now: () => DateTime(2025, 12, 26, 12, 30),
       );
       service.clearLogs();
-      final tempDir =
-          await Directory.systemTemp.createTemp('github_export_service_test');
+      final tempDir = await Directory.systemTemp.createTemp(
+        'github_export_service_test',
+      );
 
       service.logMetrics(
         BiometricMetrics(

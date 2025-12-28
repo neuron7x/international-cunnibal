@@ -16,14 +16,14 @@ class ExportFileWriter {
     return file.path;
   }
 
-  Future<String> resolveDirectoryPath({
-    String? directoryOverridePath,
-  }) async {
+  Future<String> resolveDirectoryPath({String? directoryOverridePath}) async {
     final directory = await _resolveExportDirectory(directoryOverridePath);
     return directory.path;
   }
 
-  Future<Directory> _resolveExportDirectory(String? directoryOverridePath) async {
+  Future<Directory> _resolveExportDirectory(
+    String? directoryOverridePath,
+  ) async {
     if (directoryOverridePath != null) {
       final override = Directory(directoryOverridePath);
       if (!override.existsSync()) {
@@ -35,9 +35,7 @@ class ExportFileWriter {
     try {
       return await getApplicationDocumentsDirectory();
     } catch (_) {
-      return Directory.systemTemp.createTemp(
-        'international_cunnibal_export_',
-      );
+      return Directory.systemTemp.createTemp('international_cunnibal_export_');
     }
   }
 }

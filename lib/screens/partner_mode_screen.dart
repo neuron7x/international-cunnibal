@@ -53,9 +53,9 @@ class _PartnerModeScreenState extends State<PartnerModeScreen> {
       await _bioTracking.prepare();
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Initialization error: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Initialization error: $e')));
       }
     }
 
@@ -76,9 +76,7 @@ class _PartnerModeScreenState extends State<PartnerModeScreen> {
 
     if (_patternDurations.length < 2) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(PartnerModeStrings.patternError),
-        ),
+        const SnackBar(content: Text(PartnerModeStrings.patternError)),
       );
       return;
     }
@@ -104,10 +102,7 @@ class _PartnerModeScreenState extends State<PartnerModeScreen> {
   void _resetPattern() {
     _patternDurations
       ..clear()
-      ..addAll([
-        RhythmPatterns.shortMovement,
-        RhythmPatterns.longMovement,
-      ]);
+      ..addAll([RhythmPatterns.shortMovement, RhythmPatterns.longMovement]);
   }
 
   @override
@@ -145,10 +140,7 @@ class _PartnerModeScreenState extends State<PartnerModeScreen> {
                     const SizedBox(height: 8),
                     Text(
                       PartnerModeStrings.introBody,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[600],
-                      ),
+                      style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                     ),
                   ],
                 ),
@@ -171,7 +163,9 @@ class _PartnerModeScreenState extends State<PartnerModeScreen> {
                   .entries
                   .map(
                     (entry) => Chip(
-                      label: Text('${entry.key + 1}: ${entry.value.toStringAsFixed(1)}s'),
+                      label: Text(
+                        '${entry.key + 1}: ${entry.value.toStringAsFixed(1)}s',
+                      ),
                     ),
                   )
                   .toList(),
@@ -181,7 +175,9 @@ class _PartnerModeScreenState extends State<PartnerModeScreen> {
               children: [
                 Expanded(
                   child: ElevatedButton.icon(
-                    onPressed: _isActive ? null : () => _addBeat(RhythmPatterns.shortMovement),
+                    onPressed: _isActive
+                        ? null
+                        : () => _addBeat(RhythmPatterns.shortMovement),
                     icon: const Icon(Icons.blur_on),
                     label: const Text(PartnerModeStrings.shortBeat),
                   ),
@@ -189,7 +185,9 @@ class _PartnerModeScreenState extends State<PartnerModeScreen> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: ElevatedButton.icon(
-                    onPressed: _isActive ? null : () => _addBeat(RhythmPatterns.longMovement),
+                    onPressed: _isActive
+                        ? null
+                        : () => _addBeat(RhythmPatterns.longMovement),
                     icon: const Icon(Icons.waves),
                     label: const Text(PartnerModeStrings.longBeat),
                   ),
@@ -209,13 +207,15 @@ class _PartnerModeScreenState extends State<PartnerModeScreen> {
             if (_currentSession != null) ...[
               _PartnerStatCard(
                 title: 'Синхронізація',
-                value: '${_currentSession!.synchronizationScore.toStringAsFixed(1)}%',
+                value:
+                    '${_currentSession!.synchronizationScore.toStringAsFixed(1)}%',
                 color: _getScoreColor(_currentSession!.synchronizationScore),
               ),
               const SizedBox(height: 12),
               _PartnerStatCard(
                 title: 'Стабільність ритму',
-                value: '${_currentSession!.rhythmConsistency.toStringAsFixed(1)}%',
+                value:
+                    '${_currentSession!.rhythmConsistency.toStringAsFixed(1)}%',
                 color: _getScoreColor(_currentSession!.rhythmConsistency),
               ),
               const SizedBox(height: 12),
@@ -235,7 +235,9 @@ class _PartnerModeScreenState extends State<PartnerModeScreen> {
                   foregroundColor: Colors.white,
                 ),
                 child: Text(
-                  _isActive ? PartnerModeStrings.stopCta : PartnerModeStrings.startCta,
+                  _isActive
+                      ? PartnerModeStrings.stopCta
+                      : PartnerModeStrings.startCta,
                   style: const TextStyle(fontSize: 16),
                 ),
               ),

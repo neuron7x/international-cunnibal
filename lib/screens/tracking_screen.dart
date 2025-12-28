@@ -27,7 +27,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
   final BioTrackingService _bioTracking = BioTrackingService();
   final NeuralEngine _neuralEngine = NeuralEngine();
   final GameLogicService _gameLogic = GameLogicService();
-  
+
   bool _isTracking = false;
   TongueData? _latestData;
   GameState? _gameState;
@@ -52,9 +52,9 @@ class _TrackingScreenState extends State<TrackingScreen> {
       });
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Camera error: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Camera error: $e')));
       }
     }
 
@@ -129,7 +129,11 @@ class _TrackingScreenState extends State<TrackingScreen> {
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: const [
-                              Icon(Icons.videogame_asset, color: Colors.white70, size: 64),
+                              Icon(
+                                Icons.videogame_asset,
+                                color: Colors.white70,
+                                size: 64,
+                              ),
                               SizedBox(height: 12),
                               Text(
                                 'Demo CV Engine Running',
@@ -184,7 +188,11 @@ class _TrackingScreenState extends State<TrackingScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Chip(
-                        label: Text(_bioTracking.isDemoMode ? 'DEMO ENGINE' : 'CAMERA FEED'),
+                        label: Text(
+                          _bioTracking.isDemoMode
+                              ? 'DEMO ENGINE'
+                              : 'CAMERA FEED',
+                        ),
                         backgroundColor: _bioTracking.isDemoMode
                             ? Colors.green.withOpacity(0.2)
                             : Colors.blueGrey.withOpacity(0.2),
@@ -202,7 +210,9 @@ class _TrackingScreenState extends State<TrackingScreen> {
                                 if (mounted) setState(() {});
                               },
                         icon: Icon(
-                          _bioTracking.isDemoMode ? Icons.camera_alt : Icons.bolt,
+                          _bioTracking.isDemoMode
+                              ? Icons.camera_alt
+                              : Icons.bolt,
                         ),
                         tooltip: _bioTracking.isDemoMode
                             ? 'Switch to camera feed'
@@ -216,7 +226,8 @@ class _TrackingScreenState extends State<TrackingScreen> {
                   if (_latestData != null) ...[
                     _DataRow(
                       label: 'Position',
-                      value: '(${_latestData!.position.dx.toStringAsFixed(2)}, '
+                      value:
+                          '(${_latestData!.position.dx.toStringAsFixed(2)}, '
                           '${_latestData!.position.dy.toStringAsFixed(2)})',
                     ),
                     _DataRow(
@@ -226,8 +237,8 @@ class _TrackingScreenState extends State<TrackingScreen> {
                     _DataRow(
                       label: 'Validated',
                       value: _latestData!.isValidated ? 'YES' : 'NO',
-                      valueColor: _latestData!.isValidated 
-                          ? Colors.green 
+                      valueColor: _latestData!.isValidated
+                          ? Colors.green
                           : Colors.orange,
                     ),
                   ],
@@ -257,7 +268,9 @@ class _TrackingScreenState extends State<TrackingScreen> {
                     child: ElevatedButton(
                       onPressed: controlEnabled ? _toggleTracking : null,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: _isTracking ? Colors.red : Colors.green,
+                        backgroundColor: _isTracking
+                            ? Colors.red
+                            : Colors.green,
                         foregroundColor: Colors.white,
                       ),
                       child: Text(
@@ -281,11 +294,7 @@ class _DataRow extends StatelessWidget {
   final String value;
   final Color? valueColor;
 
-  const _DataRow({
-    required this.label,
-    required this.value,
-    this.valueColor,
-  });
+  const _DataRow({required this.label, required this.value, this.valueColor});
 
   @override
   Widget build(BuildContext context) {
@@ -294,10 +303,7 @@ class _DataRow extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            label,
-            style: const TextStyle(fontSize: 14, color: Colors.grey),
-          ),
+          Text(label, style: const TextStyle(fontSize: 14, color: Colors.grey)),
           Text(
             value,
             style: TextStyle(

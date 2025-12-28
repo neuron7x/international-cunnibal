@@ -1,9 +1,4 @@
-enum EnduranceSessionPhase {
-  ready,
-  hold,
-  rest,
-  summary,
-}
+enum EnduranceSessionPhase { ready, hold, rest, summary }
 
 class EnduranceSessionState {
   final EnduranceSessionPhase phase;
@@ -28,9 +23,7 @@ class EnduranceSessionState {
     required this.canStart,
   });
 
-  factory EnduranceSessionState.initial({
-    double targetHoldSeconds = 0,
-  }) {
+  factory EnduranceSessionState.initial({double targetHoldSeconds = 0}) {
     return EnduranceSessionState(
       phase: EnduranceSessionPhase.ready,
       sessionSeconds: 0,

@@ -48,12 +48,16 @@ class EnduranceGameLogicService {
 
     if (streak >= _streakThreshold) {
       level += 1;
-      targetAperture = (targetAperture + EnduranceConstants.apertureStep)
-          .clamp(EnduranceConstants.defaultApertureThreshold, 0.6);
+      targetAperture = (targetAperture + EnduranceConstants.apertureStep).clamp(
+        EnduranceConstants.defaultApertureThreshold,
+        0.6,
+      );
       targetStability = (targetStability + EnduranceConstants.stabilityStep)
           .clamp(EnduranceConstants.stabilityFloor, 100);
-      targetTime = (targetTime + EnduranceConstants.timeStep)
-          .clamp(EnduranceConstants.targetHoldSeconds, 10);
+      targetTime = (targetTime + EnduranceConstants.timeStep).clamp(
+        EnduranceConstants.targetHoldSeconds,
+        10,
+      );
       streak = 0;
     }
 

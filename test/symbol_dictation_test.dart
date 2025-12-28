@@ -97,17 +97,20 @@ void main() {
 
       final timestamps = <int>[0, 200, 400];
       for (final ms in timestamps) {
-        engine.processTongueData(TongueData(
-          timestamp: DateTime.fromMillisecondsSinceEpoch(ms),
-          position: const Offset(0.5, 0.5),
-          velocity: RhythmPatterns.significantMovementThreshold + 1,
-          acceleration: 0,
-          landmarks: const [Offset(0.5, 0.5)],
-          isValidated: true,
-        ));
+        engine.processTongueData(
+          TongueData(
+            timestamp: DateTime.fromMillisecondsSinceEpoch(ms),
+            position: const Offset(0.5, 0.5),
+            velocity: RhythmPatterns.significantMovementThreshold + 1,
+            acceleration: 0,
+            landmarks: const [Offset(0.5, 0.5)],
+            isValidated: true,
+          ),
+        );
       }
 
-      final firstScore = dictationService.currentSession?.synchronizationScore ?? 0.0;
+      final firstScore =
+          dictationService.currentSession?.synchronizationScore ?? 0.0;
       expect(firstScore, inInclusiveRange(0, 100));
 
       dictationService.stopSession();
@@ -117,17 +120,20 @@ void main() {
         startTime: DateTime.fromMillisecondsSinceEpoch(0),
       );
       for (final ms in timestamps) {
-        engine.processTongueData(TongueData(
-          timestamp: DateTime.fromMillisecondsSinceEpoch(ms),
-          position: const Offset(0.5, 0.5),
-          velocity: RhythmPatterns.significantMovementThreshold + 1,
-          acceleration: 0,
-          landmarks: const [Offset(0.5, 0.5)],
-          isValidated: true,
-        ));
+        engine.processTongueData(
+          TongueData(
+            timestamp: DateTime.fromMillisecondsSinceEpoch(ms),
+            position: const Offset(0.5, 0.5),
+            velocity: RhythmPatterns.significantMovementThreshold + 1,
+            acceleration: 0,
+            landmarks: const [Offset(0.5, 0.5)],
+            isValidated: true,
+          ),
+        );
       }
 
-      final secondScore = dictationService.currentSession?.synchronizationScore ?? 0.0;
+      final secondScore =
+          dictationService.currentSession?.synchronizationScore ?? 0.0;
       expect(secondScore, closeTo(firstScore, 1e-9));
       engine.stop();
     });

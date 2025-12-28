@@ -67,23 +67,28 @@ void main() {
         timestamp: DateTime.fromMillisecondsSinceEpoch(0),
       );
       game.ingest(lowDirection);
-      expect(game.state.score, equals(baseline + 15)); // consistency+frequency only
+      expect(
+        game.state.score,
+        equals(baseline + 15),
+      ); // consistency+frequency only
     });
 
     test('low metrics do not level up', () {
       for (int i = 0; i < 5; i++) {
-        game.ingest(BiometricMetrics(
-          consistencyScore: 10,
-          frequency: 0.5,
-          frequencyConfidence: 0.2,
-          pcaVariance: const [0, 0, 0],
-          movementDirection: MovementDirection.right,
-          directionStability: 50,
-          intensity: 5,
-          patternScore: 0,
-          endurance: EnduranceSnapshot.empty(),
-          timestamp: DateTime.fromMillisecondsSinceEpoch(0),
-        ));
+        game.ingest(
+          BiometricMetrics(
+            consistencyScore: 10,
+            frequency: 0.5,
+            frequencyConfidence: 0.2,
+            pcaVariance: const [0, 0, 0],
+            movementDirection: MovementDirection.right,
+            directionStability: 50,
+            intensity: 5,
+            patternScore: 0,
+            endurance: EnduranceSnapshot.empty(),
+            timestamp: DateTime.fromMillisecondsSinceEpoch(0),
+          ),
+        );
       }
       expect(game.state.level, equals(1));
     });

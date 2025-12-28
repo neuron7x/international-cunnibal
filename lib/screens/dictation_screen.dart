@@ -14,7 +14,7 @@ class DictationScreen extends StatefulWidget {
 class _DictationScreenState extends State<DictationScreen> {
   final SymbolDictationService _dictation = SymbolDictationService();
   final BioTrackingService _bioTracking = BioTrackingService();
-  
+
   bool _isActive = false;
   String _selectedSymbol = 'A';
   DictationSession? _currentSession;
@@ -31,9 +31,9 @@ class _DictationScreenState extends State<DictationScreen> {
       await _bioTracking.prepare();
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Initialization error: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Initialization error: $e')));
       }
     }
 
@@ -100,10 +100,7 @@ class _DictationScreenState extends State<DictationScreen> {
                     Text(
                       'Select a letter (A-Z) and perform rhythmic tongue movements '
                       'matching the symbol\'s pattern. Each letter has a unique rhythm signature.',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[600],
-                      ),
+                      style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                     ),
                   ],
                 ),
@@ -114,10 +111,7 @@ class _DictationScreenState extends State<DictationScreen> {
             // Symbol Selector
             const Text(
               'Select Target Symbol',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             _SymbolGrid(
@@ -135,10 +129,7 @@ class _DictationScreenState extends State<DictationScreen> {
               ),
               child: Column(
                 children: [
-                  const Text(
-                    'Target Symbol',
-                    style: TextStyle(fontSize: 14),
-                  ),
+                  const Text('Target Symbol', style: TextStyle(fontSize: 14)),
                   const SizedBox(height: 8),
                   Text(
                     _selectedSymbol,
@@ -156,13 +147,15 @@ class _DictationScreenState extends State<DictationScreen> {
             if (_currentSession != null) ...[
               _StatCard(
                 title: 'Synchronization Score',
-                value: '${_currentSession!.synchronizationScore.toStringAsFixed(1)}%',
+                value:
+                    '${_currentSession!.synchronizationScore.toStringAsFixed(1)}%',
                 color: _getScoreColor(_currentSession!.synchronizationScore),
               ),
               const SizedBox(height: 12),
               _StatCard(
                 title: 'Rhythm Consistency',
-                value: '${_currentSession!.rhythmConsistency.toStringAsFixed(1)}%',
+                value:
+                    '${_currentSession!.rhythmConsistency.toStringAsFixed(1)}%',
                 color: _getScoreColor(_currentSession!.rhythmConsistency),
               ),
               const SizedBox(height: 12),
@@ -262,11 +255,7 @@ class _StatCard extends StatelessWidget {
   final String value;
   final Color? color;
 
-  const _StatCard({
-    required this.title,
-    required this.value,
-    this.color,
-  });
+  const _StatCard({required this.title, required this.value, this.color});
 
   @override
   Widget build(BuildContext context) {
@@ -276,10 +265,7 @@ class _StatCard extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              title,
-              style: const TextStyle(fontSize: 14),
-            ),
+            Text(title, style: const TextStyle(fontSize: 14)),
             Text(
               value,
               style: TextStyle(

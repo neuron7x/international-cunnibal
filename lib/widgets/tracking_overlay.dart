@@ -5,10 +5,7 @@ import 'package:international_cunnibal/models/tongue_data.dart';
 class TrackingOverlay extends StatelessWidget {
   final TongueData tongueData;
 
-  const TrackingOverlay({
-    super.key,
-    required this.tongueData,
-  });
+  const TrackingOverlay({super.key, required this.tongueData});
 
   @override
   Widget build(BuildContext context) {
@@ -41,8 +38,8 @@ class _TrackingPainter extends CustomPainter {
 
     // Draw main position with larger circle
     final mainPaint = Paint()
-      ..color = tongueData.isValidated 
-          ? Colors.green.withOpacity(0.5) 
+      ..color = tongueData.isValidated
+          ? Colors.green.withOpacity(0.5)
           : Colors.orange.withOpacity(0.5)
       ..style = PaintingStyle.fill;
 

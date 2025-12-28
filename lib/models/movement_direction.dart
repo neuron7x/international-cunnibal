@@ -1,10 +1,4 @@
-enum MovementDirection {
-  steady,
-  up,
-  down,
-  left,
-  right,
-}
+enum MovementDirection { steady, up, down, left, right }
 
 extension MovementDirectionLabel on MovementDirection {
   String get label {

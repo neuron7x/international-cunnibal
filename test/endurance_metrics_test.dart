@@ -34,11 +34,7 @@ void main() {
     });
 
     test('zero aperture stays bounded', () {
-      final samples = [
-        _sample(0.0, 0),
-        _sample(0.5, 0),
-        _sample(1.0, 0),
-      ];
+      final samples = [_sample(0.0, 0), _sample(0.5, 0), _sample(1.0, 0)];
       final result = EnduranceMetrics.compute(samples: samples);
       expect(result.aperture, closeTo(0, 1e-6));
       expect(result.enduranceTime, closeTo(0, 1e-6));
@@ -52,7 +48,10 @@ void main() {
         _sample(double.nan, 0.2),
         _sample(0.4, 0.2),
       ];
-      final result = EnduranceMetrics.compute(samples: samples, apertureThreshold: 0.2);
+      final result = EnduranceMetrics.compute(
+        samples: samples,
+        apertureThreshold: 0.2,
+      );
       expect(result.enduranceScore.isNaN, isFalse);
       expect(result.enduranceTime.isNaN, isFalse);
       expect(result.enduranceScore, inInclusiveRange(0, 100));
@@ -60,7 +59,10 @@ void main() {
 
     test('constant aperture yields high stability', () {
       final samples = List.generate(8, (i) => _sample(i * 0.2, 0.22));
-      final result = EnduranceMetrics.compute(samples: samples, apertureThreshold: 0.2);
+      final result = EnduranceMetrics.compute(
+        samples: samples,
+        apertureThreshold: 0.2,
+      );
       expect(result.aperture, closeTo(0.22, 1e-4));
       expect(result.apertureStability, greaterThan(95));
       expect(result.enduranceTime, closeTo(1.4, 1e-3));
@@ -87,10 +89,19 @@ void main() {
         return _sample(i * 0.2, (0.25 + jitter).clamp(0.0, 1.0));
       });
 
-      final cleanResult = EnduranceMetrics.compute(samples: clean, apertureThreshold: 0.2);
-      final noisyResult = EnduranceMetrics.compute(samples: noisy, apertureThreshold: 0.2);
+      final cleanResult = EnduranceMetrics.compute(
+        samples: clean,
+        apertureThreshold: 0.2,
+      );
+      final noisyResult = EnduranceMetrics.compute(
+        samples: noisy,
+        apertureThreshold: 0.2,
+      );
 
-      expect(noisyResult.apertureStability, lessThan(cleanResult.apertureStability));
+      expect(
+        noisyResult.apertureStability,
+        lessThan(cleanResult.apertureStability),
+      );
     });
 
     test('fatigue detects stability degradation', () {
@@ -104,7 +115,10 @@ void main() {
         _sample(1.2, 0.20),
         _sample(1.4, 0.24),
       ];
-      final result = EnduranceMetrics.compute(samples: samples, apertureThreshold: 0.2);
+      final result = EnduranceMetrics.compute(
+        samples: samples,
+        apertureThreshold: 0.2,
+      );
       expect(result.fatigueIndicator, closeTo(9.09, 0.1));
       expect(result.apertureStability, lessThan(100));
     });
@@ -140,8 +154,14 @@ void main() {
 
     test('deterministic output for identical input', () {
       final samples = List.generate(6, (i) => _sample(i * 0.3, 0.23));
-      final first = EnduranceMetrics.compute(samples: samples, apertureThreshold: 0.2);
-      final second = EnduranceMetrics.compute(samples: samples, apertureThreshold: 0.2);
+      final first = EnduranceMetrics.compute(
+        samples: samples,
+        apertureThreshold: 0.2,
+      );
+      final second = EnduranceMetrics.compute(
+        samples: samples,
+        apertureThreshold: 0.2,
+      );
       expect(first.enduranceScore, closeTo(second.enduranceScore, 1e-6));
       expect(first.fatigueIndicator, closeTo(second.fatigueIndicator, 1e-6));
     });
@@ -155,10 +175,14 @@ void main() {
       ];
       final fast = List.generate(13, (i) => _sample(i * 0.125, 0.24));
 
-      final slowResult =
-          EnduranceMetrics.compute(samples: slow, apertureThreshold: 0.2);
-      final fastResult =
-          EnduranceMetrics.compute(samples: fast, apertureThreshold: 0.2);
+      final slowResult = EnduranceMetrics.compute(
+        samples: slow,
+        apertureThreshold: 0.2,
+      );
+      final fastResult = EnduranceMetrics.compute(
+        samples: fast,
+        apertureThreshold: 0.2,
+      );
 
       expect(fastResult.enduranceTime, closeTo(slowResult.enduranceTime, 0.05));
       expect(fastResult.enduranceScore, closeTo(slowResult.enduranceScore, 5));
@@ -184,8 +208,14 @@ void main() {
         12,
         (i) => _sample(i * 0.2, i.isEven ? 0.18 : 0.26),
       );
-      final first = EnduranceMetrics.compute(samples: samples, apertureThreshold: 0.2);
-      final second = EnduranceMetrics.compute(samples: samples, apertureThreshold: 0.2);
+      final first = EnduranceMetrics.compute(
+        samples: samples,
+        apertureThreshold: 0.2,
+      );
+      final second = EnduranceMetrics.compute(
+        samples: samples,
+        apertureThreshold: 0.2,
+      );
       expect(first.aperture, closeTo(second.aperture, 1e-9));
       expect(first.enduranceScore, closeTo(second.enduranceScore, 1e-9));
     });
@@ -196,7 +226,10 @@ void main() {
         _sample(0.2, 0.24),
         _sample(0.1, 0.24),
       ];
-      final result = EnduranceMetrics.compute(samples: samples, apertureThreshold: 0.2);
+      final result = EnduranceMetrics.compute(
+        samples: samples,
+        apertureThreshold: 0.2,
+      );
       expect(result.enduranceTime.isNaN, isFalse);
       expect(result.enduranceScore.isNaN, isFalse);
       expect(result.enduranceTime, inInclusiveRange(0, 1));
@@ -205,9 +238,14 @@ void main() {
     test('scaled apertures stay within bounds', () {
       final base = List.generate(8, (i) => _sample(i * 0.2, 0.2));
       final scaled = List.generate(8, (i) => _sample(i * 0.2, 0.4));
-      final baseResult = EnduranceMetrics.compute(samples: base, apertureThreshold: 0.2);
-      final scaledResult =
-          EnduranceMetrics.compute(samples: scaled, apertureThreshold: 0.2);
+      final baseResult = EnduranceMetrics.compute(
+        samples: base,
+        apertureThreshold: 0.2,
+      );
+      final scaledResult = EnduranceMetrics.compute(
+        samples: scaled,
+        apertureThreshold: 0.2,
+      );
       expect(baseResult.aperture, inInclusiveRange(0, 1));
       expect(scaledResult.aperture, inInclusiveRange(0, 1));
       expect(baseResult.enduranceScore, inInclusiveRange(0, 100));
@@ -220,7 +258,10 @@ void main() {
         final jitter = (rng.nextDouble() - 0.5) * 0.04;
         return _sample(i * 0.2, (0.22 + jitter).clamp(0.0, 1.0));
       });
-      final result = EnduranceMetrics.compute(samples: samples, apertureThreshold: 0.2);
+      final result = EnduranceMetrics.compute(
+        samples: samples,
+        apertureThreshold: 0.2,
+      );
       expect(result.aperture.isNaN, isFalse);
       expect(result.apertureStability.isNaN, isFalse);
       expect(result.enduranceScore.isNaN, isFalse);
