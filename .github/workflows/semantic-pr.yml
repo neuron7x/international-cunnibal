@@ -30,4 +30,12 @@ jobs:
             revert
           requireScope: false
           subjectPattern: ^(?!\s*$).+
-          subjectPatternError: "PR title must have a non-empty subject, e.g. 'feat: add on-device benchmark gate'."
+          subjectPatternError: |
+            ❌ Титул PR повинен мати префікс Conventional Commits. 
+            
+            Приклади:
+            ✅ feat: add new feature
+            ✅ fix: resolve bug
+            ✅ chore: update dependencies
+            
+            Докладніше: https://www.conventionalcommits.org/
