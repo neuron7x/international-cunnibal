@@ -6,7 +6,7 @@
   `flutter test --coverage` (coverage artifact uploaded).
 - **CodeQL (GitHub Advanced Security)**: security-extended queries
   (build-less JS scan until Dart is supported).
-- **Dependency Review**: blocks high-severity dependency risks during PR review.
+- **Dependency Review**: scans PRs for high-severity vulnerabilities and license risks (Dart/pub, GitHub Actions); requires Dependency Graph enabled in repo settings.
 - **Secret Scan**: `gitleaks` ensures no secrets or tokens are committed.
 - **Docs & Intent Guard**:
   - Markdown linting when docs change.
