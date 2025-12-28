@@ -38,16 +38,27 @@ def run_git(args: list[str]) -> str:
     return result.stdout
 
 
-def get_changed_files(base_ref: str) -> list[str]:
+def determine_diff_range(base_ref: str) -> str:
+    try:
+        parents = run_git(["git", "rev-list", "--parents", "-n", "1", "HEAD"]).split()
+        # Merge commit: parents[1] = base, parents[2] = head
+        if len(parents) >= 3 and base_ref == "HEAD~1":
+            return f"{parents[1]}...{parents[2]}"
+    except subprocess.CalledProcessError:
+        pass
+    return f"{base_ref}...HEAD"
+
+
+def get_changed_files(diff_range: str) -> list[str]:
     return [
         line.strip()
-        for line in run_git(["git", "diff", "--name-only", f"{base_ref}...HEAD"]).splitlines()
+        for line in run_git(["git", "diff", "--name-only", diff_range]).splitlines()
         if line.strip()
     ]
 
 
-def load_diff(base_ref: str, path: str) -> list[str]:
-    return run_git(["git", "diff", "-U0", f"{base_ref}...HEAD", "--", path]).splitlines()
+def load_diff(diff_range: str, path: str) -> list[str]:
+    return run_git(["git", "diff", "-U0", diff_range, "--", path]).splitlines()
 
 
 def is_comment_or_whitespace(line: str) -> bool:
@@ -110,8 +121,8 @@ def semantic_arch_line(line: str) -> bool:
     return is_signature_change(stripped)
 
 
-def has_semantic_change(base_ref: str, path: str, classifier) -> bool:
-    for diff_line in load_diff(base_ref, path):
+def has_semantic_change(diff_range: str, path: str, classifier) -> bool:
+    for diff_line in load_diff(diff_range, path):
         if not diff_line.startswith(("+", "-")) or diff_line.startswith(("+++", "---")):
             continue
         code = diff_line[1:]
@@ -120,11 +131,11 @@ def has_semantic_change(base_ref: str, path: str, classifier) -> bool:
     return False
 
 
-def doc_update_is_valid(base_ref: str, doc_path: str) -> bool:
+def doc_update_is_valid(diff_range: str, doc_path: str) -> bool:
     header = False
     bullet = False
     invariant = False
-    for diff_line in load_diff(base_ref, doc_path):
+    for diff_line in load_diff(diff_range, doc_path):
         if not diff_line.startswith("+") or diff_line.startswith("+++"):
             continue
         line = diff_line[1:].strip()
@@ -137,7 +148,7 @@ def doc_update_is_valid(base_ref: str, doc_path: str) -> bool:
     return header and bullet and invariant
 
 
-def doc_set_has_valid_update(base_ref: str, changed: Iterable[str], doc_set: set[str]) -> bool:
+def doc_set_has_valid_update(diff_range: str, changed: Iterable[str], doc_set: set[str]) -> bool:
     for doc in changed:
         if doc in doc_set and doc_update_is_valid(base_ref, doc):
             return True
@@ -146,7 +157,8 @@ def doc_set_has_valid_update(base_ref: str, changed: Iterable[str], doc_set: set
 
 def main() -> int:
     base_ref = os.environ.get("BASE_REF", "origin/main")
-    changed = get_changed_files(base_ref)
+    diff_range = determine_diff_range(base_ref)
+    changed = get_changed_files(diff_range)
 
     failures: list[str] = []
 
@@ -155,24 +167,24 @@ def main() -> int:
 
     # Metrics gate
     metric_files_changed = [p for p in non_test_changed if p in METRIC_FILES]
-    metric_semantic = any(has_semantic_change(base_ref, p, semantic_metric_line) for p in metric_files_changed)
-    if metric_semantic and not doc_set_has_valid_update(base_ref, changed, DOC_METRICS):
+    metric_semantic = any(has_semantic_change(diff_range, p, semantic_metric_line) for p in metric_files_changed)
+    if metric_semantic and not doc_set_has_valid_update(diff_range, changed, DOC_METRICS):
         failures.append(
             "METRICS_CHANGE detected; update docs/metrics.md or ENGINEERING_HANDBOOK.md with header, bullet, and invariant impact."
         )
 
     # ML/CV gate
     ml_files_changed = [p for p in non_test_changed if p in ML_FILES]
-    ml_semantic = any(has_semantic_change(base_ref, p, semantic_ml_line) for p in ml_files_changed)
-    if ml_semantic and not doc_set_has_valid_update(base_ref, changed, DOC_ML):
+    ml_semantic = any(has_semantic_change(diff_range, p, semantic_ml_line) for p in ml_files_changed)
+    if ml_semantic and not doc_set_has_valid_update(diff_range, changed, DOC_ML):
         failures.append(
             "ML_CV_CHANGE detected; update docs/ml.md or ENGINEERING_HANDBOOK.md with header, bullet, and invariant impact."
         )
 
     # Architecture gate
     arch_files_changed = [p for p in non_test_changed if p.startswith(ARCH_PREFIXES)]
-    arch_semantic = any(has_semantic_change(base_ref, p, semantic_arch_line) for p in arch_files_changed)
-    if arch_semantic and not doc_set_has_valid_update(base_ref, changed, DOC_ARCH):
+    arch_semantic = any(has_semantic_change(diff_range, p, semantic_arch_line) for p in arch_files_changed)
+    if arch_semantic and not doc_set_has_valid_update(diff_range, changed, DOC_ARCH):
         failures.append(
             "ARCHITECTURE_CHANGE detected; update docs/architecture.md or ARCHITECTURE.md (header, bullet, invariant impact)."
         )
