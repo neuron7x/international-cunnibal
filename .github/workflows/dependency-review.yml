@@ -1,12 +1,12 @@
 name: Dependency Review
 
 on:
-  # Primary: PR review (найкраща практика для dependency review)
+  # Primary: PR review (best practice for dependency review)
   pull_request:
     branches: [main, develop]
     types: [opened, synchronize, reopened]
   
-  # Secondary: Manual trigger для аудиту
+  # Secondary: Manual trigger for audits
   workflow_dispatch:
     inputs: 
       base_ref:
@@ -19,7 +19,7 @@ on:
 
 permissions:
   contents: read
-  pull-requests: write  # Для коментарів у PR
+  pull-requests: write  # For PR comments
 
 jobs: 
   dependency-review:
@@ -28,28 +28,20 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with: 
-          # Fetch повну історію для точного порівняння
+          # Fetch full history for accurate comparison
           fetch-depth: 0
 
       - name: Dependency review
         uses: actions/dependency-review-action@v4
         with:
           fail-on-severity: high
-          # Додаткові production-ready параметри: 
-          deny-licenses: GPL-2.0, GPL-3.0  # Блокуємо проблемні ліцензії
+          # Additional production-ready parameters
+          deny-licenses: GPL-2.0, GPL-3.0  # Block problematic licenses
           fail-on-scopes: runtime, development
           vulnerability-check: true
           license-check: true
-          comment-summary-in-pr: true  # Автоматичні коментарі
+          comment-summary-in-pr: true  # Automatic comments
           retry-on-snapshot-warnings: true
           retry-on-snapshot-warnings-timeout: 600
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Upload dependency graph
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: dependency-review-report
-          path: dependency-review-report.json
-          retention-days: 90
