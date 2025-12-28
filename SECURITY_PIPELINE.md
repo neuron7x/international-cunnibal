@@ -39,7 +39,9 @@
 2. Enable GitHub Advanced Security features (CodeQL and secret scanning)
    in repository settings.
 
-## Local CI (mirrors GitHub Actions)
+## Local Development Workflow
+
+Run these commands in order to mirror CI locally (single path, no alternatives):
 
 ```bash
 flutter format .
@@ -52,6 +54,8 @@ python tool/ci/check_metric_changes.py
 python tool/ci/check_doc_updates.py
 python tool/ci/check_doc_lint.py
 python tool/ci/check_latency_budget.py
+```
+
 ## What is protected
 
 * **Metrics & math**: changes in motion or metric logic must update tests;

@@ -37,6 +37,39 @@
 
 </div>
 
+## Technical Description (concise)
+
+- Flutter on-device biofeedback app for tongue/oral biomechanics training.
+- Processes camera/landmark streams locally; ships with deterministic MotionMetrics core and seeded demo without ML assets.
+- Targets clinicians, speech therapists, and researchers needing offline session feedback without cloud dependencies.
+- Provides rhythm dictation practice with bounded metrics (consistency, direction, intensity, synchronization).
+- Aggregated JSON exports only; raw video is never persisted or transmitted.
+- Headless demo scripts run without models for quick validation on laptops or CI.
+
+## Technical Summary
+
+International Cunnibal is an on-device Flutter app for tongue biomechanics training and rhythm dictation.  
+It processes camera frames locally with MediaPipe/TFLite to extract landmarks and bounded MotionMetrics.  
+Scores cover consistency, dominant direction, intensity, rhythm match, and jaw endurance for rehab and training use cases.  
+Designed for clinicians, researchers, and athletes who need private, offline biofeedback on handheld devices.  
+All data stays on device; exports are aggregated JSON summaries only.  
+A headless demo path runs without ML assets for quick validation.  
+
+## Current State
+
+- Implemented and working: deterministic MotionMetrics core, endurance snapshots, JSON export pipeline, seeded demo engines (no external assets required).
+- Intentional R&D: live camera/landmark ingestion and on-device ML integration beyond the deterministic demo simulators.
+- Next milestone: stable pull_request CI signal (format/analyze/tests/security) plus a demo run on a physical device.
+
+## Quick Start (Local)
+
+1. `git clone https://github.com/neuron7x/international-cunnibal.git`
+2. `cd international-cunnibal`
+3. `flutter pub get`
+4. `flutter format . && flutter analyze`
+5. `flutter test --coverage`
+6. Run the app: `flutter run` (or core logic only: `dart run tool/run_demo.dart`)
+
 ## 🌟 Overview
 
 **International Cunnibal** is a cutting-edge Flutter application that brings neuroscience to your fingertips.

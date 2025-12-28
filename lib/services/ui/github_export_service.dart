@@ -79,22 +79,15 @@ class GitHubExportService {
       };
     }
 
-    final avgConsistency = _metricsLog
-        .map((m) => m.consistencyScore)
-        .reduce((a, b) => a + b) / _metricsLog.length;
+    final avgConsistency =
+        _meanOrZero(_metricsLog.map((m) => m.consistencyScore));
 
-    final avgFrequency = _metricsLog
-        .map((m) => m.frequency)
-        .reduce((a, b) => a + b) / _metricsLog.length;
-    final avgEndurance = _metricsLog
-        .map((m) => m.endurance.enduranceScore)
-        .reduce((a, b) => a + b) / _metricsLog.length;
+    final avgFrequency = _meanOrZero(_metricsLog.map((m) => m.frequency));
+    final avgEndurance =
+        _meanOrZero(_metricsLog.map((m) => m.endurance.enduranceScore));
 
-    final avgSyncScore = _sessionsLog.isEmpty
-        ? 0.0
-        : _sessionsLog
-            .map((s) => s.synchronizationScore)
-            .reduce((a, b) => a + b) / _sessionsLog.length;
+    final avgSyncScore =
+        _meanOrZero(_sessionsLog.map((s) => s.synchronizationScore));
 
     return {
       'avgConsistency': avgConsistency,
@@ -109,6 +102,13 @@ class GitHubExportService {
   void clearLogs() {
     _metricsLog.clear();
     _sessionsLog.clear();
+  }
+
+  double _meanOrZero(Iterable<double> values) {
+    final finite = values.where((v) => v.isFinite).toList();
+    if (finite.isEmpty) return 0.0;
+    final mean = finite.reduce((a, b) => a + b) / finite.length;
+    return mean.isFinite ? mean : 0.0;
   }
 
   /// Get export directory path
