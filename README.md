@@ -37,6 +37,30 @@
 
 </div>
 
+## Technical Summary
+- On-device Flutter/Dart trainer that converts camera frames into tongue and facial landmarks with MediaPipe/TFLite.
+- Built for clinicians, therapists, and movement researchers who need repeatable, offline biofeedback.
+- Metrics engine caps velocity, acceleration, and rhythm alignment scores to keep outputs bounded and comparable.
+- Export pipeline emits aggregated session JSON only; raw video is neither stored nor transmitted.
+- Privacy guards block network calls and require explicit consented capture flows.
+- Runs on Android/iOS simulators or devices with no cloud dependencies.
+
+## Current State
+- Implemented: On-device landmark tracking, bounded metrics, JSON export pipeline, privacy guards, and CI gates for format/analyze/tests.
+- In R&D: Latency budgeting stability runs and additional model tuning for edge movement patterns.
+- Next milestone: Partner/rhythm demo with reproducible metrics across Android and iOS simulators.
+
+## Quick Start (Local)
+```bash
+git clone https://github.com/neuron7x/international-cunnibal.git
+cd international-cunnibal
+flutter pub get
+flutter format --set-exit-if-changed lib test
+flutter analyze
+flutter test --coverage
+flutter run lib/main.dart   # attach a simulator or device
+```
+
 ## 🌟 Overview
 
 **International Cunnibal** is a cutting-edge Flutter application that brings neuroscience to your fingertips.

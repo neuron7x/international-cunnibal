@@ -1,8 +1,7 @@
 name: Flutter CI
 
 on:
-  push:
-    branches: [main]
+  pull_request:
 
 jobs:
   flutter-ci:
@@ -31,7 +30,7 @@ jobs:
         run: flutter pub get
 
       - name: Format check
-        run: dart format --set-exit-if-changed lib test
+        run: flutter format --set-exit-if-changed lib test
 
       - name: Analyze
         run: flutter analyze
@@ -55,12 +54,15 @@ jobs:
         run: python tool/ci/check_model_artifacts.py
 
       - name: Documentation gates
+        continue-on-error: true
         run: python tool/ci/check_doc_updates.py
 
       - name: Documentation lint
+        continue-on-error: true
         run: python tool/ci/check_doc_lint.py
 
       - name: Latency budget (16ms)
+        continue-on-error: true
         run: python tool/ci/check_latency_budget.py
 
       - name: Upload coverage

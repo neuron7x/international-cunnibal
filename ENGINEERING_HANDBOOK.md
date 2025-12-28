@@ -22,6 +22,21 @@
 - `ml-ops/model_cards/` — картки моделей.
 - `ml-ops/benchmarks/` — логи бенчмарків.
 
+### Local Development Workflow
+Послідовність команд, що дзеркалює CI (виконуйте з кореня репозиторію):
+1. `flutter pub get`
+2. `flutter format --set-exit-if-changed lib test`
+3. `flutter analyze`
+4. `flutter test --coverage`
+5. `python tool/ci/check_coverage.py`
+6. `python tool/ci/check_architecture_boundaries.py`
+7. `python tool/ci/check_privacy_guards.py`
+8. `python tool/ci/check_metric_changes.py`
+9. `python tool/ci/check_model_artifacts.py`
+10. `python tool/ci/check_doc_updates.py`
+11. `python tool/ci/check_doc_lint.py`
+12. `python tool/ci/check_latency_budget.py`
+
 ## 1. Вступ: Інженерна Доктрина та Філософія Продукту
 
 ### 1.1 Мета та Стратегічний Контекст
