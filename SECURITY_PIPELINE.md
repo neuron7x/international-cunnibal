@@ -2,7 +2,7 @@
 
 ## Automated checks (run on every PR and pushes to `main`)
 
-- **Flutter CI**: `flutter format --set-exit-if-changed lib test`, `flutter analyze`,
+- **Flutter CI**: `dart format --output=none --set-exit-if-changed lib test`, `flutter analyze`,
   `flutter test --coverage` (coverage artifact uploaded).
 - **CodeQL (GitHub Advanced Security)**: security-extended queries
   (build-less JS scan until Dart is supported).
@@ -42,7 +42,7 @@
 ## Local CI (mirrors GitHub Actions)
 
 ```bash
-flutter format .
+dart format .
 flutter analyze
 flutter test --coverage
 python tool/ci/check_coverage.py

@@ -45,7 +45,7 @@ Make sure these checks are green before requesting review:
 ## Testing
 Run the standard checks before opening a PR:
 ```bash
-flutter format --set-exit-if-changed lib test
+dart format --output=none --set-exit-if-changed lib test
 flutter analyze
 flutter test --coverage
 ```

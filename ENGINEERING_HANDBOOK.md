@@ -25,7 +25,7 @@
 ### Local Development Workflow
 Послідовність команд, що дзеркалює CI (виконуйте з кореня репозиторію):
 1. `flutter pub get`
-2. `flutter format --set-exit-if-changed lib test`
+2. `dart format --output=none --set-exit-if-changed lib test`
 3. `flutter analyze`
 4. `flutter test --coverage`
 5. `python tool/ci/check_coverage.py`

@@ -55,7 +55,7 @@
 git clone https://github.com/neuron7x/international-cunnibal.git
 cd international-cunnibal
 flutter pub get
-flutter format --set-exit-if-changed lib test
+dart format --output=none --set-exit-if-changed lib test
 flutter analyze
 flutter test --coverage
 flutter run lib/main.dart   # attach a simulator or device
