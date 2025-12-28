@@ -16,6 +16,7 @@ on:
       head_ref:
         description: 'Head reference (branch/commit)'
         required: true
+        default: 'HEAD'
 
 permissions:
   contents: read
