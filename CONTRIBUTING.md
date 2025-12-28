@@ -26,7 +26,6 @@ This repository enforces the 2025 Technical Constitution. All contributions must
 
 ### Required PR checks
 Make sure these checks are green before requesting review:
-- `Flutter CI / Format, analyze, test`
 - `CodeQL / CodeQL analysis`
 - `Dependency Review / dependency-review`
 - `Secret Scan / gitleaks`
