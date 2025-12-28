@@ -1,0 +1,92 @@
+name: Auto-fix PR Title
+
+on:
+  pull_request_target:
+    types: [opened, reopened, edited, synchronize]
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  auto-fix: 
+    runs-on: ubuntu-latest
+    steps:
+      - name: Auto-add conventional commit prefix
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const prTitle = context.payload.pull_request.title;
+            const prNumber = context.payload.pull_request.number;
+            const branchName = context.payload.pull_request.head.ref.toLowerCase();
+            
+            // Список валідних префіксів
+            const validTypes = ['feat', 'fix', 'docs', 'refactor', 'perf', 'test', 'chore', 'ci', 'build', 'revert'];
+            
+            // Перевірка чи є вже префікс
+            const hasPrefix = validTypes.some(type => {
+              const regex = new RegExp(`^${type}(\\(.+\\))?:\\s`, 'i');
+              return regex.test(prTitle);
+            });
+            
+            if (hasPrefix) {
+              console.log(`✅ PR #${prNumber} вже має валідний префікс`);
+              return;
+            }
+            
+            // Інтелектуальне визначення типу
+            let prefix = 'chore'; // default
+            
+            if (branchName.includes('feat') || branchName.includes('feature')) {
+              prefix = 'feat';
+            } else if (branchName.includes('fix') || branchName.includes('bug') || branchName.includes('hotfix')) {
+              prefix = 'fix';
+            } else if (branchName.includes('doc')) {
+              prefix = 'docs';
+            } else if (branchName.includes('test')) {
+              prefix = 'test';
+            } else if (branchName.includes('ci') || branchName.includes('workflow')) {
+              prefix = 'ci';
+            } else if (branchName.includes('refactor')) {
+              prefix = 'refactor';
+            } else if (branchName.includes('perf')) {
+              prefix = 'perf';
+            }
+            
+            // Визначення за ключовими словами в титулі
+            const lowerTitle = prTitle.toLowerCase();
+            if (lowerTitle.includes('add') || lowerTitle.includes('implement') || lowerTitle.includes('create')) {
+              prefix = 'feat';
+            } else if (lowerTitle.includes('fix') || lowerTitle.includes('bug') || lowerTitle.includes('resolve')) {
+              prefix = 'fix';
+            } else if (lowerTitle.includes('update') || lowerTitle.includes('upgrade')) {
+              prefix = 'chore';
+            } else if (lowerTitle.includes('remove') || lowerTitle.includes('delete')) {
+              prefix = 'chore';
+            } else if (lowerTitle.includes('doc')) {
+              prefix = 'docs';
+            }
+            
+            const newTitle = `${prefix}: ${prTitle}`;
+            
+            try {
+              await github.rest.pulls.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: prNumber,
+                title: newTitle
+              });
+              
+              // Додати коментар про автоматичну зміну
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                body: `🤖 Автоматично додано префікс \`${prefix}:\` до титулу PR для відповідності [Conventional Commits](https://www.conventionalcommits.org/).\n\nПопередній титул: \`${prTitle}\`\nНовий титул: \`${newTitle}\`\n\nЯкщо префікс невірний, відредагуйте титул вручну.`
+              });
+              
+              console.log(`✅ Оновлено титул PR #${prNumber}: "${newTitle}"`);
+            } catch (error) {
+              console.error(`❌ Помилка оновлення PR: ${error.message}`);
+            }
