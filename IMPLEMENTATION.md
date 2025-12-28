@@ -85,31 +85,31 @@ Real-time tongue biomechanics tracking via MediaPipe/TFLite integration (Referen
 **Implementation:**
 Comprehensive biometric metrics (Reference: 2025-11-30):
 
-### 4.1 Consistency Score (Standard Deviation)
+### 4.1 Consistency Score (Coefficient of Variation)
 **Algorithm:**
 ```
-1. Calculate mean velocity across buffer
-2. Calculate variance: Σ(v - mean)² / n
-3. Calculate std dev: √variance
-4. Normalize to 0-100: max(0, 100 - stdDev * 50)
+1. Derive speeds from displacements and sample times
+2. Compute mean, standard deviation, and jerk (speed deltas)
+3. Calculate coefficient of variation and jerk penalty
+4. Normalize and clamp score to 0-100
 ```
 
-**Interpretation:** Higher score = more consistent movements
+**Interpretation:** Higher score = more consistent movements with fewer jerks
 
-**Code:** `lib/services/neural_engine.dart` - `_calculateConsistencyScore()`
+**Code:** `lib/core/motion_metrics.dart` - `MotionMetrics.compute()` (called from `NeuralEngine._calculateMetrics()`)
 
 ### 4.2 Frequency (Hz)
 **Algorithm:**
 ```
-1. Detect peaks in velocity data
-2. Count peaks: v[i] > v[i-1] && v[i] > v[i+1]
-3. Calculate timespan in seconds
-4. Frequency = peaks / timespan
+1. Project motion onto the principal axis
+2. Run autocorrelation across plausible lags
+3. Select peak with sub-sample refinement
+4. Convert lag to Hz and clamp confidence to 0-1
 ```
 
-**Interpretation:** Movements per second
+**Interpretation:** Dominant movement frequency along principal axis
 
-**Code:** `lib/services/neural_engine.dart` - `_calculateFrequency()`
+**Code:** `lib/core/motion_metrics.dart` - `MotionMetrics.compute()` (called from `NeuralEngine._calculateMetrics()`)
 
 ### 4.3 Vector PCA (Principal Component Analysis)
 **Algorithm:**
