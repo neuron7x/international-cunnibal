@@ -2,8 +2,6 @@
 
 ## Automated checks (run on every PR and pushes to `main`)
 
-- **Flutter CI**: `flutter format --set-exit-if-changed lib test`, `flutter analyze`,
-  `flutter test --coverage` (coverage artifact uploaded).
 - **CodeQL (GitHub Advanced Security)**: security-extended queries
   (build-less JS scan until Dart is supported).
 - **Dependency Review**: blocks high-severity dependency risks during PR review.
@@ -26,7 +24,6 @@
    - Require pull requests; block direct pushes and force-pushes.
    - Require branches to be up to date before merging.
    - Require the following status checks:
-     - `Flutter CI / Format, analyze, test`
      - `CodeQL / CodeQL analysis`
      - `Dependency Review / dependency-review`
      - `Secret Scan / gitleaks`
