@@ -14,14 +14,14 @@ class GitHubExportService {
   GitHubExportService._internal({
     ExportFileWriter? fileWriter,
     DateTime Function()? now,
-  }) : _fileWriter = fileWriter ?? const ExportFileWriter(),
-       _now = now ?? DateTime.now;
+  })  : _fileWriter = fileWriter ?? const ExportFileWriter(),
+        _now = now ?? DateTime.now;
 
   GitHubExportService.testing({
     required ExportFileWriter fileWriter,
     DateTime Function()? now,
-  }) : _fileWriter = fileWriter,
-       _now = now ?? DateTime.now;
+  })  : _fileWriter = fileWriter,
+        _now = now ?? DateTime.now;
 
   final ExportFileWriter _fileWriter;
   final DateTime Function() _now;
@@ -87,17 +87,17 @@ class GitHubExportService {
         _metricsLog.map((m) => m.frequency).reduce((a, b) => a + b) /
         _metricsLog.length;
     final avgEndurance =
-        _metricsLog
-            .map((m) => m.endurance.enduranceScore)
-            .reduce((a, b) => a + b) /
+        _metricsLog.map((m) => m.endurance.enduranceScore).reduce(
+              (a, b) => a + b,
+            ) /
         _metricsLog.length;
 
     final avgSyncScore = _sessionsLog.isEmpty
         ? 0.0
         : _sessionsLog
-                  .map((s) => s.synchronizationScore)
-                  .reduce((a, b) => a + b) /
-              _sessionsLog.length;
+                .map((s) => s.synchronizationScore)
+                .reduce((a, b) => a + b) /
+            _sessionsLog.length;
 
     return {
       'avgConsistency': avgConsistency,
