@@ -36,12 +36,14 @@ jobs:
         with:
           fail-on-severity: high
           # Additional production-ready parameters
-          deny-licenses: GPL-2.0, GPL-3.0  # Block problematic licenses
+          deny-licenses: GPL-2.0-only, GPL-3.0-only  # Block problematic licenses
           fail-on-scopes: runtime, development
           vulnerability-check: true
           license-check: true
           comment-summary-in-pr: true  # Automatic comments
           retry-on-snapshot-warnings: true
           retry-on-snapshot-warnings-timeout: 600
+          base-ref: ${{ github.event.inputs.base_ref || '' }}
+          head-ref: ${{ github.event.inputs.head_ref || '' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
