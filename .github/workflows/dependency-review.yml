@@ -64,6 +64,8 @@ jobs:
             else
               echo '{"error": "Flutter not available in runner"}' > deps-snapshot.json
             fi
+          else
+            echo '{"info": "No pubspec.yaml found"}' > deps-snapshot.json
           fi
 
       - name: Upload artifacts
@@ -71,9 +73,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: dependency-review-${{ github.run_id }}
-          path: |
-            deps-snapshot.json
+          path: deps-snapshot.json
           retention-days: 90
+          if-no-files-found: warn
 
       - name: Report failure
         if: steps.dependency-review.outcome == 'failure'
