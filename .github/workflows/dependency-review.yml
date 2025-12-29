@@ -41,7 +41,16 @@ jobs:
         with:
           fail-on-severity: high
           # Additional production-ready parameters
-          deny-licenses: GPL-2.0-only, GPL-2.0-or-later, GPL-3.0-only, GPL-3.0-or-later, AGPL-3.0-only, AGPL-3.0-or-later, LGPL-2.1-only, LGPL-3.0-only  # Block problematic licenses
+          # Block problematic licenses (SPDX-compliant identifiers)
+          deny-licenses: |
+            GPL-2.0-only
+            GPL-2.0-or-later
+            GPL-3.0-only
+            GPL-3.0-or-later
+            AGPL-3.0-only
+            AGPL-3.0-or-later
+            LGPL-2.1-only
+            LGPL-3.0-only
           fail-on-scopes: runtime, development
           vulnerability-check: true
           license-check: true
@@ -86,7 +95,7 @@ jobs:
             if (context.eventName === 'pull_request') {
               await github.rest.issues.createComment({
                 ...context.repo,
-                issue_number: context.issue.number,
+                issue_number: context.payload.pull_request.number,
                 body: '⚠️ Dependency review failed. Manual audit required.\n\nPlease check the workflow logs for details or ensure Dependency Graph is enabled in repository settings.'
               });
             }
