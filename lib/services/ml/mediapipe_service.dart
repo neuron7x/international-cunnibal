@@ -39,7 +39,7 @@ class MediaPipeService {
 
   Future<void> loadModel() async {
     _interpreter ??=
-        await Interpreter.fromAsset('assets/models/face_landmark.tflite');
+        await Interpreter.fromAsset('assets/models/tongue_detector.tflite');
   }
 
   void dispose() {

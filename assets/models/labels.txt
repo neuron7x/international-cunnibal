@@ -1,0 +1,12 @@
+# Tongue Landmark Indices (MediaPipe Face Mesh style)
+# Based on 468-point face mesh, tongue-relevant landmarks
+# Each line is a landmark index from the full face mesh
+13    # Lower lip bottom - helps track jaw opening
+14    # Lower lip center - central reference point
+78    # Upper lip left inner - mouth opening width
+308   # Upper lip right inner - mouth opening width
+324   # Mouth corner right - tracks lateral movement
+375   # Mouth corner left - tracks lateral movement
+405   # Tongue tip approximate - primary tracking point
+406   # Tongue center - mid-tongue position
+407   # Tongue base - posterior tongue position
