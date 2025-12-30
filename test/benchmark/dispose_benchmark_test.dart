@@ -1,6 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:international_cunnibal/services/ui/cv_engine.dart';
 
+const int _disposeBudgetMicros = 1000;
+
 void main() {
   test('dispose performance benchmark', () async {
     const iterations = 100;
@@ -20,6 +22,6 @@ void main() {
 
     final avgDispose = stopwatch.elapsedMicroseconds / iterations;
 
-    expect(avgDispose, lessThan(1000));
+    expect(avgDispose, lessThan(_disposeBudgetMicros));
   });
 }
