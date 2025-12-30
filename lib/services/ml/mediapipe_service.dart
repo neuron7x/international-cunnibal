@@ -4,6 +4,8 @@ import 'dart:math';
 import 'package:camera/camera.dart';
 import 'package:tflite_flutter/tflite_flutter.dart';
 
+typedef TensorInput = List<List<List<List<double>>>>;
+
 class Landmark {
   final double x;
   final double y;
@@ -17,6 +19,8 @@ class MediaPipeService {
 
   static const int _placeholderSeed = 7;
   static const int _inputSize = 256;
+  static const int _facemarkCount = 468;
+  static const double _normalizationFactor = 127.5;
 
   static const List<int> tongueLandmarkIndices = [
     13,
@@ -50,7 +54,7 @@ class MediaPipeService {
     final input = _preprocessImage(image);
     final outputBuffer = List.generate(
       1,
-      (_) => List.generate(468, (_) => List<double>.filled(3, 0.0)),
+      (_) => List.generate(_facemarkCount, (_) => List<double>.filled(3, 0.0)),
     );
     try {
       _interpreter!.run(input, outputBuffer);
@@ -73,14 +77,14 @@ class MediaPipeService {
         .toList(growable: false);
   }
 
-  List<List<List<List<double>>>> _preprocessImage(CameraImage image) {
+  TensorInput _preprocessImage(CameraImage image) {
     final plane = image.planes.first;
     if (plane.bytes.isEmpty) {
       return _emptyInput();
     }
     final mean =
         plane.bytes.fold<int>(0, (sum, b) => sum + b) / plane.bytes.length;
-    final normalizedValue = (mean / 127.5) - 1.0;
+    final normalizedValue = (mean / _normalizationFactor) - 1.0;
 
     final normalized = List<List<List<List<double>>>>.generate(
       1,
@@ -109,7 +113,7 @@ class MediaPipeService {
     return result;
   }
 
-  List<List<List<List<double>>>> _emptyInput() {
+  TensorInput _emptyInput() {
     return List<List<List<List<double>>>>.generate(
       1,
       (_) => List<List<List<double>>>.generate(

@@ -6,13 +6,13 @@ import 'package:international_cunnibal/services/backend/leaderboard_backend.dart
 enum LeaderboardFilter { daily, weekly, allTime }
 
 class LeaderboardService {
-  final List<Score> _scores = [];
   final String? localUserId;
   static const int _seed = 42;
   static const Duration _minSubmitInterval = Duration(minutes: 5);
   final DateTime Function() _clock;
   final LeaderboardBackend _backend;
   DateTime? _lastSubmit;
+  bool _seeded = false;
 
   LeaderboardService({
     this.localUserId,
@@ -39,39 +39,28 @@ class LeaderboardService {
       );
     }
     await _backend.upsertScore(score);
-    final index = _scores.indexWhere((s) => s.userId == score.userId);
-    if (index >= 0) {
-      _scores[index] = score;
-    } else {
-      _scores.add(score);
-    }
     _lastSubmit = now;
   }
 
-  int rankOf(
+  Future<int> rankOf(
     String userId, {
     LeaderboardFilter filter = LeaderboardFilter.allTime,
-  }) {
-    final now = _clock();
-    final sorted = _scores
-        .where((score) => isWithinFilter(score.timestamp, filter, now))
-        .toList()
-      ..sort((a, b) => b.totalPoints.compareTo(a.totalPoints));
-
-    for (int i = 0; i < sorted.length; i++) {
-      if (sorted[i].userId == userId) {
-        return i + 1;
-      }
+  }) async {
+    final scores = await _backend.getTop(filter: filter, limit: 1000);
+    for (int i = 0; i < scores.length; i++) {
+      if (scores[i].userId == userId) return i + 1;
     }
     return -1;
   }
 
-  Score? currentUserScore() {
+  Future<Score?> currentUserScore() async {
     if (localUserId == null) return null;
-    for (final score in _scores) {
-      if (score.userId == localUserId) return score;
+    final scores = await _backend.getTop(filter: LeaderboardFilter.allTime);
+    try {
+      return scores.firstWhere((s) => s.userId == localUserId);
+    } catch (_) {
+      return null;
     }
-    return null;
   }
 
   static bool isWithinFilter(
@@ -90,7 +79,7 @@ class LeaderboardService {
   }
 
   void _seedIfEmpty() {
-    if (_scores.isNotEmpty) return;
+    if (_seeded) return;
     final random = Random(_seed);
     final now = _clock();
     final seeds = <Score>[];
@@ -118,7 +107,7 @@ class LeaderboardService {
         ),
       );
     }
-    _scores.addAll(seeds);
     _backend.upsertScores(seeds);
+    _seeded = true;
   }
 }
