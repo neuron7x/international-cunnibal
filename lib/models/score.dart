@@ -81,7 +81,7 @@ class Score {
     );
 
     return Score(
-      userId: json['userId'] as String,
+      userId: userId,
       enduranceScore: enduranceScore,
       streakDays: streakDays,
       totalSessions: totalSessions,

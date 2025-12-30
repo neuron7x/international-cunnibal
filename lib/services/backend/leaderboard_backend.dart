@@ -47,11 +47,4 @@ class InMemoryLeaderboardBackend implements LeaderboardBackend {
       _scores.add(score);
     }
   }
-
-  @override
-  Future<void> upsertScores(List<Score> scores) async {
-    for (final score in scores) {
-      await upsertScore(score);
-    }
-  }
 }

@@ -48,9 +48,16 @@ class MediaPipeService {
     }
 
     final input = _preprocessImage(image);
-    final outputBuffer = List<double>.filled(468 * 3, 0.0).reshape([1, 468, 3]);
-    _interpreter!.run(input, outputBuffer);
-    return _parseLandmarks(outputBuffer);
+    final outputBuffer = List.generate(
+      1,
+      (_) => List.generate(468, (_) => List<double>.filled(3, 0.0)),
+    );
+    try {
+      _interpreter!.run(input, outputBuffer);
+      return _parseLandmarks(outputBuffer.first);
+    } catch (_) {
+      return _placeholderLandmarks();
+    }
   }
 
   List<Landmark> _placeholderLandmarks() {
@@ -66,7 +73,7 @@ class MediaPipeService {
         .toList(growable: false);
   }
 
-  List<List<List<double>>> _preprocessImage(CameraImage image) {
+  List<List<List<List<double>>>> _preprocessImage(CameraImage image) {
     final plane = image.planes.first;
     if (plane.bytes.isEmpty) {
       return _emptyInput();
@@ -75,18 +82,21 @@ class MediaPipeService {
         plane.bytes.fold<int>(0, (sum, b) => sum + b) / plane.bytes.length;
     final normalizedValue = (mean / 127.5) - 1.0;
 
-    final normalized = List<List<List<double>>>.generate(
-      _inputSize,
-      (_) => List<List<double>>.generate(
+    final normalized = List<List<List<List<double>>>>.generate(
+      1,
+      (_) => List<List<List<double>>>.generate(
         _inputSize,
-        (_) => List<double>.filled(3, normalizedValue),
+        (_) => List<List<double>>.generate(
+          _inputSize,
+          (_) => List<double>.filled(3, normalizedValue),
+        ),
       ),
     );
-    return [normalized];
+    return normalized;
   }
 
-  List<Landmark> _parseLandmarks(List<List<List<double>>> output) {
-    final flat = output.first;
+  List<Landmark> _parseLandmarks(List<List<double>> output) {
+    final flat = output;
     final result = <Landmark>[];
     for (var i = 0; i < flat.length; i++) {
       final entry = flat[i];
@@ -99,15 +109,16 @@ class MediaPipeService {
     return result;
   }
 
-  List<List<List<double>>> _emptyInput() {
-    return [
-      List<List<double>>.generate(
+  List<List<List<List<double>>>> _emptyInput() {
+    return List<List<List<List<double>>>>.generate(
+      1,
+      (_) => List<List<List<double>>>.generate(
         _inputSize,
         (_) => List<List<double>>.generate(
           _inputSize,
           (_) => List<double>.filled(3, 0.0),
         ),
-      )
-    ];
+      ),
+    );
   }
 }
