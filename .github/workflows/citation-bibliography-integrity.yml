@@ -1,0 +1,29 @@
+name: Citation & Bibliography Integrity
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  validate-bibliography:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install validation dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install cffconvert
+
+      - name: Run bibliography validation
+        run: python scripts/validate_bibliography.py
+
+      - name: Validate CITATION.cff
+        run: cffconvert --validate -i CITATION.cff
