@@ -108,7 +108,9 @@ class DemoCvEngine implements CvEngine {
   @override
   void dispose() {
     stop();
-    _controller.close();
+    if (!_controller.isClosed) {
+      _controller.close();
+    }
   }
 }
 
@@ -222,9 +224,20 @@ class CameraCvEngine implements CvEngine {
   @override
   void dispose() {
     stop();
-    _stream.close();
-    _controller?.dispose();
+    if (!_stream.isClosed) {
+      _stream.close();
+    }
+    final controller = _controller;
     _controller = null;
+    if (controller != null) {
+      try {
+        controller.dispose();
+      } catch (error, stackTrace) {
+        debugPrint(
+          'CameraCvEngine dispose error: $error\n$stackTrace',
+        );
+      }
+    }
   }
 }
 

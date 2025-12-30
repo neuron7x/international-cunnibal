@@ -94,6 +94,8 @@ class GameLogicService {
   }
 
   void dispose() {
-    _stateController.close();
+    if (!_stateController.isClosed) {
+      _stateController.close();
+    }
   }
 }
