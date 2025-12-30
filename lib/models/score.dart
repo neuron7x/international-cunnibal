@@ -69,18 +69,22 @@ class Score {
   }
 
   factory Score.fromJson(Map<String, dynamic> json) {
-    final enduranceScore = json['enduranceScore'] as int;
-    final streakDays = json['streakDays'] as int;
-    final totalSessions = json['totalSessions'] as int;
     final userId = json['userId'] as String;
-
-    _validate(
-      userId: userId,
-      enduranceScore: enduranceScore,
-      streakDays: streakDays,
-      totalSessions: totalSessions,
-    );
-
+    if (userId.isEmpty || userId.length > 50) {
+      throw FormatException('Invalid userId');
+    }
+    final enduranceScore = json['enduranceScore'] as int;
+    if (enduranceScore < 0 || enduranceScore > 100) {
+      throw FormatException('Invalid enduranceScore: $enduranceScore');
+    }
+    final streakDays = json['streakDays'] as int;
+    if (streakDays < 0 || streakDays > 10000) {
+      throw FormatException('Invalid streakDays: $streakDays');
+    }
+    final totalSessions = json['totalSessions'] as int;
+    if (totalSessions < 0 || totalSessions > 1000000) {
+      throw FormatException('Invalid totalSessions: $totalSessions');
+    }
     return Score(
       userId: userId,
       enduranceScore: enduranceScore,
