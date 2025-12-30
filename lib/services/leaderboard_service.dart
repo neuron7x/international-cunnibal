@@ -46,11 +46,7 @@ class LeaderboardService {
     String userId, {
     LeaderboardFilter filter = LeaderboardFilter.allTime,
   }) async {
-    final scores = await _backend.getTop(filter: filter, limit: 1000);
-    for (int i = 0; i < scores.length; i++) {
-      if (scores[i].userId == userId) return i + 1;
-    }
-    return -1;
+    return _backend.rankForUser(userId, filter: filter);
   }
 
   Future<Score?> currentUserScore() async {

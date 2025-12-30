@@ -14,6 +14,17 @@ abstract class LeaderboardBackend {
       await upsertScore(score);
     }
   }
+
+  Future<int> rankForUser(
+    String userId, {
+    required LeaderboardFilter filter,
+  }) async {
+    final scores = await getTop(filter: filter, limit: 1000);
+    for (int i = 0; i < scores.length; i++) {
+      if (scores[i].userId == userId) return i + 1;
+    }
+    return -1;
+  }
 }
 
 class InMemoryLeaderboardBackend implements LeaderboardBackend {
@@ -46,5 +57,25 @@ class InMemoryLeaderboardBackend implements LeaderboardBackend {
     } else {
       _scores.add(score);
     }
+  }
+
+  @override
+  Future<int> rankForUser(
+    String userId, {
+    required LeaderboardFilter filter,
+  }) async {
+    final now = DateTime.now();
+    final filtered = _scores
+        .where((score) => LeaderboardService.isWithinFilter(
+              score.timestamp,
+              filter,
+              now,
+            ))
+        .toList()
+      ..sort((a, b) => b.totalPoints.compareTo(a.totalPoints));
+    for (int i = 0; i < filtered.length; i++) {
+      if (filtered[i].userId == userId) return i + 1;
+    }
+    return -1;
   }
 }

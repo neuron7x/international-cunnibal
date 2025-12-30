@@ -9,6 +9,7 @@ class BadgeThresholds {
 
 class Score {
   static const int maxStreakDays = 3650;
+  static const int maxUserIdLength = 36;
   final String userId;
   final int enduranceScore;
   final int streakDays;
@@ -112,7 +113,7 @@ class Score {
     if (totalSessions < 0) {
       throw FormatException('Invalid totalSessions: $totalSessions');
     }
-    if (userId.isEmpty || userId.length > 36) {
+    if (userId.isEmpty || userId.length > Score.maxUserIdLength) {
       throw FormatException('Invalid userId');
     }
   }

@@ -21,6 +21,7 @@ class MediaPipeService {
   static const int _inputSize = 256;
   static const int _facemarkCount = 468;
   static const double _normalizationFactor = 127.5;
+  static const int _sampleBytes = 1024;
 
   static const List<int> tongueLandmarkIndices = [
     13,
@@ -82,8 +83,15 @@ class MediaPipeService {
     if (plane.bytes.isEmpty) {
       return _emptyInput();
     }
-    final mean =
-        plane.bytes.fold<int>(0, (sum, b) => sum + b) / plane.bytes.length;
+    final length = plane.bytes.length;
+    final step = (length / _sampleBytes).ceil().clamp(1, length);
+    var sum = 0;
+    var count = 0;
+    for (var i = 0; i < length && count < _sampleBytes; i += step) {
+      sum += plane.bytes[i];
+      count++;
+    }
+    final mean = count == 0 ? 0 : sum / count;
     final normalizedValue = (mean / _normalizationFactor) - 1.0;
 
     final normalized = List<List<List<List<double>>>>.generate(
