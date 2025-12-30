@@ -80,6 +80,7 @@ secrets.*
 *.onnx
 *.pt
 *.tflite
+!assets/models/tongue_detector.tflite
 *.h5
 *.ckpt
 *.bin
