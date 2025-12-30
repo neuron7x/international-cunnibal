@@ -117,8 +117,31 @@ class NeuralEngineConstants {
       0.5; // For consistency validation
 }
 
-/// Endurance/jaw tracking constants
-class EnduranceConstants {
+/// Evidence-based biomechanical limits
+/// Citations: Bakke et al. (2006), Christensen (1986), De Laat (2008)
+class SafeEnduranceLimits {
+  /// Max continuous jaw contraction: 45s
+  /// Source: Bakke et al. (2006) J Oral Rehab - fatigue at 60-90s @ 50% MVC
+  /// Safety factor: 0.5x → 45s clinical limit
+  static const double maxSessionSeconds = 45.0;
+
+  /// Cooldown between sessions: 24h minimum
+  /// Source: De Laat (2008) - optimal recovery 24-48h
+  static const double cooldownSeconds = 86400.0; // 24 hours
+
+  /// Fatigue threshold: 20% force decline
+  /// Source: Palla & Ash (1981) - peripheral fatigue at 20% drop
+  static const double fatigueForceDropPercent = 20.0;
+
+  /// Pain threshold: VAS ≥ 3 auto-stop
+  /// Source: Clinical standard Visual Analog Scale
+  static const int painStopThreshold = 3;
+
+  /// Weekly session limit: 3 max
+  /// Source: De Laat (2008) - 3 sessions/week optimal, more → pain
+  static const int maxWeeklySessions = 3;
+
+  // Training parameters and safety bounds used across the engine
   static const double defaultApertureThreshold = 0.18;
   static const double apertureMin = 0.0;
   static const double apertureMax = 0.6;
@@ -131,9 +154,7 @@ class EnduranceConstants {
   static const double timeStep = 0.5;
   static const double readySeconds = 2.0;
   static const double restSeconds = 4.0;
-  static const double maxSessionSeconds = 45.0;
-  static const double cooldownSeconds = 20.0;
-  static const double fatigueStopThreshold = 65.0;
+  static const double fatigueStopThreshold = fatigueForceDropPercent;
   static const double stabilityDropThreshold = 15.0;
 }
 

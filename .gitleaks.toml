@@ -1,0 +1,8 @@
+[extend]
+  ## Use default gitleaks ruleset as a base
+  paths = []
+
+[allowlist]
+  description = "Ignore bibliography reference keys (not secrets)"
+  paths = ["docs/bibliography/REFERENCES_APA7.md"]
+  regexes = ["(?m)^<!--\\s*key:\\s*[a-zA-Z0-9_]+\\s*-->$"]

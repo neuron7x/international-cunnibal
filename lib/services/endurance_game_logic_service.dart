@@ -18,9 +18,9 @@ class EnduranceGameLogicService {
   EnduranceState _state = const EnduranceState(
     level: 1,
     badges: 0,
-    targetAperture: EnduranceConstants.defaultApertureThreshold,
-    targetStability: EnduranceConstants.stabilityFloor,
-    targetTime: EnduranceConstants.targetHoldSeconds,
+    targetAperture: SafeEnduranceLimits.defaultApertureThreshold,
+    targetStability: SafeEnduranceLimits.stabilityFloor,
+    targetTime: SafeEnduranceLimits.targetHoldSeconds,
     streak: 0,
   );
 
@@ -48,14 +48,14 @@ class EnduranceGameLogicService {
 
     if (streak >= _streakThreshold) {
       level += 1;
-      targetAperture = (targetAperture + EnduranceConstants.apertureStep).clamp(
-        EnduranceConstants.defaultApertureThreshold,
+      targetAperture = (targetAperture + SafeEnduranceLimits.apertureStep).clamp(
+        SafeEnduranceLimits.defaultApertureThreshold,
         0.6,
       );
-      targetStability = (targetStability + EnduranceConstants.stabilityStep)
-          .clamp(EnduranceConstants.stabilityFloor, 100);
-      targetTime = (targetTime + EnduranceConstants.timeStep).clamp(
-        EnduranceConstants.targetHoldSeconds,
+      targetStability = (targetStability + SafeEnduranceLimits.stabilityStep)
+          .clamp(SafeEnduranceLimits.stabilityFloor, 100);
+      targetTime = (targetTime + SafeEnduranceLimits.timeStep).clamp(
+        SafeEnduranceLimits.targetHoldSeconds,
         10,
       );
       streak = 0;
@@ -77,9 +77,9 @@ class EnduranceGameLogicService {
     _state = const EnduranceState(
       level: 1,
       badges: 0,
-      targetAperture: EnduranceConstants.defaultApertureThreshold,
-      targetStability: EnduranceConstants.stabilityFloor,
-      targetTime: EnduranceConstants.targetHoldSeconds,
+      targetAperture: SafeEnduranceLimits.defaultApertureThreshold,
+      targetStability: SafeEnduranceLimits.stabilityFloor,
+      targetTime: SafeEnduranceLimits.targetHoldSeconds,
       streak: 0,
     );
   }

@@ -1,10 +1,12 @@
+import 'dart:async';
+
 import 'package:international_cunnibal/models/endurance_session_state.dart';
 import 'package:international_cunnibal/models/endurance_snapshot.dart';
 import 'package:international_cunnibal/utils/constants.dart';
 
 class EnduranceSessionService {
   EnduranceSessionState _state = EnduranceSessionState.initial(
-    targetHoldSeconds: EnduranceConstants.targetHoldSeconds,
+    targetHoldSeconds: SafeEnduranceLimits.targetHoldSeconds,
   );
 
   double? _sessionStart;
@@ -13,8 +15,11 @@ class EnduranceSessionService {
   double? _cooldownUntil;
   double? _lastStability;
   bool _cooldownApplied = false;
+  Timer? _painCheckTimer;
+  int _lastPainVAS = 0;
 
   EnduranceSessionState get state => _state;
+  Function()? onPainCheckRequested;
 
   void start(double tSeconds) {
     if (_cooldownUntil != null && tSeconds < _cooldownUntil!) {
@@ -31,12 +36,15 @@ class EnduranceSessionService {
     _lastUpdate = tSeconds;
     _lastStability = null;
     _cooldownApplied = false;
+    _lastPainVAS = 0;
+    _painCheckTimer?.cancel();
+    _painCheckTimer = null;
     _state = EnduranceSessionState(
       phase: EnduranceSessionPhase.ready,
       sessionSeconds: 0,
       phaseSeconds: 0,
       safeHoldSeconds: 0,
-      targetHoldSeconds: EnduranceConstants.targetHoldSeconds,
+      targetHoldSeconds: SafeEnduranceLimits.targetHoldSeconds,
       cooldownRemainingSeconds: 0,
       autoPaused: false,
       prompt: 'Get comfortable. We will start shortly.',
@@ -45,6 +53,8 @@ class EnduranceSessionService {
   }
 
   void stop(double tSeconds) {
+    _painCheckTimer?.cancel();
+    _painCheckTimer = null;
     _phaseStart = tSeconds;
     _lastUpdate = tSeconds;
     _applyCooldown(tSeconds);
@@ -85,24 +95,24 @@ class EnduranceSessionService {
     var autoPaused = _state.autoPaused;
 
     final apertureInBounds =
-        snapshot.aperture >= EnduranceConstants.apertureSafetyMin &&
-        snapshot.aperture <= EnduranceConstants.apertureSafetyMax;
+        snapshot.aperture >= SafeEnduranceLimits.apertureSafetyMin &&
+        snapshot.aperture <= SafeEnduranceLimits.apertureSafetyMax;
     final stabilityOk =
-        snapshot.apertureStability >= EnduranceConstants.stabilityFloor;
+        snapshot.apertureStability >= SafeEnduranceLimits.stabilityFloor;
 
     if (phase == EnduranceSessionPhase.ready &&
-        phaseSeconds >= EnduranceConstants.readySeconds) {
+        phaseSeconds >= SafeEnduranceLimits.readySeconds) {
       phase = EnduranceSessionPhase.hold;
       _phaseStart = tSeconds;
       prompt = 'Hold steady. Focus on control and comfort.';
     }
 
     if (phase == EnduranceSessionPhase.hold) {
-      if (sessionSeconds >= EnduranceConstants.maxSessionSeconds) {
+      if (sessionSeconds >= SafeEnduranceLimits.maxSessionSeconds) {
         phase = EnduranceSessionPhase.summary;
         prompt = 'Session complete. Maximum duration reached.';
       } else if (snapshot.fatigueIndicator >=
-          EnduranceConstants.fatigueStopThreshold) {
+          SafeEnduranceLimits.fatigueStopThreshold) {
         phase = EnduranceSessionPhase.summary;
         prompt = 'Session complete. Fatigue threshold reached.';
       } else if (!apertureInBounds || !stabilityOk) {
@@ -112,7 +122,7 @@ class EnduranceSessionService {
         _phaseStart = tSeconds;
       } else if (_lastStability != null &&
           (_lastStability! - snapshot.apertureStability) >=
-              EnduranceConstants.stabilityDropThreshold) {
+              SafeEnduranceLimits.stabilityDropThreshold) {
         autoPaused = true;
         phase = EnduranceSessionPhase.rest;
         prompt = 'Stability dipped. Take a rest and reset.';
@@ -120,7 +130,7 @@ class EnduranceSessionService {
       } else {
         safeHold += dt;
         prompt = 'Hold steady. Smooth, controlled aperture.';
-        if (safeHold >= EnduranceConstants.targetHoldSeconds) {
+        if (safeHold >= SafeEnduranceLimits.targetHoldSeconds) {
           phase = EnduranceSessionPhase.rest;
           prompt = 'Great control. Begin your rest.';
           _phaseStart = tSeconds;
@@ -130,7 +140,7 @@ class EnduranceSessionService {
     }
 
     if (phase == EnduranceSessionPhase.rest) {
-      if (phaseSeconds >= EnduranceConstants.restSeconds) {
+      if (phaseSeconds >= SafeEnduranceLimits.restSeconds) {
         phase = EnduranceSessionPhase.summary;
         prompt = 'Session summary ready.';
       } else {
@@ -146,6 +156,18 @@ class EnduranceSessionService {
           ? 0.0
           : (_cooldownUntil! - tSeconds).clamp(0.0, double.infinity);
       canStart = cooldownRemaining <= 0;
+      _painCheckTimer?.cancel();
+      _painCheckTimer = null;
+    }
+    if (phase == EnduranceSessionPhase.hold) {
+      _painCheckTimer ??= Timer.periodic(const Duration(seconds: 60), (_) {
+        if (_state.phase == EnduranceSessionPhase.hold) {
+          _requestPainCheck();
+        }
+      });
+    } else {
+      _painCheckTimer?.cancel();
+      _painCheckTimer = null;
     }
 
     _lastStability = snapshot.apertureStability;
@@ -156,9 +178,9 @@ class EnduranceSessionService {
       phaseSeconds: (tSeconds - (_phaseStart ?? tSeconds)).clamp(0.0, 9999),
       safeHoldSeconds: safeHold.clamp(
         0.0,
-        EnduranceConstants.maxSessionSeconds,
+        SafeEnduranceLimits.maxSessionSeconds,
       ),
-      targetHoldSeconds: EnduranceConstants.targetHoldSeconds,
+      targetHoldSeconds: SafeEnduranceLimits.targetHoldSeconds,
       cooldownRemainingSeconds: cooldownRemaining,
       autoPaused: autoPaused,
       prompt: prompt,
@@ -174,14 +196,34 @@ class EnduranceSessionService {
     _lastUpdate = null;
     _lastStability = null;
     _cooldownApplied = false;
+    _painCheckTimer?.cancel();
+    _painCheckTimer = null;
     _state = EnduranceSessionState.initial(
-      targetHoldSeconds: EnduranceConstants.targetHoldSeconds,
+      targetHoldSeconds: SafeEnduranceLimits.targetHoldSeconds,
     );
   }
 
   void _applyCooldown(double tSeconds) {
     if (_cooldownApplied) return;
-    _cooldownUntil = tSeconds + EnduranceConstants.cooldownSeconds;
+    _cooldownUntil = tSeconds + SafeEnduranceLimits.cooldownSeconds;
     _cooldownApplied = true;
+  }
+
+  void _requestPainCheck() {
+    onPainCheckRequested?.call();
+  }
+
+  void reportPainVAS(int vas, {double? tSeconds}) {
+    _lastPainVAS = vas;
+
+    if (vas >= SafeEnduranceLimits.painStopThreshold) {
+      final stopTime =
+          tSeconds ?? DateTime.now().millisecondsSinceEpoch / 1000.0;
+      stop(stopTime);
+      _state = _state.copyWith(
+        phase: EnduranceSessionPhase.summary,
+        prompt: 'Session stopped: Pain detected (VAS $vas/10). Rest 48h.',
+      );
+    }
   }
 }

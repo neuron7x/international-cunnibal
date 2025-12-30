@@ -6,7 +6,10 @@ import 'package:international_cunnibal/models/endurance_session_state.dart';
 import 'package:international_cunnibal/services/endurance_engine.dart';
 import 'package:international_cunnibal/services/endurance_game_logic_service.dart';
 import 'package:international_cunnibal/services/endurance_session_service.dart';
+import 'package:international_cunnibal/services/health/session_tracker.dart';
 import 'package:international_cunnibal/utils/constants.dart';
+import 'package:international_cunnibal/widgets/pain_scale_dialog.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class EnduranceModeScreen extends StatefulWidget {
   const EnduranceModeScreen({super.key});
@@ -19,20 +22,37 @@ class _EnduranceModeScreenState extends State<EnduranceModeScreen> {
   final EnduranceEngine _engine = EnduranceEngine();
   final EnduranceGameLogicService _logic = EnduranceGameLogicService();
   final EnduranceSessionService _session = EnduranceSessionService();
+  SessionTracker? _sessionTracker;
 
   EnduranceSnapshot _snapshot = EnduranceSnapshot.empty(
-    threshold: EnduranceConstants.defaultApertureThreshold,
+    threshold: SafeEnduranceLimits.defaultApertureThreshold,
   );
   EnduranceSessionState _sessionState = EnduranceSessionState.initial(
-    targetHoldSeconds: EnduranceConstants.targetHoldSeconds,
+    targetHoldSeconds: SafeEnduranceLimits.targetHoldSeconds,
   );
   bool _optedIn = false;
   Timer? _demoTimer;
+  bool _sessionRecorded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _session.onPainCheckRequested = _handlePainCheckRequest;
+    _initSessionTracker();
+  }
 
   @override
   void dispose() {
     _demoTimer?.cancel();
     super.dispose();
+  }
+
+  Future<void> _initSessionTracker() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (!mounted) return;
+    setState(() {
+      _sessionTracker = SessionTracker(prefs);
+    });
   }
 
   void _toggleOptIn(bool value) {
@@ -41,25 +61,41 @@ class _EnduranceModeScreenState extends State<EnduranceModeScreen> {
       _demoTimer?.cancel();
       _demoTimer = null;
       _snapshot = EnduranceSnapshot.empty(
-        threshold: EnduranceConstants.defaultApertureThreshold,
+        threshold: SafeEnduranceLimits.defaultApertureThreshold,
       );
       _logic.reset();
       _session.reset();
       _sessionState = EnduranceSessionState.initial(
-        targetHoldSeconds: EnduranceConstants.targetHoldSeconds,
+        targetHoldSeconds: SafeEnduranceLimits.targetHoldSeconds,
       );
+      _sessionRecorded = false;
     }
   }
 
-  void _toggleSession() {
+  Future<void> _toggleSession() async {
     if (!_optedIn) return;
     if (_demoTimer != null) {
       _demoTimer?.cancel();
       _demoTimer = null;
       final nowSeconds = DateTime.now().millisecondsSinceEpoch / 1000.0;
       _session.stop(nowSeconds);
+      await _recordSession();
       setState(() {});
       return;
+    }
+    final tracker = _sessionTracker;
+    if (tracker != null) {
+      final eligibility = await tracker.checkEligibility();
+      if (!eligibility.canStart) {
+        setState(() {
+          _sessionState = _session.state.copyWith(
+            canStart: false,
+            prompt: eligibility.reason ??
+                'Rest required before starting another session.',
+          );
+        });
+        return;
+      }
     }
     final nowSeconds = DateTime.now().millisecondsSinceEpoch / 1000.0;
     _session.start(nowSeconds);
@@ -67,6 +103,7 @@ class _EnduranceModeScreenState extends State<EnduranceModeScreen> {
       setState(() => _sessionState = _session.state);
       return;
     }
+    _sessionRecorded = false;
     _demoTimer = Timer.periodic(const Duration(milliseconds: 200), (_) {
       final tSeconds = DateTime.now().millisecondsSinceEpoch / 1000.0;
       final snap = _engine.demoTick(tSeconds);
@@ -75,12 +112,36 @@ class _EnduranceModeScreenState extends State<EnduranceModeScreen> {
       if (session.phase == EnduranceSessionPhase.summary) {
         _demoTimer?.cancel();
         _demoTimer = null;
+        _recordSession();
       }
       setState(() {
         _snapshot = snap;
         _sessionState = session;
       });
     });
+  }
+
+  Future<void> _recordSession() async {
+    if (_sessionRecorded) return;
+    _sessionRecorded = true;
+    await _sessionTracker?.recordSession();
+  }
+
+  Future<void> _handlePainCheckRequest() async {
+    if (!mounted) return;
+    final vas = await showDialog<int>(
+      context: context,
+      builder: (context) => PainScaleDialog(
+        onRated: (_) {},
+      ),
+    );
+    if (vas != null) {
+      _session.reportPainVAS(vas);
+      setState(() => _sessionState = _session.state);
+      if (_sessionState.phase == EnduranceSessionPhase.summary) {
+        await _recordSession();
+      }
+    }
   }
 
   @override
@@ -182,7 +243,7 @@ class _EnduranceModeScreenState extends State<EnduranceModeScreen> {
                         backgroundColor: Colors.grey[300],
                         valueColor: AlwaysStoppedAnimation<Color>(
                           _snapshot.apertureStability >=
-                                  EnduranceConstants.stabilityFloor
+                                  SafeEnduranceLimits.stabilityFloor
                               ? Colors.green
                               : Colors.orange,
                         ),
