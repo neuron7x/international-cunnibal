@@ -10,16 +10,15 @@ abstract class LeaderboardBackend {
   Future<void> upsertScore(Score score);
 
   Future<void> upsertScores(List<Score> scores) async {
-    for (final score in scores) {
-      await upsertScore(score);
-    }
+    await Future.wait(scores.map(upsertScore));
   }
 
   Future<int> rankForUser(
     String userId, {
     required LeaderboardFilter filter,
+    int limit = 1000,
   }) async {
-    final scores = await getTop(filter: filter, limit: 1000);
+    final scores = await getTop(filter: filter, limit: limit);
     for (int i = 0; i < scores.length; i++) {
       if (scores[i].userId == userId) return i + 1;
     }
@@ -63,6 +62,7 @@ class InMemoryLeaderboardBackend implements LeaderboardBackend {
   Future<int> rankForUser(
     String userId, {
     required LeaderboardFilter filter,
+    int limit = 1000,
   }) async {
     final now = DateTime.now();
     final filtered = _scores

@@ -9,10 +9,12 @@ class LeaderboardService {
   final String? localUserId;
   static const int _seed = 42;
   static const Duration _minSubmitInterval = Duration(minutes: 5);
+  static const int _rankSearchLimit = 5000;
   final DateTime Function() _clock;
   final LeaderboardBackend _backend;
   DateTime? _lastSubmit;
   bool _seeded = false;
+  Future<void>? _seedFuture;
 
   LeaderboardService({
     this.localUserId,
@@ -20,16 +22,18 @@ class LeaderboardService {
     LeaderboardBackend? backend,
   })  : _clock = clock ?? DateTime.now,
         _backend = backend ?? InMemoryLeaderboardBackend([]) {
-    _seedIfEmpty();
+    _seedFuture = _seedIfEmpty();
   }
 
   Future<List<Score>> getTop100({
     LeaderboardFilter filter = LeaderboardFilter.allTime,
   }) async {
+    await _seedFuture;
     return _backend.getTop(filter: filter, limit: 100);
   }
 
   Future<void> submitScore(Score score) async {
+    await _seedFuture;
     score.ensureValid();
     final now = _clock();
     if (_lastSubmit != null &&
@@ -46,11 +50,17 @@ class LeaderboardService {
     String userId, {
     LeaderboardFilter filter = LeaderboardFilter.allTime,
   }) async {
-    return _backend.rankForUser(userId, filter: filter);
+    await _seedFuture;
+    return _backend.rankForUser(
+      userId,
+      filter: filter,
+      limit: _rankSearchLimit,
+    );
   }
 
   Future<Score?> currentUserScore() async {
     if (localUserId == null) return null;
+    await _seedFuture;
     final scores = await _backend.getTop(filter: LeaderboardFilter.allTime);
     try {
       return scores.firstWhere((s) => s.userId == localUserId);
@@ -74,7 +84,7 @@ class LeaderboardService {
     }
   }
 
-  void _seedIfEmpty() {
+  Future<void> _seedIfEmpty() async {
     if (_seeded) return;
     final random = Random(_seed);
     final now = _clock();
@@ -103,7 +113,7 @@ class LeaderboardService {
         ),
       );
     }
-    _backend.upsertScores(seeds);
+    await _backend.upsertScores(seeds);
     _seeded = true;
   }
 }

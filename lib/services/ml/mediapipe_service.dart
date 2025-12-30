@@ -84,14 +84,15 @@ class MediaPipeService {
       return _emptyInput();
     }
     final length = plane.bytes.length;
-    final step = (length / _sampleBytes).ceil().clamp(1, length);
+    final samplingInterval =
+        (length / _sampleBytes).ceil().clamp(1, length);
     var sum = 0;
     var count = 0;
-    for (var i = 0; i < length && count < _sampleBytes; i += step) {
+    for (var i = 0; i < length && count < _sampleBytes; i += samplingInterval) {
       sum += plane.bytes[i];
       count++;
     }
-    final mean = count == 0 ? 0 : sum / count;
+    final mean = sum / count;
     final normalizedValue = (mean / _normalizationFactor) - 1.0;
 
     final normalized = List<List<List<List<double>>>>.generate(
