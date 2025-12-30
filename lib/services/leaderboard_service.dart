@@ -93,8 +93,9 @@ class LeaderboardService {
     if (_scores.isNotEmpty) return;
     final random = Random(_seed);
     final now = _clock();
+    final seeds = <Score>[];
     for (var i = 0; i < 12; i++) {
-      _scores.add(
+      seeds.add(
         Score(
           userId: 'user-$i',
           enduranceScore: 40 + random.nextInt(60),
@@ -106,7 +107,7 @@ class LeaderboardService {
       );
     }
     if (localUserId != null) {
-      _scores.add(
+      seeds.add(
         Score(
           userId: localUserId!,
           enduranceScore: 80,
@@ -117,9 +118,7 @@ class LeaderboardService {
         ),
       );
     }
-    // keep backend in sync
-    for (final score in _scores) {
-      _backend.upsertScore(score);
-    }
+    _scores.addAll(seeds);
+    _backend.upsertScores(seeds);
   }
 }

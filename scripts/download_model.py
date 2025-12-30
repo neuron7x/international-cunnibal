@@ -2,6 +2,7 @@
 import hashlib
 import pathlib
 import sys
+import urllib.error
 import urllib.request
 
 MODEL_URL = "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task"
@@ -15,8 +16,8 @@ def download_model() -> None:
     print(f"Downloading model from {MODEL_URL}...")
     try:
         urllib.request.urlretrieve(MODEL_URL, OUTPUT)
-    except Exception as exc:  # noqa: BLE001
-        print(f"Error downloading: {exc}", file=sys.stderr)
+    except urllib.error.URLError as exc:
+        print(f"Network error downloading model: {exc}", file=sys.stderr)
         sys.exit(1)
 
     if EXPECTED_SHA256:

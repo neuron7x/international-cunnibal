@@ -8,6 +8,12 @@ abstract class LeaderboardBackend {
   });
 
   Future<void> upsertScore(Score score);
+
+  Future<void> upsertScores(List<Score> scores) async {
+    for (final score in scores) {
+      await upsertScore(score);
+    }
+  }
 }
 
 class InMemoryLeaderboardBackend implements LeaderboardBackend {
@@ -39,6 +45,13 @@ class InMemoryLeaderboardBackend implements LeaderboardBackend {
       _scores[index] = score;
     } else {
       _scores.add(score);
+    }
+  }
+
+  @override
+  Future<void> upsertScores(List<Score> scores) async {
+    for (final score in scores) {
+      await upsertScore(score);
     }
   }
 }

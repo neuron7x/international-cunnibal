@@ -67,9 +67,20 @@ class MediaPipeService {
   }
 
   List<List<List<double>>> _preprocessImage(CameraImage image) {
-    final normalized = List<List<double>>.generate(
+    final plane = image.planes.first;
+    if (plane.bytes.isEmpty) {
+      return _emptyInput();
+    }
+    final mean =
+        plane.bytes.fold<int>(0, (sum, b) => sum + b) / plane.bytes.length;
+    final normalizedValue = (mean / 127.5) - 1.0;
+
+    final normalized = List<List<List<double>>>.generate(
       _inputSize,
-      (_) => List<double>.filled(_inputSize * 3, 0.0),
+      (_) => List<List<double>>.generate(
+        _inputSize,
+        (_) => List<double>.filled(3, normalizedValue),
+      ),
     );
     return [normalized];
   }
@@ -86,5 +97,17 @@ class MediaPipeService {
       return _placeholderLandmarks();
     }
     return result;
+  }
+
+  List<List<List<double>>> _emptyInput() {
+    return [
+      List<List<double>>.generate(
+        _inputSize,
+        (_) => List<List<double>>.generate(
+          _inputSize,
+          (_) => List<double>.filled(3, 0.0),
+        ),
+      )
+    ];
   }
 }
