@@ -36,19 +36,45 @@ For the end-to-end data and AI pipeline (ingestion → processing → export) se
 ## Core Components
 
 ### NeuralEngine
-The heart of the application, implementing Anokhin's Action Acceptor theory and feeding MotionMetrics:
+The central coordinator for biomechanics processing and metrics calculation:
 
 **Responsibilities:**
-- Process incoming tongue biomechanics data
-- Validate motor patterns against expected outcomes
+- Process incoming tongue biomechanics data from camera pipeline
+- Validate motion data consistency to ensure quality measurements
 - Calculate real-time metrics (consistency, frequency, direction, intensity, pattern)
-- Stream processed data to UI components
+- Stream processed data to UI and game logic components
 
 **Key Features:**
 - Singleton pattern for global access
 - Stream-based architecture for reactive updates
-- Buffer management for statistical analysis
-- Action Acceptor pattern implementation
+- Buffer management for statistical analysis (100 samples)
+- Motion validation for quality control (see [Motion Validation](docs/motion_validation.md))
+
+**Processing Pipeline:**
+```
+Camera → TongueData → Validation → Buffer → Metrics → UI/Game
+                         ↓
+                   Quality Check (MotionValidationController)
+```
+
+### MotionValidationController
+**NEW:** Concrete system component for data quality validation
+
+**Responsibility:**
+Validates biomechanics data consistency in real-time by detecting measurement anomalies.
+
+**How it works:**
+- Compares consecutive velocity measurements
+- Flags data as invalid if velocity change exceeds threshold (100 px/s)
+- Tracks validation statistics (validation rate, valid/invalid counts)
+- Deterministic: same input always produces same output
+
+**Guarantees:**
+- Bounded response time (<1ms per validation)
+- No external dependencies (on-device only)
+- Observable via metrics stream
+
+See [Motion Validation Documentation](docs/motion_validation.md) for details.
 
 ### BioTrackingService
 Handles real-time tongue tracking via camera:
@@ -105,13 +131,14 @@ Handles performance log generation and export:
 
 1. **Camera Frame** → BioTrackingService
 2. **Tongue Detection** → TongueData model
-3. **TongueData** → NeuralEngine (Action Acceptor)
-4. **Validated TongueData** → UI (via Stream)
-5. **Metrics Calculation** → BiometricMetrics
-6. **Metrics** → GitHubExportService (logging)
-7. **Export** → JSON file (on-device) via `ExportFileWriter`
-8. **Jaw Endurance Loop (optional)** → EnduranceEngine → EnduranceGameLogicService
-9. **Couple Dashboard (opt-in)** → informational comparison only
+3. **TongueData** → NeuralEngine
+4. **Motion Validation** → MotionValidationController (quality check)
+5. **Validated TongueData** → UI (via Stream)
+6. **Metrics Calculation** → BiometricMetrics
+7. **Metrics** → GitHubExportService (logging)
+8. **Export** → JSON file (on-device) via `ExportFileWriter`
+9. **Jaw Endurance Loop (optional)** → EnduranceEngine → EnduranceGameLogicService
+10. **Couple Dashboard (opt-in)** → informational comparison only
 
 ## Design Patterns
 

@@ -92,7 +92,7 @@ class _MetricsScreenState extends State<MetricsScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Powered by Anokhin\'s Action Acceptor',
+              'On-device processing with motion validation',
               style: TextStyle(
                 fontSize: 14,
                 fontStyle: FontStyle.italic,

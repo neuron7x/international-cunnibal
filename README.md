@@ -28,7 +28,7 @@
 
 ### 🚀 Neural Biofeedback Engine for Precision Oral Biomechanics
 
-*Revolutionary sensory-motor synchronization training powered by Anokhin's Action Acceptor theory*
+*Real-time motion tracking with quality validation and on-device processing*
 
 [🎯 Features](#-features) • [📱 Demo](#-demo) • [🛠️ Quick Start](#-installation) •
 [📊 Architecture](#-architecture) • [🧭 Delivery Plan](docs/delivery_plan.md) • [🤝 Contributing](#-contributing)
@@ -41,9 +41,9 @@
 
 ## 🌟 Overview
 
-**International Cunnibal** is a cutting-edge Flutter application that brings neuroscience to your fingertips.
-Built on **Anokhin's Action Acceptor theory**, this sophisticated neural biofeedback system provides real-time
-tongue biomechanics tracking and analysis through advanced on-device AI processing.
+**International Cunnibal** is a cutting-edge Flutter application for precision biomechanics training.
+This sophisticated biofeedback system provides real-time tongue biomechanics tracking and analysis 
+through advanced on-device AI processing with built-in motion validation for quality assurance.
 
 <div align="center">
 
@@ -56,7 +56,7 @@ tongue biomechanics tracking and analysis through advanced on-device AI processi
 <td width="33%" align="center">
 <img src="https://img.icons8.com/fluency/96/brain.png" width="64" alt="AI Brain"/><br/>
 <b>🧠 AI-Powered</b><br/>
-Advanced neural engine with Action Acceptor validation
+On-device processing with motion validation
 </td>
 <td width="33%" align="center">
 <img src="https://img.icons8.com/fluency/96/privacy.png" width="64" alt="Privacy"/><br/>
@@ -95,7 +95,7 @@ graph LR
 - ✅ **High-frequency camera tracking** at 30 FPS
 - ✅ **MediaPipe/TFLite integration** for landmark detection
 - ✅ **Velocity & acceleration** calculations in real-time
-- ✅ **Action Acceptor validation** for movement consistency
+- ✅ **Motion validation** for measurement consistency and quality control
 - ✅ **10-point landmark** detection for precision tracking
 
 </details>
@@ -251,7 +251,7 @@ graph TB
     end
 
     subgraph "⚙️ Business Logic"
-        E[NeuralEngine] --> F[Action Acceptor]
+        E[NeuralEngine] --> F[MotionValidationController]
         G[BioTrackingService] --> E
         H[SymbolDictationService] --> E
         I[GitHubExportService]
@@ -273,37 +273,39 @@ graph TB
 
 ### 🧠 NeuralEngine Service
 
-**Anokhin's Action Acceptor Implementation** *(Reference: 2025-11-30)*
+**Biomechanics Processing Pipeline** *(Updated: 2025-12-30)*
 
 <table>
 <tr>
 <td width="25%" align="center">
 <b>1️⃣</b><br/>
-📥 Accept<br/>
-<sub>Sensory Input</sub>
+📥 Receive<br/>
+<sub>Motion Data</sub>
 </td>
 <td width="25%" align="center">
 <b>2️⃣</b><br/>
-🔄 Compare<br/>
-<sub>Pattern Matching</sub>
+✅ Validate<br/>
+<sub>Quality Check</sub>
 </td>
 <td width="25%" align="center">
 <b>3️⃣</b><br/>
-✅ Validate<br/>
-<sub>Motor Execution</sub>
+📊 Calculate<br/>
+<sub>Metrics</sub>
 </td>
 <td width="25%" align="center">
 <b>4️⃣</b><br/>
-📊 Feedback<br/>
+📈 Stream<br/>
 <sub>Real-time Results</sub>
 </td>
 </tr>
 </table>
 
-- 🔄 Processes **afferent (sensory)** input from tongue tracking
-- 📊 Compares **actual movements** with expected patterns
-- ✅ Validates **motor command** execution
-- 💡 Provides **real-time feedback** for sensory-motor learning
+- 📥 Receives **motion measurements** from camera tracking pipeline
+- ✅ Validates **data consistency** to filter sensor noise and anomalies
+- 📊 Calculates **biometric metrics** (consistency, frequency, direction, intensity)
+- 📈 Streams **real-time data** to UI and game logic components
+
+**Motion Validation**: Uses [Motion Validation Controller](docs/motion_validation.md) to ensure measurement quality by detecting unrealistic velocity changes between consecutive frames.
 
 ### 🛠️ Core Services
 
@@ -752,12 +754,12 @@ Benchmark note: MotionMetrics processes a 30 FPS window in well under 1 ms o
 <tr>
 <td width="50%">
 
-**📖 Theoretical Framework**
+**📖 System Architecture**
 
-- 🧠 Anokhin's Action Acceptor theory
-- 📅 Reference date: 2025-11-30
-- 🎯 Sensory-motor validation system
-- ✅ Afferent signal comparison
+- 🎯 Motion validation for quality control
+- 📅 Updated: 2025-12-30
+- ✅ Deterministic data validation
+- 📊 Observable metrics and statistics
 
 </td>
 <td width="50%">
@@ -765,18 +767,19 @@ Benchmark note: MotionMetrics processes a 30 FPS window in well under 1 ms o
 **🔧 Technical Implementation**
 
 - 📸 MediaPipe/TFLite integration
-- 📊 Metrics calculation methods
-- 🔒 On-device AI processing
+- 📊 Real-time metrics calculation
+- 🔒 100% on-device processing
 - 📤 Automated log exports
 
 </td>
 </tr>
 </table>
 
-#### 📝 Key Citations
+#### 📝 Key References
 
-1. **Anokhin's Action Acceptor Theory** *(2025-11-30)*
-   - Foundation for sensory-motor validation
+1. **Motion Validation System** *(2025-12-30)*
+   - Quality control for biomechanics measurements
+   - See [Motion Validation Documentation](docs/motion_validation.md)
 
 2. **Real-time Tongue Biomechanics via MediaPipe/TFLite** *(2025-11-30)*
    - Computer vision and AI integration
