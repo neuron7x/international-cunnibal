@@ -892,7 +892,7 @@ If you find this project useful, please consider giving it a ⭐
 
 ### 📚 Documentation
 
-[📖 Architecture](ARCHITECTURE.md) • [🔧 API Reference](API.md) • [🚀 Quick Start](QUICKSTART.md) • [💡 Implementation](IMPLEMENTATION.md)
+[📖 Architecture](ARCHITECTURE.md) • [🔧 API Reference](API.md) • [🚀 Quick Start](QUICKSTART.md) • [💡 Implementation](IMPLEMENTATION.md) • [🤖 Model Cards](ml-ops/model_cards/tongue_detector_v1.0.md) • [🇺🇦 Ukrainian](README.uk.md)
 
 ---
 

@@ -29,7 +29,7 @@ void main() {
         // Should fallback to loadFailed or demo status
         expect(
           service.status,
-          anyOf(TrackingStatus.loadFailed, TrackingStatus.demo),
+          anyOf([TrackingStatus.loadFailed, TrackingStatus.demo]),
         );
       });
 

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:camera/camera.dart';
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:international_cunnibal/models/tongue_data.dart';
 import 'package:international_cunnibal/services/ml/mediapipe_service.dart';
@@ -129,8 +130,10 @@ class BioTrackingService {
           .map((line) => int.tryParse(line.trim()))
           .whereType<int>()
           .toList();
-    } catch (_) {
+    } on Exception catch (e) {
       _labelIndices = [];
+      // Log error for debugging but allow graceful fallback
+      debugPrint('Failed to load labels.txt: $e');
       rethrow;
     }
   }
