@@ -35,18 +35,20 @@ class MetricsValidator {
       );
     }
 
-    final pcaSum = m.pcaVariance.reduce((a, b) => a + b);
-    if ((pcaSum - 1.0).abs() > 0.05) {
-      errors.add(
-        ValidationError('pcaVariance', m.pcaVariance, 'sum should ≈ 1.0'),
-      );
-    }
-
-    for (final v in m.pcaVariance) {
-      if (v < 0 || v > 1) {
+    if (m.pcaVariance.isNotEmpty) {
+      final pcaSum = m.pcaVariance.reduce((a, b) => a + b);
+      if ((pcaSum - 1.0).abs() > 0.05) {
         errors.add(
-          ValidationError('pcaVariance', v, 'each component 0 <= x <= 1'),
+          ValidationError('pcaVariance', m.pcaVariance, 'sum should ≈ 1.0'),
         );
+      }
+
+      for (final v in m.pcaVariance) {
+        if (v < 0 || v > 1) {
+          errors.add(
+            ValidationError('pcaVariance', v, 'each component 0 <= x <= 1'),
+          );
+        }
       }
     }
 

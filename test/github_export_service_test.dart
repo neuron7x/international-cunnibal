@@ -128,15 +128,15 @@ void main() {
       service.clearLogs();
 
       service.logMetrics(
-          BiometricMetrics(
-            consistencyScore: 80,
-            frequency: 2.0,
-            frequencyConfidence: 0.9,
-            pcaVariance: const [0.5, 0.3, 0.2],
-            movementDirection: MovementDirection.right,
-            directionStability: 50,
-            intensity: 60,
-            patternScore: 75,
+        BiometricMetrics(
+          consistencyScore: 80,
+          frequency: 2.0,
+          frequencyConfidence: 0.9,
+          pcaVariance: const [0.5, 0.3, 0.2],
+          movementDirection: MovementDirection.right,
+          directionStability: 50,
+          intensity: 60,
+          patternScore: 75,
           endurance: EnduranceSnapshot.empty(),
           timestamp: DateTime(2025, 12, 26),
         ),
