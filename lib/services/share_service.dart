@@ -27,6 +27,9 @@ class UserStats {
 }
 
 class ShareService {
+  static const String _challengeLink =
+      'https://bit.ly/international-cunnibal';
+
   Future<File> generateShareCard({
     required UserStats stats,
     Achievement? achievement,
@@ -46,7 +49,7 @@ class ShareService {
     if (achievement != null) {
       buffer.writeln('Achievement: ${achievement.name} (${achievement.tier.name})');
     }
-    buffer.writeln('Challenge me at: https://bit.ly/international-cunnibal');
+    buffer.writeln('Challenge me at: $_challengeLink');
 
     await card.writeAsString(buffer.toString());
     return card;

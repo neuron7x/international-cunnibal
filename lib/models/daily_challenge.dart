@@ -1,5 +1,3 @@
-import 'package:flutter/foundation.dart';
-
 enum ChallengeType {
   endurance,
   rhythm,
@@ -52,7 +50,7 @@ class DailyChallenge {
       'id': id,
       'title': title,
       'description': description,
-      'type': describeEnum(type),
+      'type': type.name,
       'target': target,
       'rewardPoints': rewardPoints,
       'expiresAt': expiresAt.toIso8601String(),
@@ -65,7 +63,7 @@ class DailyChallenge {
       title: json['title'] as String,
       description: json['description'] as String,
       type: ChallengeType.values.firstWhere(
-        (t) => describeEnum(t) == json['type'],
+        (t) => t.name == json['type'],
         orElse: () => ChallengeType.endurance,
       ),
       target: Map<String, dynamic>.from(json['target'] as Map),

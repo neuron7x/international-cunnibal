@@ -15,6 +15,8 @@ class Landmark {
 class MediaPipeService {
   Interpreter? _interpreter;
 
+  static const int _placeholderSeed = 7;
+
   static const List<int> tongueLandmarkIndices = [
     13,
     14,
@@ -44,7 +46,7 @@ class MediaPipeService {
   }
 
   List<Landmark> _placeholderLandmarks() {
-    final random = Random(7);
+    final random = Random(_placeholderSeed);
     return tongueLandmarkIndices
         .map(
           (_) => Landmark(

@@ -7,6 +7,7 @@ enum LeaderboardFilter { daily, weekly, allTime }
 class LeaderboardService {
   final List<Score> _scores = [];
   final String? localUserId;
+  static const int _seed = 42;
 
   LeaderboardService({this.localUserId}) {
     _seedIfEmpty();
@@ -77,7 +78,7 @@ class LeaderboardService {
 
   void _seedIfEmpty() {
     if (_scores.isNotEmpty) return;
-    final random = Random(42);
+    final random = Random(_seed);
     final now = DateTime.now();
     for (var i = 0; i < 12; i++) {
       _scores.add(

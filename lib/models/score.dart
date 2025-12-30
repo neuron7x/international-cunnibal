@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:international_cunnibal/models/achievement.dart';
 
 class Score {
@@ -52,7 +51,7 @@ class Score {
       'totalSessions': totalSessions,
       'timestamp': timestamp.toIso8601String(),
       'displayName': displayName,
-      'badge': describeEnum(badge),
+      'badge': badge.name,
     };
   }
 
