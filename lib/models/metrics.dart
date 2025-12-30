@@ -78,6 +78,25 @@ class BiometricMetrics {
     };
   }
 
+  factory BiometricMetrics.fromJson(Map<String, dynamic> json) {
+    return BiometricMetrics(
+      consistencyScore: (json['consistencyScore'] as num).toDouble(),
+      frequency: (json['frequency'] as num).toDouble(),
+      frequencyConfidence: (json['frequencyConfidence'] as num).toDouble(),
+      pcaVariance: (json['pcaVariance'] as List)
+          .map((e) => (e as num).toDouble())
+          .toList(),
+      movementDirection:
+          MovementDirectionLabel.fromLabel(json['movementDirection'] as String),
+      directionStability: (json['directionStability'] as num).toDouble(),
+      intensity: (json['intensity'] as num).toDouble(),
+      patternScore: (json['patternScore'] as num).toDouble(),
+      endurance:
+          EnduranceSnapshot.fromJson(json['endurance'] as Map<String, dynamic>),
+      timestamp: DateTime.parse(json['timestamp'] as String),
+    );
+  }
+
   @override
   String toString() {
     return 'BiometricMetrics('

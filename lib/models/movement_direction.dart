@@ -15,4 +15,20 @@ extension MovementDirectionLabel on MovementDirection {
         return 'steady';
     }
   }
+
+  static MovementDirection fromLabel(String label) {
+    switch (label.toLowerCase()) {
+      case 'up':
+        return MovementDirection.up;
+      case 'down':
+        return MovementDirection.down;
+      case 'left':
+        return MovementDirection.left;
+      case 'right':
+        return MovementDirection.right;
+      case 'steady':
+      default:
+        return MovementDirection.steady;
+    }
+  }
 }

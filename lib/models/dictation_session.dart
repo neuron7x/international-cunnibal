@@ -46,4 +46,14 @@ class DictationSession {
       'rhythmConsistency': rhythmConsistency,
     };
   }
+
+  factory DictationSession.fromJson(Map<String, dynamic> json) {
+    return DictationSession(
+      targetSymbol: json['targetSymbol'] as String,
+      startTime: DateTime.parse(json['startTime'] as String),
+      rhythmTimestamps:
+          (json['rhythmTimestamps'] as List).map((e) => (e as num).toDouble()).toList(),
+      synchronizationScore: (json['synchronizationScore'] as num).toDouble(),
+    );
+  }
 }

@@ -28,4 +28,24 @@ class GameState {
       streak: streak ?? this.streak,
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'level': level,
+      'score': score,
+      'targetConsistency': targetConsistency,
+      'targetFrequency': targetFrequency,
+      'streak': streak,
+    };
+  }
+
+  factory GameState.fromJson(Map<String, dynamic> json) {
+    return GameState(
+      level: json['level'] as int,
+      score: json['score'] as int,
+      targetConsistency: (json['targetConsistency'] as num).toDouble(),
+      targetFrequency: (json['targetFrequency'] as num).toDouble(),
+      streak: json['streak'] as int,
+    );
+  }
 }

@@ -46,4 +46,27 @@ class TongueData {
       'isValidated': isValidated,
     };
   }
+
+  factory TongueData.fromJson(Map<String, dynamic> json) {
+    final positionJson = json['position'] as Map<String, dynamic>;
+    return TongueData(
+      timestamp: DateTime.parse(json['timestamp'] as String),
+      position: Offset(
+        (positionJson['x'] as num).toDouble(),
+        (positionJson['y'] as num).toDouble(),
+      ),
+      velocity: (json['velocity'] as num).toDouble(),
+      acceleration: (json['acceleration'] as num).toDouble(),
+      landmarks: (json['landmarks'] as List)
+          .map((l) => l as Map<String, dynamic>)
+          .map(
+            (l) => Offset(
+              (l['x'] as num).toDouble(),
+              (l['y'] as num).toDouble(),
+            ),
+          )
+          .toList(),
+      isValidated: json['isValidated'] as bool,
+    );
+  }
 }
