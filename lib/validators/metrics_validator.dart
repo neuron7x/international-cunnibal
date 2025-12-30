@@ -59,7 +59,7 @@ class MetricsValidator {
     }
 
     final now = DateTime.now();
-    final minValid = DateTime(2025, 1, 1);
+    final minValid = now.subtract(const Duration(days: 365));
     if (m.timestamp.isBefore(minValid) || m.timestamp.isAfter(now)) {
       errors.add(
         ValidationError(
