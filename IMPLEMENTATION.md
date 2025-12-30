@@ -23,34 +23,81 @@ This document summarizes how each requirement from the problem statement has bee
 
 ---
 
-## 2. NeuralEngine Service - Anokhin's Action Acceptor
+## 2. Motion Validation System
 
-✅ **Status: COMPLETE**
+✅ **Status: COMPLETE** *(Updated: 2025-12-30)*
+
+**Concrete System Feature:**
+Motion Validation Controller - validates biomechanics data consistency in real-time.
+
+**Responsibility:**
+Detects measurement anomalies by comparing consecutive velocity readings and flags inconsistent data points.
 
 **Implementation:**
-Implements Anokhin's Action Acceptor theory (Reference: 2025-11-30) with the following components:
+1. **Input Processing**: Receives TongueData with position, velocity, acceleration, timestamp
+2. **Validation Logic**: Compares velocity change with previous measurement
+3. **Quality Check**: Flags data as invalid if velocity change exceeds threshold (100 px/s)
+4. **Statistics Tracking**: Maintains validation rate, valid/invalid counts for observability
 
-1. **Afferent Input Processing**: Accepts sensory input from tongue tracking
-2. **Pattern Comparison**: Compares actual movements with expected patterns
-3. **Motor Validation**: Validates movement consistency using velocity analysis
-4. **Feedback Loop**: Provides real-time validation status
+**Key Features:**
+- Deterministic validation (same input → same output)
+- Bounded response time (<1ms per measurement)
+- Observable metrics via stream (validation rate, counts)
+- No external dependencies (100% on-device)
+
+**Guarantees:**
+- First measurement always valid (no previous data)
+- Consistent validation behavior across runs
+- No data modification (only flags validity)
+
+**Files:**
+- `lib/services/motion_validation_controller.dart` - Core implementation
+- `test/motion_validation_controller_test.dart` - Comprehensive unit tests (25+ test cases)
+- `docs/motion_validation.md` - Product documentation
+
+**Acceptance Criteria:**
+- ✅ Validation logic correctly compares velocity changes
+- ✅ Statistics accurately track valid/invalid counts
+- ✅ Validation rate is calculated correctly
+- ✅ System is deterministic
+- ✅ Response time is <1ms per validation
+- ✅ All unit tests pass
+- ✅ Integration with NeuralEngine works
+- ✅ Documentation explains feature without AI terminology
+- ✅ Metrics are observable via stream
+
+---
+
+## 3. NeuralEngine Service - Biomechanics Processing Pipeline
+
+✅ **Status: COMPLETE** *(Updated: 2025-12-30)*
+
+**Implementation:**
+Central coordinator for motion data processing with the following pipeline:
+
+1. **Data Reception**: Receives motion measurements from camera tracking
+2. **Motion Validation**: Uses MotionValidationController to validate consistency
+3. **Buffering**: Maintains 100-sample buffer for statistical analysis
+4. **Metrics Calculation**: Computes biometric metrics (consistency, frequency, direction, intensity)
+5. **Streaming**: Broadcasts validated data and metrics to UI and game logic
 
 **Key Features:**
 - Buffer management (100 samples) for statistical analysis
 - Stream-based architecture for reactive updates
-- Action Acceptor validation algorithm
-- Real-time metrics calculation
+- Integration with Motion Validation Controller
+- Real-time metrics calculation (1 Hz)
 
 **Files:**
 - `lib/services/neural_engine.dart` - Core implementation
 - `test/neural_engine_test.dart` - Unit tests
 
-**Reference Documentation:**
-- Lines 13-23 in neural_engine.dart contain detailed theory documentation
+**Historical Note:**
+Previously implemented as "Anokhin's Action Acceptor" (Reference: 2025-11-30).
+Now uses concrete Motion Validation Controller for quality checks.
 
 ---
 
-## 3. Bio-Tracking: Real-time Tongue Biomechanics
+## 4. Bio-Tracking: Real-time Tongue Biomechanics
 
 ✅ **Status: COMPLETE**
 
@@ -78,14 +125,14 @@ Real-time tongue biomechanics tracking via MediaPipe/TFLite integration (Referen
 
 ---
 
-## 4. Metrics: Consistency Score, Frequency, Vector PCA
+## 5. Metrics: Consistency Score, Frequency, Vector PCA
 
 ✅ **Status: COMPLETE**
 
 **Implementation:**
 Comprehensive biometric metrics (Reference: 2025-11-30):
 
-### 4.1 Consistency Score (Coefficient of Variation)
+### 5.1 Consistency Score (Coefficient of Variation)
 **Algorithm:**
 ```
 1. Derive speeds from displacements and sample times
@@ -134,7 +181,7 @@ Comprehensive biometric metrics (Reference: 2025-11-30):
 
 ---
 
-## 5. Feature: Partner-led Symbol Dictation (A-Z)
+## 6. Feature: Partner-led Symbol Dictation (A-Z)
 
 ✅ **Status: COMPLETE**
 
@@ -172,11 +219,11 @@ Each letter has a unique Morse code-inspired rhythm:
 
 ---
 
-## 6. Infrastructure: On-device AI & GitHub Exports
+## 7. Infrastructure: On-device AI & GitHub Exports
 
 ✅ **Status: COMPLETE**
 
-### 6.1 On-device AI for Privacy
+### 7.1 On-device AI for Privacy
 **Implementation:**
 - All processing happens locally
 - TFLite models run on device (structure ready)
@@ -238,7 +285,7 @@ JSON export with comprehensive data (Reference: 2025-11-30):
 
 ---
 
-## 7. Clean Code
+## 8. Clean Code
 
 ✅ **Status: COMPLETE**
 

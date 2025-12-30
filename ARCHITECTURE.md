@@ -131,13 +131,14 @@ Handles performance log generation and export:
 
 1. **Camera Frame** → BioTrackingService
 2. **Tongue Detection** → TongueData model
-3. **TongueData** → NeuralEngine (Action Acceptor)
-4. **Validated TongueData** → UI (via Stream)
-5. **Metrics Calculation** → BiometricMetrics
-6. **Metrics** → GitHubExportService (logging)
-7. **Export** → JSON file (on-device) via `ExportFileWriter`
-8. **Jaw Endurance Loop (optional)** → EnduranceEngine → EnduranceGameLogicService
-9. **Couple Dashboard (opt-in)** → informational comparison only
+3. **TongueData** → NeuralEngine
+4. **Motion Validation** → MotionValidationController (quality check)
+5. **Validated TongueData** → UI (via Stream)
+6. **Metrics Calculation** → BiometricMetrics
+7. **Metrics** → GitHubExportService (logging)
+8. **Export** → JSON file (on-device) via `ExportFileWriter`
+9. **Jaw Endurance Loop (optional)** → EnduranceEngine → EnduranceGameLogicService
+10. **Couple Dashboard (opt-in)** → informational comparison only
 
 ## Design Patterns
 
