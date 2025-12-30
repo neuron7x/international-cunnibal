@@ -31,6 +31,8 @@ lib/
     └── tracking_overlay.dart
 ```
 
+For the end-to-end data and AI pipeline (ingestion → processing → export) see the [Data & AI Architecture Blueprint](docs/data_architecture.md).
+
 ## Core Components
 
 ### NeuralEngine
