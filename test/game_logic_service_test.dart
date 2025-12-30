@@ -127,4 +127,35 @@ void main() {
       await subscription.cancel();
     });
   });
+
+  group('GameLogicService edge cases', () {
+    test('ingest after dispose does not crash', () {
+      final service = GameLogicService();
+      service.dispose();
+
+      expect(() {
+        service.ingest(BiometricMetrics(
+          consistencyScore: 80,
+          frequency: 2.0,
+          frequencyConfidence: 1.0,
+          pcaVariance: const [50, 30, 20],
+          movementDirection: MovementDirection.right,
+          directionStability: 20,
+          intensity: 80,
+          patternScore: 80,
+          endurance: EnduranceSnapshot.empty(),
+          timestamp: DateTime.fromMillisecondsSinceEpoch(0),
+        ));
+      }, returnsNormally);
+    });
+
+    test('state getter after dispose returns last state', () {
+      final service = GameLogicService();
+      final stateBefore = service.state;
+
+      service.dispose();
+
+      expect(service.state, equals(stateBefore));
+    });
+  });
 }

@@ -1,20 +1,12 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:camera/camera.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:international_cunnibal/models/tongue_data.dart';
 import 'package:international_cunnibal/utils/constants.dart';
 
 enum CvEngineMode { demo, camera }
-
-const double _demoJitterAmplitude = 0.01;
-const int _faceMeshLandmarkCount = 309;
-const double _cameraSecondaryFrequencyScale = 0.8;
-const double _mouthWidth = 0.22;
-const double _apertureBaseline = 0.22;
-const double _apertureNoise = 0.04;
-const double _apertureFatigueDrop = 0.06;
-const double _apertureFatigueNoise = 0.06;
 
 abstract class CvEngine {
   Stream<TongueData> get stream;
@@ -65,7 +57,8 @@ class DemoCvEngine implements CvEngine {
     final yWave =
         cos(time * BioTrackingConstants.simulationFrequencyMultiplier) *
         BioTrackingConstants.simulationAmplitudeY;
-    final jitter = (_random.nextDouble() - 0.5) * _demoJitterAmplitude;
+    final jitter =
+        (_random.nextDouble() - 0.5) * CvEngineConstants.demoJitterAmplitude;
     final aperture = _demoAperture(time, _random);
 
     final position = Offset(
@@ -85,7 +78,7 @@ class DemoCvEngine implements CvEngine {
     final landmarks = _buildFaceMeshLandmarks(
       center: position,
       aperture: aperture,
-      noise: _demoJitterAmplitude,
+      noise: CvEngineConstants.demoJitterAmplitude,
       random: _random,
     );
 
@@ -107,9 +100,15 @@ class DemoCvEngine implements CvEngine {
 
   @override
   void dispose() {
-    stop();
-    if (!_controller.isClosed) {
-      _controller.close();
+    try {
+      stop();
+      if (!_controller.isClosed) {
+        _controller.close();
+      }
+    } catch (error, stackTrace) {
+      if (kDebugMode) {
+        debugPrint('DemoCvEngine dispose error: $error\n$stackTrace');
+      }
     }
   }
 }
@@ -184,7 +183,7 @@ class CameraCvEngine implements CvEngine {
             cos(
               time *
                   BioTrackingConstants.simulationFrequencyMultiplier *
-                  _cameraSecondaryFrequencyScale,
+                  CvEngineConstants.cameraSecondaryFrequencyScale,
             );
     final aperture = _demoAperture(time, _random);
 
@@ -233,9 +232,11 @@ class CameraCvEngine implements CvEngine {
       try {
         controller.dispose();
       } catch (error, stackTrace) {
-        debugPrint(
-          'CameraCvEngine dispose error: $error\n$stackTrace',
-        );
+        if (kDebugMode) {
+          debugPrint(
+            'CameraCvEngine dispose error: $error\n$stackTrace',
+          );
+        }
       }
     }
   }
@@ -244,16 +245,19 @@ class CameraCvEngine implements CvEngine {
 double _demoAperture(double tSeconds, Random random) {
   final cycle = tSeconds % 18.0;
   if (cycle < 6.0) {
-    return _apertureBaseline + sin(tSeconds) * 0.01;
+    return CvEngineConstants.apertureBaseline + sin(tSeconds) * 0.01;
   }
   if (cycle < 12.0) {
-    final noise = (random.nextDouble() - 0.5) * _apertureNoise;
-    return (_apertureBaseline + noise).clamp(0.08, 0.5);
+    final noise =
+        (random.nextDouble() - 0.5) * CvEngineConstants.apertureNoise;
+    return (CvEngineConstants.apertureBaseline + noise).clamp(0.08, 0.5);
   }
   final fatigueProgress = ((cycle - 12.0) / 6.0).clamp(0.0, 1.0);
-  final noise =
-      (random.nextDouble() - 0.5) * (_apertureFatigueNoise * fatigueProgress);
-  return (_apertureBaseline - _apertureFatigueDrop * fatigueProgress + noise)
+  final noise = (random.nextDouble() - 0.5) *
+      (CvEngineConstants.apertureFatigueNoise * fatigueProgress);
+  return (CvEngineConstants.apertureBaseline -
+          CvEngineConstants.apertureFatigueDrop * fatigueProgress +
+          noise)
       .clamp(0.06, 0.45);
 }
 
@@ -263,10 +267,14 @@ List<Offset> _buildFaceMeshLandmarks({
   required double noise,
   required Random random,
 }) {
-  final landmarks = List<Offset>.filled(_faceMeshLandmarkCount, center);
-  final left = Offset((center.dx - _mouthWidth).clamp(0.0, 1.0), center.dy);
-  final right = Offset((center.dx + _mouthWidth).clamp(0.0, 1.0), center.dy);
-  final halfAperture = (aperture * _mouthWidth).clamp(0.01, 0.2) / 2;
+  final landmarks =
+      List<Offset>.filled(CvEngineConstants.faceMeshLandmarkCount, center);
+  final left =
+      Offset((center.dx - CvEngineConstants.mouthWidth).clamp(0.0, 1.0), center.dy);
+  final right =
+      Offset((center.dx + CvEngineConstants.mouthWidth).clamp(0.0, 1.0), center.dy);
+  final halfAperture =
+      (aperture * CvEngineConstants.mouthWidth).clamp(0.01, 0.2) / 2;
   final upper = Offset(center.dx, (center.dy - halfAperture).clamp(0.0, 1.0));
   final lower = Offset(center.dx, (center.dy + halfAperture).clamp(0.0, 1.0));
 
@@ -276,7 +284,7 @@ List<Offset> _buildFaceMeshLandmarks({
   landmarks[308] = right;
 
   for (var i = 0; i < 12; i++) {
-    final idx = (i * 9) % _faceMeshLandmarkCount;
+    final idx = (i * 9) % CvEngineConstants.faceMeshLandmarkCount;
     final jitterX = (random.nextDouble() - 0.5) * noise;
     final jitterY = (random.nextDouble() - 0.5) * noise;
     landmarks[idx] = Offset(
