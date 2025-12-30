@@ -1,0 +1,11 @@
+# Tongue Landmark Indices (MediaPipe Face Mesh style)
+# Based on 468-point face mesh, tongue-relevant landmarks
+13
+14
+78
+308
+324
+375
+405
+406
+407

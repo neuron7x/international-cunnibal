@@ -33,6 +33,8 @@
 [🎯 Features](#-features) • [📱 Demo](#-demo) • [🛠️ Quick Start](#-installation) •
 [📊 Architecture](#-architecture) • [🧭 Delivery Plan](docs/delivery_plan.md) • [🤝 Contributing](#-contributing)
 
+**Languages:** [🇺🇦 Українська](README.uk.md)
+
 ---
 
 </div>
@@ -442,6 +444,74 @@ flutter run
 # dart run tool/verify_logic.dart
 # dart run tool/benchmark_core.dart
 ```
+
+#### ✅ First Run Checklist
+
+Before running the app for the first time:
+
+- [ ] **Flutter SDK** installed and configured (3.0+)
+- [ ] **Dependencies** installed via `flutter pub get`
+- [ ] **Demo mode** enabled (default) - no additional setup needed
+- [ ] **Camera permissions** configured if using real tracking mode
+- [ ] **Model files** present in `assets/models/` (placeholders included)
+
+#### 🎮 Demo vs Real Tracking
+
+The app supports two tracking modes:
+
+<table>
+<tr>
+<td width="50%" valign="top">
+
+**🎭 Demo Mode (Default)**
+
+✅ **No ML models required**<br/>
+✅ **No camera permissions needed**<br/>
+✅ **Simulated data for testing**<br/>
+✅ **Fast iteration on logic**<br/>
+✅ **Perfect for development**
+
+*Ideal for:*
+- Initial testing
+- Logic validation
+- UI development
+- Performance benchmarking
+
+</td>
+<td width="50%" valign="top">
+
+**📸 Real Tracking Mode**
+
+🎯 **TFLite model inference**<br/>
+📷 **Camera access required**<br/>
+🤖 **Real biomechanics processing**<br/>
+🔐 **On-device AI only**<br/>
+⚙️ **Opt-in via settings**
+
+*Ideal for:*
+- Production use
+- Real training sessions
+- Biometric data collection
+- Performance analysis
+
+</td>
+</tr>
+</table>
+
+**Switching Modes:**
+
+1. Open app settings
+2. Toggle "Real Tracking" option
+3. Grant camera permissions when prompted
+4. App will load model or fallback to demo if unavailable
+
+**Model Setup:**
+
+The app includes placeholder model files:
+- `assets/models/tongue_detector.tflite` - TFLite model (replace with trained model)
+- `assets/models/labels.txt` - Landmark indices for tongue detection
+
+For production, replace placeholders with trained models. Models are tracked via DVC for version control.
 
 #### 🎯 Platform-Specific Setup
 
