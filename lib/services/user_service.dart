@@ -2,16 +2,27 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 
 class UserService {
-  static const _prefsKey = 'user_uuid';
+  static const _keyUserId = 'user_uuid';
+  static const _keyDisplayName = 'display_name';
   static const _uuid = Uuid();
 
   Future<String> getUserId() async {
     final prefs = await SharedPreferences.getInstance();
-    var existing = prefs.getString(_prefsKey);
-    if (existing == null || existing.isEmpty) {
-      existing = _uuid.v4();
-      await prefs.setString(_prefsKey, existing);
+    var userId = prefs.getString(_keyUserId);
+    if (userId == null || userId.isEmpty) {
+      userId = _uuid.v4();
+      await prefs.setString(_keyUserId, userId);
     }
-    return existing;
+    return userId;
+  }
+
+  Future<String?> getDisplayName() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_keyDisplayName);
+  }
+
+  Future<void> setDisplayName(String name) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_keyDisplayName, name);
   }
 }
