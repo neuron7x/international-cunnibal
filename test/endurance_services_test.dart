@@ -32,7 +32,7 @@ EnduranceSnapshot _snapshot({
     fatigueIndicator: fatigue,
     enduranceTime: enduranceTime,
     enduranceScore: 80,
-    threshold: EnduranceConstants.defaultApertureThreshold,
+    threshold: SafeEnduranceLimits.defaultApertureThreshold,
   );
 }
 
@@ -61,7 +61,7 @@ void main() {
       service.start(0);
       final state = service.ingest(
         snapshot: _snapshot(),
-        tSeconds: EnduranceConstants.readySeconds + 0.1,
+        tSeconds: SafeEnduranceLimits.readySeconds + 0.1,
       );
       expect(state.phase, equals(EnduranceSessionPhase.hold));
     });
@@ -71,11 +71,11 @@ void main() {
       service.start(0);
       service.ingest(
         snapshot: _snapshot(),
-        tSeconds: EnduranceConstants.readySeconds + 0.1,
+        tSeconds: SafeEnduranceLimits.readySeconds + 0.1,
       );
       final state = service.ingest(
         snapshot: _snapshot(stability: 20),
-        tSeconds: EnduranceConstants.readySeconds + 0.2,
+        tSeconds: SafeEnduranceLimits.readySeconds + 0.2,
       );
       expect(state.phase, equals(EnduranceSessionPhase.rest));
       expect(state.autoPaused, isTrue);
@@ -86,11 +86,11 @@ void main() {
       service.start(0);
       final first = service.ingest(
         snapshot: _snapshot(),
-        tSeconds: EnduranceConstants.readySeconds + 0.1,
+        tSeconds: SafeEnduranceLimits.readySeconds + 0.1,
       );
       final state = service.ingest(
         snapshot: _snapshot(),
-        tSeconds: EnduranceConstants.readySeconds + 0.1,
+        tSeconds: SafeEnduranceLimits.readySeconds + 0.1,
       );
       expect(state.safeHoldSeconds, closeTo(first.safeHoldSeconds, 1e-9));
     });
@@ -102,8 +102,8 @@ void main() {
       service.reset();
       final snapshot = _snapshot(
         aperture: 0.3,
-        stability: EnduranceConstants.stabilityFloor + 10,
-        enduranceTime: EnduranceConstants.targetHoldSeconds + 0.5,
+        stability: SafeEnduranceLimits.stabilityFloor + 10,
+        enduranceTime: SafeEnduranceLimits.targetHoldSeconds + 0.5,
       );
 
       service.ingest(snapshot);
@@ -113,7 +113,7 @@ void main() {
       expect(service.state.streak, equals(0));
       expect(
         service.state.targetAperture,
-        greaterThanOrEqualTo(EnduranceConstants.defaultApertureThreshold),
+        greaterThanOrEqualTo(SafeEnduranceLimits.defaultApertureThreshold),
       );
     });
 

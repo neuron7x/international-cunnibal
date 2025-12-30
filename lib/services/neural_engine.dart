@@ -169,7 +169,7 @@ class NeuralEngine {
     final endurance = _enduranceEnabled
         ? _enduranceEngine.snapshot()
         : EnduranceSnapshot.empty(
-            threshold: EnduranceConstants.defaultApertureThreshold,
+            threshold: SafeEnduranceLimits.defaultApertureThreshold,
           );
     if (_enduranceEnabled) {
       _enduranceGameLogic.ingest(endurance);
