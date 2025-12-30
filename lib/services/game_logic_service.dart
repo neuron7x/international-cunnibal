@@ -92,4 +92,8 @@ class GameLogicService {
       streak: 0,
     );
   }
+
+  void dispose() {
+    _stateController.close();
+  }
 }

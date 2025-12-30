@@ -83,4 +83,8 @@ class EnduranceGameLogicService {
       streak: 0,
     );
   }
+
+  void dispose() {
+    _stateController.close();
+  }
 }

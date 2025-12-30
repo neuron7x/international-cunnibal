@@ -143,5 +143,15 @@ void main() {
       expect(service.state.streak, equals(0));
       expect(service.state.level, equals(1));
     });
+
+    test('dispose closes stream controller', () async {
+      final service = EnduranceGameLogicService();
+      final subscription = service.stateStream.listen((_) {});
+
+      service.dispose();
+
+      expect(() => service.stateStream.listen((_) {}), throwsStateError);
+      await subscription.cancel();
+    });
   });
 }
