@@ -787,6 +787,16 @@ Benchmark note: MotionMetrics processes a 30 FPS window in well under 1 ms o
 4. **On-device AI for Privacy & Automated GitHub Performance Log Exports** *(2025-11-30)*
    - Privacy-first architecture and data management
 
+#### 📚 Comprehensive Bibliography
+
+For detailed scientific references including functional systems theory, neuromorphic computing, on-device AI, MLOps
+practices, small-world networks, and AGI pathways, see the [**Scientific Bibliography**](docs/bibliography.md).
+
+**Bio-Plausible Architecture:** Our implementation of Anokhin's Action Acceptor directly applies functional systems
+theory to validate motor execution through real-time comparison of predicted vs. actual sensory feedback. This
+brain-inspired approach, supported by neuromorphic computing principles and small-world network topology, enables
+adaptive sensory-motor synchronization while maintaining privacy through on-device processing.
+
 ---
 
 ## 🔒 Privacy
@@ -892,7 +902,9 @@ If you find this project useful, please consider giving it a ⭐
 
 ### 📚 Documentation
 
-[📖 Architecture](ARCHITECTURE.md) • [🔧 API Reference](API.md) • [🚀 Quick Start](QUICKSTART.md) • [💡 Implementation](IMPLEMENTATION.md) • [🤖 Model Cards](ml-ops/model_cards/tongue_detector_v1.0.md) • [🇺🇦 Ukrainian](README.uk.md)
+[📖 Architecture](ARCHITECTURE.md) • [🔧 API Reference](API.md) • [🚀 Quick Start](QUICKSTART.md) •
+[💡 Implementation](IMPLEMENTATION.md) • [📚 Scientific Bibliography](docs/bibliography.md) •
+[🤖 Model Cards](ml-ops/model_cards/tongue_detector_v1.0.md) • [🇺🇦 Ukrainian](README.uk.md)
 
 ---
 
