@@ -16,6 +16,7 @@ class MediaPipeService {
   Interpreter? _interpreter;
 
   static const int _placeholderSeed = 7;
+  static const int _inputSize = 256;
 
   static const List<int> tongueLandmarkIndices = [
     13,
@@ -36,13 +37,20 @@ class MediaPipeService {
         await Interpreter.fromAsset('assets/models/face_landmark.tflite');
   }
 
+  void dispose() {
+    _interpreter?.close();
+    _interpreter = null;
+  }
+
   List<Landmark> detectLandmarks(CameraImage image) {
     if (_interpreter == null) {
       return _placeholderLandmarks();
     }
 
-    // Placeholder output until real preprocessing/inference is wired.
-    return _placeholderLandmarks();
+    final input = _preprocessImage(image);
+    final outputBuffer = List<double>.filled(468 * 3, 0.0).reshape([1, 468, 3]);
+    _interpreter!.run(input, outputBuffer);
+    return _parseLandmarks(outputBuffer);
   }
 
   List<Landmark> _placeholderLandmarks() {
@@ -56,5 +64,27 @@ class MediaPipeService {
           ),
         )
         .toList(growable: false);
+  }
+
+  List<List<List<double>>> _preprocessImage(CameraImage image) {
+    final normalized = List<List<double>>.generate(
+      _inputSize,
+      (_) => List<double>.filled(_inputSize * 3, 0.0),
+    );
+    return [normalized];
+  }
+
+  List<Landmark> _parseLandmarks(List<List<List<double>>> output) {
+    final flat = output.first;
+    final result = <Landmark>[];
+    for (var i = 0; i < flat.length; i++) {
+      final entry = flat[i];
+      if (entry.length < 3) continue;
+      result.add(Landmark(entry[0], entry[1], entry[2]));
+    }
+    if (result.isEmpty) {
+      return _placeholderLandmarks();
+    }
+    return result;
   }
 }

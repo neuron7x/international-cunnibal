@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:international_cunnibal/models/score.dart';
+import 'package:international_cunnibal/services/backend/leaderboard_backend.dart';
 
 enum LeaderboardFilter { daily, weekly, allTime }
 
@@ -8,40 +9,52 @@ class LeaderboardService {
   final List<Score> _scores = [];
   final String? localUserId;
   static const int _seed = 42;
+  static const Duration _minSubmitInterval = Duration(minutes: 5);
+  final DateTime Function() _clock;
+  final LeaderboardBackend _backend;
+  DateTime? _lastSubmit;
 
-  LeaderboardService({this.localUserId}) {
+  LeaderboardService({
+    this.localUserId,
+    DateTime Function()? clock,
+    LeaderboardBackend? backend,
+  })  : _clock = clock ?? DateTime.now,
+        _backend = backend ?? InMemoryLeaderboardBackend([]) {
     _seedIfEmpty();
   }
 
   Future<List<Score>> getTop100({
     LeaderboardFilter filter = LeaderboardFilter.allTime,
   }) async {
-    final now = DateTime.now();
-    final filtered = _scores
-        .where((score) => _isWithinFilter(score.timestamp, filter, now))
-        .toList()
-      ..sort(
-        (a, b) => b.totalPoints.compareTo(a.totalPoints),
-      );
-    return filtered.take(100).toList(growable: false);
+    return _backend.getTop(filter: filter, limit: 100);
   }
 
   Future<void> submitScore(Score score) async {
+    score.ensureValid();
+    final now = _clock();
+    if (_lastSubmit != null &&
+        now.difference(_lastSubmit!) < _minSubmitInterval) {
+      throw Exception(
+        'Rate limit: wait ${_minSubmitInterval.inMinutes} minutes between submissions',
+      );
+    }
+    await _backend.upsertScore(score);
     final index = _scores.indexWhere((s) => s.userId == score.userId);
     if (index >= 0) {
       _scores[index] = score;
     } else {
       _scores.add(score);
     }
+    _lastSubmit = now;
   }
 
   int rankOf(
     String userId, {
     LeaderboardFilter filter = LeaderboardFilter.allTime,
   }) {
-    final now = DateTime.now();
+    final now = _clock();
     final sorted = _scores
-        .where((score) => _isWithinFilter(score.timestamp, filter, now))
+        .where((score) => isWithinFilter(score.timestamp, filter, now))
         .toList()
       ..sort((a, b) => b.totalPoints.compareTo(a.totalPoints));
 
@@ -61,7 +74,7 @@ class LeaderboardService {
     return null;
   }
 
-  bool _isWithinFilter(
+  static bool isWithinFilter(
     DateTime timestamp,
     LeaderboardFilter filter,
     DateTime now,
@@ -79,7 +92,7 @@ class LeaderboardService {
   void _seedIfEmpty() {
     if (_scores.isNotEmpty) return;
     final random = Random(_seed);
-    final now = DateTime.now();
+    final now = _clock();
     for (var i = 0; i < 12; i++) {
       _scores.add(
         Score(
@@ -103,6 +116,10 @@ class LeaderboardService {
           displayName: 'You',
         ),
       );
+    }
+    // keep backend in sync
+    for (final score in _scores) {
+      _backend.upsertScore(score);
     }
   }
 }

@@ -1,5 +1,12 @@
 import 'package:international_cunnibal/models/achievement.dart';
 
+class BadgeThresholds {
+  static const int diamond = 90;
+  static const int gold = 75;
+  static const int silver = 50;
+  static const int bronze = 0;
+}
+
 class Score {
   final String userId;
   final int enduranceScore;
@@ -20,9 +27,13 @@ class Score {
   int get totalPoints => enduranceScore + (streakDays * 2) + totalSessions;
 
   AchievementTier get badge {
-    if (enduranceScore >= 90) return AchievementTier.diamond;
-    if (enduranceScore >= 75) return AchievementTier.gold;
-    if (enduranceScore >= 50) return AchievementTier.silver;
+    if (enduranceScore >= BadgeThresholds.diamond) {
+      return AchievementTier.diamond;
+    }
+    if (enduranceScore >= BadgeThresholds.gold) return AchievementTier.gold;
+    if (enduranceScore >= BadgeThresholds.silver) {
+      return AchievementTier.silver;
+    }
     return AchievementTier.bronze;
   }
 
@@ -56,13 +67,52 @@ class Score {
   }
 
   factory Score.fromJson(Map<String, dynamic> json) {
+    final enduranceScore = json['enduranceScore'] as int;
+    final streakDays = json['streakDays'] as int;
+    final totalSessions = json['totalSessions'] as int;
+    final userId = json['userId'] as String;
+
+    _validate(
+      userId: userId,
+      enduranceScore: enduranceScore,
+      streakDays: streakDays,
+      totalSessions: totalSessions,
+    );
+
     return Score(
       userId: json['userId'] as String,
-      enduranceScore: json['enduranceScore'] as int,
-      streakDays: json['streakDays'] as int,
-      totalSessions: json['totalSessions'] as int,
+      enduranceScore: enduranceScore,
+      streakDays: streakDays,
+      totalSessions: totalSessions,
       timestamp: DateTime.parse(json['timestamp'] as String),
       displayName: json['displayName'] as String?,
     );
+  }
+
+  void ensureValid() => _validate(
+        userId: userId,
+        enduranceScore: enduranceScore,
+        streakDays: streakDays,
+        totalSessions: totalSessions,
+      );
+
+  static void _validate({
+    required String userId,
+    required int enduranceScore,
+    required int streakDays,
+    required int totalSessions,
+  }) {
+    if (enduranceScore < 0 || enduranceScore > 100) {
+      throw FormatException('Invalid enduranceScore: $enduranceScore');
+    }
+    if (streakDays < 0 || streakDays > 3650) {
+      throw FormatException('Invalid streakDays: $streakDays');
+    }
+    if (totalSessions < 0) {
+      throw FormatException('Invalid totalSessions: $totalSessions');
+    }
+    if (userId.isEmpty || userId.length > 36) {
+      throw FormatException('Invalid userId');
+    }
   }
 }

@@ -60,4 +60,17 @@ void main() {
     expect(restored.icon.codePoint, equals(achievement.icon.codePoint));
     expect(restored.tier, equals(achievement.tier));
   });
+
+  test('Score.fromJson validates input ranges', () {
+    expect(
+      () => Score.fromJson({
+        'userId': '',
+        'enduranceScore': -1,
+        'streakDays': 0,
+        'totalSessions': 0,
+        'timestamp': DateTime.now().toIso8601String(),
+      }),
+      throwsA(isA<FormatException>()),
+    );
+  });
 }
