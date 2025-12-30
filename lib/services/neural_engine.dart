@@ -2,19 +2,34 @@ import 'dart:async';
 import 'package:international_cunnibal/core/motion_metrics.dart';
 import 'package:international_cunnibal/services/endurance_engine.dart';
 import 'package:international_cunnibal/services/endurance_game_logic_service.dart';
+import 'package:international_cunnibal/services/motion_validation_controller.dart';
 import 'package:international_cunnibal/models/endurance_snapshot.dart';
 import 'package:international_cunnibal/models/tongue_data.dart';
 import 'package:international_cunnibal/models/metrics.dart';
 import 'package:international_cunnibal/services/game_logic_service.dart';
 import 'package:international_cunnibal/utils/constants.dart';
 
-/// NeuralEngine service implementing Anokhin's Action Acceptor
+/// NeuralEngine service for biomechanics processing and metrics calculation
 ///
-/// Based on Anokhin's theory of functional systems and action acceptor,
-/// this engine processes tongue biomechanics and validates motor patterns
-/// against expected outcomes for sensory-motor synchronization.
+/// Orchestrates the processing pipeline for tongue biomechanics data:
+/// 1. Validates motion data consistency (via MotionValidationController)
+/// 2. Buffers validated measurements for statistical analysis
+/// 3. Calculates real-time biometric metrics (consistency, frequency, direction)
+/// 4. Streams processed data to UI and game logic layers
 ///
-/// Reference: Anokhin's Action Acceptor theory (2025-11-30)
+/// **Responsibility:** Central coordinator for motion data processing
+///
+/// **Processing Flow:**
+/// Camera frames → TongueData → Validation → Buffer → Metrics → UI/Game Logic
+///
+/// **Guarantees:**
+/// - Real-time processing at 30 FPS input rate
+/// - Metrics updated every 1 second
+/// - All processing on-device (no network)
+/// - Deterministic validation
+///
+/// Implementation note: Previously called "Action Acceptor" based on 
+/// Anokhin's theory (2025-11-30). Now uses concrete Motion Validation Controller.
 class NeuralEngine {
   static final NeuralEngine _instance = NeuralEngine._internal();
   factory NeuralEngine() => _instance;
@@ -40,6 +55,7 @@ class NeuralEngine {
   final EnduranceEngine _enduranceEngine = EnduranceEngine();
   final EnduranceGameLogicService _enduranceGameLogic =
       EnduranceGameLogicService();
+  final MotionValidationController _validator = MotionValidationController();
 
   void _resetControllers() {
     _tongueDataController?.close();
@@ -70,6 +86,7 @@ class NeuralEngine {
     _isProcessing = true;
     _dataBuffer.clear();
     _enduranceEngine.reset();
+    _validator.reset();
 
     // Calculate metrics every second
     if (enableTimer) {
@@ -102,49 +119,35 @@ class NeuralEngine {
   }
 
   /// Process incoming tongue biomechanics data
-  /// Implements the Action Acceptor pattern for sensory-motor validation
+  /// Uses Motion Validation Controller to validate consistency
   void processTongueData(TongueData data) {
     if (!_isProcessing) return;
     _ensureControllers();
     final tongueController = _tongueDataController;
     if (tongueController == null) return;
 
+    // Validate motion data consistency using Motion Validation Controller
+    // Detects measurement anomalies by comparing velocity changes
+    final validated = _validator.validate(data);
+
     // Add to buffer, maintaining buffer size
-    _dataBuffer.add(data);
+    _dataBuffer.add(validated);
     if (_dataBuffer.length > _bufferSize) {
       _dataBuffer.removeAt(0);
     }
-    _ingestEndurance(data);
-
-    // Apply Action Acceptor pattern:
-    // 1. Accept afferent (sensory) input
-    // 2. Compare with expected pattern
-    // 3. Validate motor command execution
-    final validated = _validateAction(data);
+    _ingestEndurance(validated);
 
     tongueController.add(validated);
   }
 
   /// Validate action using Anokhin's Action Acceptor principle
+  /// 
+  /// DEPRECATED: This method is kept for backward compatibility.
+  /// Motion validation is now handled by MotionValidationController.
+  /// This method simply delegates to the controller.
+  @Deprecated('Use MotionValidationController directly for validation')
   TongueData _validateAction(TongueData data) {
-    // Action Acceptor compares actual afferent signals with expected ones
-    // Here we validate the biomechanics consistency
-
-    if (_dataBuffer.length < 2) return data;
-
-    final previous = _dataBuffer[_dataBuffer.length - 2];
-    final velocityChange = (data.velocity - previous.velocity).abs();
-    final isConsistent =
-        velocityChange < NeuralEngineConstants.velocityChangeThreshold;
-
-    return TongueData(
-      timestamp: data.timestamp,
-      position: data.position,
-      velocity: data.velocity,
-      acceleration: data.acceleration,
-      landmarks: data.landmarks,
-      isValidated: isConsistent,
-    );
+    return _validator.validate(data);
   }
 
   /// Calculate biometric metrics

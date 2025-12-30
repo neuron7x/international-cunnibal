@@ -7,7 +7,7 @@ class TongueData {
   final double velocity; // Pixels per second
   final double acceleration; // Pixels per second squared
   final List<Offset> landmarks; // MediaPipe-style landmarks
-  final bool isValidated; // Action Acceptor validation status
+  final bool isValidated; // Motion validation status (consistency check)
 
   const TongueData({
     required this.timestamp,

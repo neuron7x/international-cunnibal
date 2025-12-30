@@ -112,9 +112,9 @@ class NeuralEngineConstants {
   // Consistency score calculation
   static const double stdDevScalingFactor = 50.0;
 
-  // Action Acceptor validation
+  // Motion validation (quality control)
   static const double velocityChangeThreshold =
-      0.5; // For consistency validation
+      0.5; // Maximum allowed velocity change for consistency validation
 }
 
 /// Evidence-based biomechanical limits
