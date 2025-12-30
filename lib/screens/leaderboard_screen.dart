@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:international_cunnibal/models/achievement.dart';
 import 'package:international_cunnibal/models/score.dart';
 import 'package:international_cunnibal/services/leaderboard_service.dart';
-import 'package:international_cunnibal/services/user_service.dart';
+import 'package:international_cunnibal/services/user_id_provider.dart';
 
 class LeaderboardScreen extends StatefulWidget {
   const LeaderboardScreen({super.key});
@@ -25,7 +25,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
   }
 
   Future<void> _initUser() async {
-    final id = await UserService().getUserId();
+    final id = await UserIdProvider.getUserId();
     setState(() {
       _userId = id;
       _service = LeaderboardService(localUserId: id);
