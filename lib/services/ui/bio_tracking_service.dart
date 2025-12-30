@@ -134,7 +134,7 @@ class BioTrackingService {
       _labelIndices = [];
       // Log error for debugging but allow graceful fallback
       debugPrint('Failed to load labels.txt: $e');
-      rethrow;
+      // Don't rethrow - allow graceful degradation to demo mode
     }
   }
 

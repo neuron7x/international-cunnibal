@@ -7,6 +7,11 @@ This directory contains TensorFlow Lite models for on-device AI processing.
 ### tongue_detector.tflite
 A MediaPipe-based facial landmark detection model adapted for tongue tracking.
 
+**⚠️ Current Status:**
+The included `tongue_detector.tflite` is a **placeholder text file** for demonstration purposes.
+It will cause graceful fallback to demo mode when loaded. For production use, replace with an
+actual trained TFLite binary model.
+
 **Model Requirements:**
 - Input: RGB image (320x320 or 640x480)
 - Output: Facial landmarks (468 points) with confidence scores

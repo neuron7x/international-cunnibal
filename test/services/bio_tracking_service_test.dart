@@ -26,11 +26,8 @@ void main() {
         // loadModel should handle missing model file gracefully
         await service.loadModel();
         
-        // Should fallback to loadFailed or demo status
-        expect(
-          service.status,
-          anyOf([TrackingStatus.loadFailed, TrackingStatus.demo]),
-        );
+        // Should fallback to loadFailed status
+        expect(service.status, TrackingStatus.loadFailed);
       });
 
       test('demo mode does not require model loading', () async {

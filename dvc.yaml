@@ -1,3 +1,6 @@
+# DVC stages for model artifact tracking
+# This stage tracks model files for version control
+# In production, replace the command with actual model preparation/download script
 stages:
   track_tongue_detector:
     cmd: echo "Model artifact tracked by DVC"
