@@ -130,7 +130,7 @@ class BioTrackingService {
           .map((line) => int.tryParse(line.trim()))
           .whereType<int>()
           .toList();
-    } on Exception catch (e) {
+    } catch (e) {
       _labelIndices = [];
       // Log error for debugging but allow graceful fallback
       debugPrint('Failed to load labels.txt: $e');

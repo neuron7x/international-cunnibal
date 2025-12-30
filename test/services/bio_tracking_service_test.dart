@@ -85,11 +85,11 @@ void main() {
         expect(service.status, TrackingStatus.demo);
       });
 
-      test('isRealTrackingEnabled requires loaded status and camera mode', () {
+      test('isRealTrackingEnabled requires loaded status and camera mode', () async {
         expect(service.isRealTrackingEnabled, false);
         
         // Demo mode should never enable real tracking
-        service.setMode(CvEngineMode.demo);
+        await service.setMode(CvEngineMode.demo);
         expect(service.isRealTrackingEnabled, false);
       });
     });
