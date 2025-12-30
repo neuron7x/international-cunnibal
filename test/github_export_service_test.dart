@@ -54,7 +54,7 @@ void main() {
           consistencyScore: 80,
           frequency: 2.0,
           frequencyConfidence: 0.9,
-          pcaVariance: const [50.0, 30.0, 20.0],
+          pcaVariance: const [0.5, 0.3, 0.2],
           movementDirection: MovementDirection.right,
           directionStability: 50,
           intensity: 60,
@@ -84,6 +84,7 @@ void main() {
       expect(content['totalMetrics'], equals(1));
       expect(content['totalSessions'], equals(1));
       expect(content['summary']['avgSynchronization'], equals(90));
+      expect(content['schemaVersion'], isNotNull);
 
       service.clearLogs();
       await tempDir.delete(recursive: true);
@@ -103,7 +104,7 @@ void main() {
             consistencyScore: 80,
             frequency: 2.0,
             frequencyConfidence: 0.9,
-            pcaVariance: const [50.0, 30.0, 20.0],
+            pcaVariance: const [0.5, 0.3, 0.2],
             movementDirection: MovementDirection.right,
             directionStability: 50,
             intensity: 60,
@@ -131,7 +132,7 @@ void main() {
           consistencyScore: 80,
           frequency: 2.0,
           frequencyConfidence: 0.9,
-          pcaVariance: const [50.0, 30.0, 20.0],
+          pcaVariance: const [0.5, 0.3, 0.2],
           movementDirection: MovementDirection.right,
           directionStability: 50,
           intensity: 60,

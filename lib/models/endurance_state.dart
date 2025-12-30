@@ -32,4 +32,26 @@ class EnduranceState {
       streak: streak ?? this.streak,
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'level': level,
+      'badges': badges,
+      'targetAperture': targetAperture,
+      'targetStability': targetStability,
+      'targetTime': targetTime,
+      'streak': streak,
+    };
+  }
+
+  factory EnduranceState.fromJson(Map<String, dynamic> json) {
+    return EnduranceState(
+      level: json['level'] as int,
+      badges: json['badges'] as int,
+      targetAperture: (json['targetAperture'] as num).toDouble(),
+      targetStability: (json['targetStability'] as num).toDouble(),
+      targetTime: (json['targetTime'] as num).toDouble(),
+      streak: json['streak'] as int,
+    );
+  }
 }

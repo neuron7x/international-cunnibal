@@ -1,9 +1,12 @@
 import 'dart:convert';
 import 'package:intl/intl.dart';
-import 'package:international_cunnibal/models/metrics.dart';
 import 'package:international_cunnibal/models/dictation_session.dart';
+import 'package:international_cunnibal/models/metrics.dart';
+import 'package:international_cunnibal/models/schema_version.dart';
+import 'package:international_cunnibal/services/analytics/incremental_stats.dart';
 import 'package:international_cunnibal/utils/constants.dart';
 import 'package:international_cunnibal/utils/export_file_writer.dart';
+import 'package:international_cunnibal/validators/metrics_validator.dart';
 
 /// GitHub Performance Log Export Service
 /// Automated export of performance logs for GitHub integration
@@ -28,10 +31,17 @@ class GitHubExportService {
 
   final List<BiometricMetrics> _metricsLog = [];
   final List<DictationSession> _sessionsLog = [];
+  final MetricsAggregator _aggregator = MetricsAggregator();
 
   /// Log metrics data
   void logMetrics(BiometricMetrics metrics) {
+    final errors = MetricsValidator.validate(metrics);
+    if (errors.isNotEmpty) {
+      throw ArgumentError('Invalid metrics: $errors');
+    }
+
     _metricsLog.add(metrics);
+    _aggregator.ingest(metrics);
 
     // Auto-export if we have enough entries
     if (_metricsLog.length >= ExportConstants.autoExportThreshold) {
@@ -52,6 +62,7 @@ class GitHubExportService {
     final filename = 'performance_log_$timestamp.json';
 
     final data = {
+      'schemaVersion': SchemaVersion.current,
       'exportTimestamp': now.toIso8601String(),
       'appVersion': ExportConstants.appVersion,
       'totalMetrics': _metricsLog.length,
@@ -70,28 +81,7 @@ class GitHubExportService {
 
   /// Generate summary statistics
   Map<String, dynamic> _generateSummary() {
-    if (_metricsLog.isEmpty) {
-      return {
-        'avgConsistency': 0.0,
-        'avgFrequency': 0.0,
-        'avgEnduranceScore': 0.0,
-        'totalSessions': 0,
-      };
-    }
-
-    final avgConsistency =
-        _metricsLog.map((m) => m.consistencyScore).reduce((a, b) => a + b) /
-        _metricsLog.length;
-
-    final avgFrequency =
-        _metricsLog.map((m) => m.frequency).reduce((a, b) => a + b) /
-        _metricsLog.length;
-    final avgEndurance =
-        _metricsLog
-            .map((m) => m.endurance.enduranceScore)
-            .reduce((a, b) => a + b) /
-        _metricsLog.length;
-
+    final summary = _aggregator.summary();
     final avgSyncScore = _sessionsLog.isEmpty
         ? 0.0
         : _sessionsLog
@@ -100,9 +90,7 @@ class GitHubExportService {
               _sessionsLog.length;
 
     return {
-      'avgConsistency': avgConsistency,
-      'avgFrequency': avgFrequency,
-      'avgEnduranceScore': avgEndurance,
+      ...summary,
       'avgSynchronization': avgSyncScore,
       'totalSessions': _sessionsLog.length,
     };
@@ -112,6 +100,7 @@ class GitHubExportService {
   void clearLogs() {
     _metricsLog.clear();
     _sessionsLog.clear();
+    _aggregator.reset();
   }
 
   /// Get export directory path

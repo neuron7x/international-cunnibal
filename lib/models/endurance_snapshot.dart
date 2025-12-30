@@ -52,4 +52,15 @@ class EnduranceSnapshot {
       'threshold': threshold,
     };
   }
+
+  factory EnduranceSnapshot.fromJson(Map<String, dynamic> json) {
+    return EnduranceSnapshot(
+      aperture: (json['aperture'] as num).toDouble(),
+      apertureStability: (json['apertureStability'] as num).toDouble(),
+      fatigueIndicator: (json['fatigueIndicator'] as num).toDouble(),
+      enduranceTime: (json['enduranceTime'] as num).toDouble(),
+      enduranceScore: (json['enduranceScore'] as num).toDouble(),
+      threshold: (json['threshold'] as num).toDouble(),
+    );
+  }
 }

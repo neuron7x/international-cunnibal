@@ -107,6 +107,36 @@ void main() {
       expect(json['pcaVariance'], equals([60.0, 30.0, 10.0]));
       expect(json['endurance']['enduranceScore'], equals(80));
     });
+
+    test('BiometricMetrics deserializes from JSON', () {
+      final original = BiometricMetrics(
+        consistencyScore: 85.0,
+        frequency: 2.5,
+        frequencyConfidence: 0.6,
+        pcaVariance: [60.0, 30.0, 10.0],
+        movementDirection: MovementDirection.left,
+        directionStability: 25,
+        intensity: 30,
+        patternScore: 10,
+        endurance: const EnduranceSnapshot(
+          aperture: 0.2,
+          apertureStability: 70,
+          fatigueIndicator: 10,
+          enduranceTime: 1.5,
+          enduranceScore: 80,
+          threshold: 0.18,
+        ),
+        timestamp: DateTime(2025, 12, 26),
+      );
+
+      final deserialized = BiometricMetrics.fromJson(original.toJson());
+
+      expect(deserialized.consistencyScore, equals(original.consistencyScore));
+      expect(deserialized.frequency, equals(original.frequency));
+      expect(deserialized.movementDirection, equals(original.movementDirection));
+      expect(deserialized.endurance.enduranceScore,
+          equals(original.endurance.enduranceScore));
+    });
   });
 
   group('DictationSession Model Tests', () {
@@ -148,6 +178,41 @@ void main() {
       expect(json['targetSymbol'], equals('A'));
       expect(json['synchronizationScore'], equals(75.0));
       expect(json['rhythmTimestamps'], equals([0.0, 0.5, 1.0]));
+    });
+
+    test('DictationSession deserializes from JSON', () {
+      final session = DictationSession(
+        targetSymbol: 'B',
+        startTime: DateTime(2025, 12, 26),
+        rhythmTimestamps: const [0.0, 0.5, 1.0],
+        synchronizationScore: 80.0,
+      );
+
+      final deserialized = DictationSession.fromJson(session.toJson());
+
+      expect(deserialized.targetSymbol, equals(session.targetSymbol));
+      expect(deserialized.synchronizationScore,
+          equals(session.synchronizationScore));
+      expect(deserialized.rhythmTimestamps, equals(session.rhythmTimestamps));
+    });
+  });
+
+  group('TongueData Model Tests - roundtrip', () {
+    test('TongueData deserializes from JSON', () {
+      final data = TongueData(
+        timestamp: DateTime(2025, 12, 26),
+        position: const Offset(0.5, 0.5),
+        velocity: 1.0,
+        acceleration: 0.1,
+        landmarks: [const Offset(0.1, 0.2)],
+        isValidated: true,
+      );
+
+      final deserialized = TongueData.fromJson(data.toJson());
+
+      expect(deserialized.position, equals(data.position));
+      expect(deserialized.velocity, equals(data.velocity));
+      expect(deserialized.landmarks.first, equals(data.landmarks.first));
     });
   });
 }
