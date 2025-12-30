@@ -31,17 +31,22 @@ Camera Frame → Position Detection → Velocity Calculation → Validation Chec
 
 1. **Input**: Receives a new motion measurement with position, velocity, and timestamp
 2. **Compare**: Calculates the velocity change from the previous measurement
-3. **Check**: Compares velocity change against a threshold (100 pixels/second)
+3. **Check**: Compares velocity change against a threshold (0.5 normalized units/second)
 4. **Output**: Marks the measurement as valid or invalid
 
 ### Example
 
 ```
-Measurement 1: velocity = 50 px/s  ✓ (first measurement, always valid)
-Measurement 2: velocity = 60 px/s  ✓ (change = 10, below threshold)
-Measurement 3: velocity = 250 px/s ✗ (change = 190, exceeds threshold)
-Measurement 4: velocity = 255 px/s ✓ (change = 5, below threshold)
+Measurement 1: velocity = 0.15 normalized u/s  ✓ (first measurement, always valid)
+Measurement 2: velocity = 0.18 normalized u/s  ✓ (change = 0.03, below threshold)
+Measurement 3: velocity = 0.80 normalized u/s  ✗ (change = 0.62, exceeds threshold)
+Measurement 4: velocity = 0.82 normalized u/s  ✓ (change = 0.02, below threshold)
 ```
+
+**Note:** Velocity is measured in normalized coordinate units (0-1 range) per second.
+Position coordinates are normalized to 0-1, so velocity threshold of 0.5 represents
+movement across half the screen in one second, which is unrealistically fast for
+natural tongue movements.
 
 ## Technical Specifications
 
@@ -50,7 +55,7 @@ Measurement 4: velocity = 255 px/s ✓ (change = 5, below threshold)
 | Property | Value | Notes |
 |----------|-------|-------|
 | **Processing Speed** | <1ms per measurement | Fast enough for 30 FPS video |
-| **Threshold** | 100 px/s | Velocity change limit |
+| **Threshold** | 0.5 normalized u/s | Velocity change limit (normalized coordinates 0-1) |
 | **Determinism** | 100% | Same input always produces same output |
 | **Dependencies** | None | No network, no external services |
 | **Data Storage** | In-memory only | No persistent storage |

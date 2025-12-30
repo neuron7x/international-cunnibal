@@ -101,8 +101,8 @@ MotionValidationController.validate(data)
 2. Calculate velocity change
    velocityChange = |current.velocity - previous.velocity|
     ↓
-3. Compare with threshold (100 px/s)
-   isValid = (velocityChange < 100.0)
+3. Compare with threshold (0.5 normalized units/second)
+   isValid = (velocityChange < 0.5)
     ↓
 4. Update statistics
    totalValidations++
@@ -128,13 +128,15 @@ MotionValidationController.validate(data)
 
 **Input Sequence:**
 ```
-Frame 1: velocity = 10 px/s  → VALID (first frame)
-Frame 2: velocity = 15 px/s  → VALID (change = 5, < 100)
-Frame 3: velocity = 20 px/s  → VALID (change = 5, < 100)
-Frame 4: velocity = 250 px/s → INVALID (change = 230, > 100) [sensor glitch]
-Frame 5: velocity = 255 px/s → VALID (change = 5, < 100)
-Frame 6: velocity = 260 px/s → VALID (change = 5, < 100)
+Frame 1: velocity = 0.10 u/s → VALID (first frame)
+Frame 2: velocity = 0.12 u/s → VALID (change = 0.02, < 0.5)
+Frame 3: velocity = 0.15 u/s → VALID (change = 0.03, < 0.5)
+Frame 4: velocity = 0.80 u/s → INVALID (change = 0.65, > 0.5) [sensor glitch]
+Frame 5: velocity = 0.82 u/s → VALID (change = 0.02, < 0.5)
+Frame 6: velocity = 0.84 u/s → VALID (change = 0.02, < 0.5)
 ```
+
+**Note:** Velocity in normalized units (u/s) where coordinates range from 0-1.
 
 **User sees:**
 - Smooth motion tracking
