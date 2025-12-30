@@ -24,6 +24,7 @@ abstract class CvEngine {
   Future<void> prepare();
   Future<void> start();
   void stop();
+  void dispose();
 }
 
 class DemoCvEngine implements CvEngine {
@@ -102,6 +103,14 @@ class DemoCvEngine implements CvEngine {
   void stop() {
     _timer?.cancel();
     _timer = null;
+  }
+
+  @override
+  void dispose() {
+    stop();
+    if (!_controller.isClosed) {
+      _controller.close();
+    }
   }
 }
 
@@ -210,6 +219,25 @@ class CameraCvEngine implements CvEngine {
   void stop() {
     _timer?.cancel();
     _timer = null;
+  }
+
+  @override
+  void dispose() {
+    stop();
+    if (!_stream.isClosed) {
+      _stream.close();
+    }
+    final controller = _controller;
+    _controller = null;
+    if (controller != null) {
+      try {
+        controller.dispose();
+      } catch (error, stackTrace) {
+        debugPrint(
+          'CameraCvEngine dispose error: $error\n$stackTrace',
+        );
+      }
+    }
   }
 }
 

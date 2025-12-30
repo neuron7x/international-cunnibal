@@ -117,5 +117,14 @@ void main() {
       game.ingest(metrics);
       expect(game.state.streak, equals(1));
     });
+
+    test('dispose closes stream controller', () async {
+      final subscription = game.stateStream.listen((_) {});
+
+      game.dispose();
+
+      expect(() => game.stateStream.listen((_) {}), throwsStateError);
+      await subscription.cancel();
+    });
   });
 }

@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:international_cunnibal/services/cv_engine.dart';
+import 'package:international_cunnibal/services/ui/cv_engine.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
