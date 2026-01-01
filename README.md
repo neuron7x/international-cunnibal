@@ -271,6 +271,37 @@ graph TB
 
 </div>
 
+### 🤖 AI System Overview
+
+**8-Step On-Device Pipeline** *(Zero data exfiltration)*
+
+<table>
+<tr>
+<td width="12.5%" align="center"><b>1</b><br/>📷<br/><sub>Camera</sub></td>
+<td width="12.5%" align="center"><b>2</b><br/>🤖<br/><sub>TFLite</sub></td>
+<td width="12.5%" align="center"><b>3</b><br/>📊<br/><sub>Normalize</sub></td>
+<td width="12.5%" align="center"><b>4</b><br/>✅<br/><sub>Validate</sub></td>
+<td width="12.5%" align="center"><b>5</b><br/>📦<br/><sub>Buffer</sub></td>
+<td width="12.5%" align="center"><b>6</b><br/>📈<br/><sub>Metrics</sub></td>
+<td width="12.5%" align="center"><b>7</b><br/>🎮<br/><sub>Logic</sub></td>
+<td width="12.5%" align="center"><b>8</b><br/>📱<br/><sub>UI</sub></td>
+</tr>
+</table>
+
+**Where AI Lives:**
+- **ML Inference** → `lib/services/ml/mediapipe_service.dart` (TFLite landmark detection)
+- **CV Engine** → `lib/services/ui/cv_engine.dart` (camera/demo abstraction)
+- **Signal Processing** → `lib/core/motion_metrics.dart` (FFT, PCA, statistics - **no ML**)
+- **Models** → `assets/models/*.tflite` (loaded on-device), `ml-ops/` (training artifacts)
+
+**Key Boundaries:**
+- 🧠 **ML only for landmark detection** - all other processing is deterministic math
+- 🔒 **On-device only** - models run locally, no cloud inference
+- 🎭 **Demo mode included** - works without camera/models for development
+- 📦 **Clear layering** - Core (math) → Services (orchestration) → UI (presentation)
+
+See [ARCHITECTURE.md](ARCHITECTURE.md#ai-system-boundary) for complete AI system boundary specification.
+
 ### 🧠 NeuralEngine Service
 
 **Biomechanics Processing Pipeline** *(Updated: 2025-12-30)*

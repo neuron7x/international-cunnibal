@@ -1,5 +1,95 @@
 # Architecture
 
+## AI System Boundary
+
+### Canonical AI Processing Flow (8 Steps)
+
+This section defines the single source of truth for how AI/ML integrates with the Flutter app:
+
+1. **Input Capture** → Camera frames (30 FPS) or demo synthesis via `CvEngine`
+2. **ML Inference** → MediaPipe/TFLite landmark detection in `MediaPipeService` (on-device only)
+3. **Data Normalization** → Raw landmarks → `TongueData` model (position, velocity, acceleration)
+4. **Quality Validation** → `MotionValidationController` flags invalid measurements
+5. **Buffering & Analysis** → `NeuralEngine` maintains 100-sample buffer for statistics
+6. **Metrics Computation** → `MotionMetrics` calculates consistency, frequency, direction, intensity (pure math, no ML)
+7. **Game Logic Integration** → `GameLogicService` consumes metrics, updates progression state
+8. **UI Feedback** → Streams to Flutter widgets for real-time display and export logging
+
+**Privacy Guarantee:** All processing happens on-device. No data leaves the phone.
+
+### Where AI/ML Lives
+
+#### On-Device Runtime (Production)
+- **`lib/services/ml/mediapipe_service.dart`** - TFLite interpreter, model loading, inference
+- **`lib/services/ui/cv_engine.dart`** - Camera/demo abstraction, frame preprocessing
+- **`lib/services/ui/bio_tracking_service.dart`** - Orchestrates CV engine, streams to NeuralEngine
+- **`assets/models/*.tflite`** - Binary model files (loaded at runtime via tflite_flutter package)
+
+#### Processing Pipeline (No ML)
+- **`lib/services/neural_engine.dart`** - Data buffering, validation orchestration, metrics streaming
+- **`lib/services/motion_validation_controller.dart`** - Quality checks (deterministic logic, not ML)
+- **`lib/core/motion_metrics.dart`** - Pure signal processing (FFT, PCA, statistics)
+- **`lib/core/endurance_metrics.dart`** - Jaw aperture calculations (geometry, not ML)
+
+#### Offline/Training-Only (Not in App)
+- **`ml-ops/models/`** - DVC-tracked model binaries (training artifacts)
+- **`ml-ops/model_cards/`** - Model documentation, provenance, performance metrics
+- **`ml-ops/benchmarks/`** - Offline performance evaluation logs
+- **`scripts/download_model.py`** - Development utility to fetch models (not used at runtime)
+
+#### Development & CI
+- **`tool/run_demo.dart`** - Standalone demo runner (no ML needed)
+- **`tool/benchmark_core.dart`** - Performance benchmarking for MotionMetrics
+- **`tool/verify_logic.dart`** - Logic validation without camera/models
+- **`tool/ci/*.py`** - Architecture boundary checks, latency budgets, privacy guards
+
+### Module Responsibilities (No Overlap)
+
+| Layer | Modules | Responsibility | Dependencies |
+|-------|---------|----------------|--------------|
+| **ML Inference** | `lib/services/ml/*` | TFLite model loading, landmark detection | tflite_flutter, camera |
+| **CV Abstraction** | `lib/services/ui/cv_engine.dart` | Camera/demo mode switching, frame streaming | camera package |
+| **Data Pipeline** | `lib/services/neural_engine.dart` | Orchestration, buffering, streaming | Core services |
+| **Signal Processing** | `lib/core/motion_metrics.dart` | Pure math (FFT, PCA, stats), no Flutter imports | vector_math only |
+| **Business Logic** | `lib/services/game_logic_service.dart` | Progression, targets, level-up | Metrics only |
+| **UI Presentation** | `lib/screens/*`, `lib/widgets/*` | Display, user interaction | Flutter framework |
+| **Persistence** | `lib/services/ui/github_export_service.dart` | JSON export (user-triggered only) | path_provider |
+
+**Boundary Rules:**
+- Core (`lib/core/`) MUST NOT import Flutter or services (enforced by `tool/ci/check_architecture_boundaries.py`)
+- Services MUST NOT perform UI rendering
+- ML inference ONLY in `lib/services/ml/` - all other layers are ML-free
+- Models MUST be tracked in `ml-ops/` with DVC, never committed to Git as binaries
+
+### Demo Mode vs Real Tracking
+
+The app supports two modes with clear boundaries:
+
+**Demo Mode (Default):**
+- `DemoCvEngine` generates synthetic data (sine waves + noise)
+- No camera, no model loading, no permissions needed
+- Perfect for development, CI, and offline testing
+- Falls back automatically if model loading fails
+
+**Real Tracking Mode:**
+- `CameraCvEngine` captures frames, `MediaPipeService` runs inference
+- Requires camera permission and valid TFLite model in `assets/models/`
+- User explicitly enables via settings toggle
+- Status tracked: `notLoaded` → `loading` → `loaded` / `loadFailed`
+
+**Switching Logic:** `BioTrackingService` coordinates mode selection, handles graceful fallback.
+
+### Non-Goals
+
+This architecture explicitly DOES NOT:
+- ❌ Send data to cloud or external servers (100% on-device)
+- ❌ Perform model training at runtime (training is offline only)
+- ❌ Use ML for signal processing (core math is deterministic, not learned)
+- ❌ Store raw camera frames (only extracted landmarks with privacy filters)
+- ❌ Require internet connectivity (works fully offline)
+- ❌ Share models between users (each device loads from local assets)
+- ❌ Perform online learning or model updates (static models)
+
 ## Overview
 
 International Cunnibal implements a clean architecture pattern with clear separation of concerns:
