@@ -1,5 +1,43 @@
 # Quick Start Guide
 
+## AI System at a Glance
+
+**International Cunnibal** uses on-device AI for tongue biomechanics tracking. Here's what you need to know:
+
+### Two Operating Modes
+
+1. **Demo Mode (Default)** - No setup needed
+   - Simulated data generation
+   - No camera or ML models required
+   - Perfect for development and testing
+   - Run immediately: `flutter run`
+
+2. **Real Tracking Mode** - Production use
+   - Requires camera permissions
+   - Loads TFLite model from `assets/models/`
+   - 100% on-device inference (no cloud)
+   - Enable via app settings
+
+### AI Pipeline (8 Steps)
+
+```
+Camera → TFLite Landmarks → Normalization → Validation → 
+Buffer → Metrics (FFT/PCA) → Game Logic → UI Feedback
+```
+
+**Key Point:** Only Step 2 (TFLite) uses ML. Steps 3-8 are deterministic math and business logic.
+
+### Where AI Code Lives
+
+- **ML Inference**: `lib/services/ml/mediapipe_service.dart`
+- **Camera/Demo**: `lib/services/ui/cv_engine.dart`
+- **Signal Processing**: `lib/core/motion_metrics.dart` (pure math, no ML)
+- **Orchestration**: `lib/services/neural_engine.dart`
+
+See [ARCHITECTURE.md](ARCHITECTURE.md#ai-system-boundary) for detailed system boundary documentation.
+
+---
+
 ## Installation
 
 ### 1. Install Flutter

@@ -1,3 +1,20 @@
+/// Computer Vision engine abstraction for tongue tracking.
+/// 
+/// Provides two implementations with a common interface:
+/// 
+/// 1. DemoCvEngine - Synthetic data generation (no camera, no ML)
+///    - Sine wave patterns with controlled noise
+///    - Perfect for development, testing, CI
+///    - Deterministic with fixed seed for reproducibility
+/// 
+/// 2. CameraCvEngine - Real camera capture and ML inference
+///    - Integrates with MediaPipeService for landmark detection
+///    - Requires camera permissions and TFLite model
+///    - Falls back to demo mode if camera/model unavailable
+/// 
+/// Architecture Boundary: This is the "edge" of the AI pipeline. It converts
+/// raw inputs (camera frames or synthetic signals) into normalized TongueData.
+/// ML inference happens via MediaPipeService, not here.
 import 'dart:async';
 import 'dart:math';
 import 'package:camera/camera.dart';
