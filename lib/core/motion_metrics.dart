@@ -1,3 +1,15 @@
+/// Pure signal processing for motion analysis.
+/// 
+/// This module contains deterministic mathematical computations for biomechanics
+/// metrics. It has NO machine learning, NO Flutter dependencies, and NO I/O.
+/// All functions are pure: same input always produces same output.
+/// 
+/// Responsibility: FFT-based frequency analysis, PCA for direction, statistical
+/// calculations for consistency and intensity. This is the "math core" of the
+/// AI pipeline, but it's not AI itself - just classical signal processing.
+/// 
+/// Architecture Boundary: This module must remain framework-agnostic and
+/// testable in isolation. No imports from lib/services/ or Flutter packages.
 import 'dart:math';
 
 class Vector2 {

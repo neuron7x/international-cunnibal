@@ -1,3 +1,20 @@
+/// MediaPipe TFLite service for facial landmark detection.
+/// 
+/// This is the ONLY module in the codebase that performs machine learning inference.
+/// All ML operations are confined to this service for clear architectural boundaries.
+/// 
+/// Responsibility:
+/// - Load TFLite models from assets (on-device only, no network)
+/// - Preprocess camera frames for model input
+/// - Run inference to detect 468 facial landmarks
+/// - Extract tongue-specific landmarks (indices 13, 14, 78, 308, etc.)
+/// - Provide graceful fallback to placeholder data if model unavailable
+/// 
+/// Architecture Boundary: ML inference ONLY happens here. All downstream
+/// processing in lib/services/neural_engine.dart and lib/core/motion_metrics.dart
+/// is deterministic math, not ML.
+/// 
+/// Privacy: All inference runs on-device. No data is sent to external servers.
 import 'dart:async';
 import 'dart:math';
 
